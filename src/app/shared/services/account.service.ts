@@ -13,14 +13,14 @@ export class AccountService {
   constructor(private http: HttpClient) {}
 
   getUserDetails(): Observable<any> {
-    const checkLocalStorage = localStorage.getItem("account");
-    if(!checkLocalStorage) {
+    const checkLocalStorage = localStorage.getItem("auth");
+    if(checkLocalStorage && JSON.parse(checkLocalStorage).access_token) {
+      return this.http.get<AccountUser>(`${environment.URL}/self`);
+    } else {
       return new Observable((observer) => {
-        observer.next(true);
+        observer.next(...JSON.parse(checkLocalStorage || '{}'));
         observer.complete();
       });
-    } else {
-      return this.http.get<AccountUser>(`${environment.URL}/self`);
     }
   }
 
