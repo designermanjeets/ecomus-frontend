@@ -14,9 +14,9 @@ export class AccountService {
 
   getUserDetails(): Observable<any> {
     const checkLocalStorage = localStorage.getItem("account");
-    if(checkLocalStorage) {
+    if(!checkLocalStorage) {
       return new Observable((observer) => {
-        observer.next(JSON.parse(checkLocalStorage));
+        observer.next(true);
         observer.complete();
       });
     } else {
