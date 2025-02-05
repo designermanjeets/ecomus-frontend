@@ -13,7 +13,15 @@ export class AccountService {
   constructor(private http: HttpClient) {}
 
   getUserDetails(): Observable<any> {
-    return this.http.get<AccountUser>(`${environment.URL}/self`);
+    const checkLocalStorage = localStorage.getItem("account");
+    if(checkLocalStorage) {
+      return new Observable((observer) => {
+        observer.next(JSON.parse(checkLocalStorage));
+        observer.complete();
+      });
+    } else {
+      return this.http.get<AccountUser>(`${environment.URL}/self`);
+    }
   }
 
   updateProfile(payload: AccountUser): Observable<AccountUser> {
