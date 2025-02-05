@@ -1,4 +1,4 @@
-import { Component, TemplateRef, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, TemplateRef, ViewChild } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { ModalDismissReasons, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Select, Store } from '@ngxs/store';
@@ -9,6 +9,7 @@ import { CountryState } from '../../../../state/country.state';
 import { StateState } from '../../../../state/state.state';
 import { UserAddress } from '../../../../interface/user.interface';
 import * as data from '../../../../data/country-code';
+import { Country, State, City }  from 'country-state-city';
 
 @Component({
   selector: 'address-modal',
@@ -22,15 +23,21 @@ export class AddressModalComponent {
   public modalOpen: boolean = false;
 
   public states$: Observable<Select2Data>;
+  public city$: Observable<Select2Data>;
+  public cityOptions: Select2Data = [];
   public address: UserAddress | null;
   public codes = data.countryCodes;
 
   @ViewChild("addressModal", { static: false }) AddressModal: TemplateRef<string>;
   @Select(CountryState.countries) countries$: Observable<Select2Data>;
 
-  constructor(private modalService: NgbModal,
+  constructor(
+    private modalService: NgbModal,
     private store: Store,
-    private formBuilder: FormBuilder) {
+    private formBuilder: FormBuilder,
+    private cdRef: ChangeDetectorRef
+
+  ) {
     this.form = this.formBuilder.group({
       title: new FormControl('', [Validators.required]),
       street: new FormControl('', [Validators.required]),
@@ -47,6 +54,11 @@ export class AddressModalComponent {
         this.form.controls['phone']?.setValue(+value.toString().slice(0, 10));
       }
     });
+
+    setTimeout(() => {
+      this.form.controls['country_id'].disable();
+    }, 500);
+
   }
 
   countryChange(data: Select2UpdateEvent) {
@@ -58,6 +70,26 @@ export class AddressModalComponent {
         this.form.controls['state_id'].setValue('');
     } else {
       this.form.controls['state_id'].setValue('');
+    }
+  }
+
+  stateChange(data: Select2UpdateEvent) {
+    if(data && data?.value) {
+      data.options?.length && this.states$.subscribe((dataz) => {
+        const filterState = dataz.filter((state) => state.label == data.options[0].label);
+        const getAllStates = State.getStatesOfCountry('IN');
+        const filterStateByCode = getAllStates.filter((state) => state.name == filterState[0].label);
+        const  cityOptions = City.getCitiesOfState('IN', filterStateByCode.length ? filterStateByCode[0].isoCode : '');
+        this.cityOptions = [];
+        cityOptions.forEach((city) => {
+          this.cityOptions.push({
+            label: city.name,
+            value: city.name
+          });
+        });
+      });
+    } else {
+      this.form.controls['city'].setValue('');
     }
   }
 

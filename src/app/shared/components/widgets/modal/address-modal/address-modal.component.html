@@ -35,7 +35,7 @@
           <div>
             <label class="form-label" for="address1">{{ 'Country' | translate }}</label>
             <select2 class="custom-select" [data]="(countries$ | async) ? (countries$ | async)! : []"
-              [placeholder]="'select_country' | translate" formControlName="country_id" (update)="countryChange($event)" resettable>
+              [placeholder]="'select_country' | translate" formControlName="country_id" (update)="countryChange($event)" resettable [value]="356">
             </select2>
             <div class="invalid-feedback"
               *ngIf="form?.controls?.['country_id']?.touched && form?.controls?.['country_id']?.errors?.['required']">
@@ -47,7 +47,7 @@
           <div>
             <label class="form-label" for="state">{{ 'State' | translate }}</label>
             <select2 class="custom-select" [data]="(states$ | async) ? (states$ | async)! : []"
-              [placeholder]="'Select State' | translate" formControlName="state_id">
+              [placeholder]="'Select State' | translate" formControlName="state_id" (update)="stateChange($event)">
             </select2>
             <div class="invalid-feedback"
               *ngIf="form?.controls?.['state_id']?.touched && form?.controls?.['state_id']?.errors?.['required']">
@@ -58,7 +58,9 @@
         <div class="col-sm-6">
           <div>
             <label class="form-label" for="city">{{ 'City' | translate }}</label>
-            <input class="form-control" id="city" type="text" placeholder="{{ 'Enter City' | translate }}" formControlName="city" />
+            <select2 class="custom-select" [data]="cityOptions"
+              [placeholder]="'Enter City' | translate" formControlName="city"></select2>
+            <!-- <input class="form-control" id="city" type="text" placeholder="{{ 'Enter City' | translate }}" formControlName="city" /> -->
             <div class="invalid-feedback"
               *ngIf="form?.controls?.['city']?.touched && form.controls['city']?.errors?.['required']">
               {{ 'City is Required' | translate }}
