@@ -59,7 +59,7 @@
           <div>
             <label class="form-label" for="city">{{ 'City' | translate }}</label>
             <select2 class="custom-select" [data]="cityOptions"
-              [placeholder]="'Enter City' | translate" formControlName="city"></select2>
+              [placeholder]="'Enter City' | translate" formControlName="city" (update)="cityChange($event)"></select2>
             <!-- <input class="form-control" id="city" type="text" placeholder="{{ 'Enter City' | translate }}" formControlName="city" /> -->
             <div class="invalid-feedback"
               *ngIf="form?.controls?.['city']?.touched && form.controls['city']?.errors?.['required']">
@@ -71,10 +71,18 @@
           <div>
             <label class="form-label" for="pincode">{{ 'Pincode' | translate }}</label>
             <input class="form-control" id="pincode" type="text" maxlength="6" placeholder="{{ 'Enter Pincode' | translate }}"
-              formControlName="pincode" numbersOnly minlength="3" />
+              formControlName="pincode" numbersOnly minlength="6" />
             <div class="invalid-feedback"
-              *ngIf="form?.controls?.['pincode']?.touched && form.controls['pincode']?.errors?.['required']">
-              {{ 'Pincode is Required' | translate }}
+              *ngIf="
+                  form?.controls?.['pincode']?.touched && 
+                  (
+                    form.controls['pincode']?.errors?.['required'] ||
+                    form.controls['pincode']?.errors?.['minlength'] ||
+                    form.controls['pincode']?.errors?.['numbersOnly']
+                  )
+                "
+                >
+              {{ 'Pincode is invalid' | translate }}
             </div>
           </div>
         </div>

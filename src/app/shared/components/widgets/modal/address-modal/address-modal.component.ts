@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, TemplateRef, ViewChild } from '@angular/c
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { ModalDismissReasons, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Select, Store } from '@ngxs/store';
-import { map, Observable } from 'rxjs';
+import { debounceTime, distinctUntilChanged, map, Observable } from 'rxjs';
 import { Select2Data, Select2UpdateEvent } from 'ng-select2-component';
 import { CreateAddress, UpdateAddress } from '../../../../action/account.action';
 import { CountryState } from '../../../../state/country.state';
@@ -10,6 +10,8 @@ import { StateState } from '../../../../state/state.state';
 import { UserAddress } from '../../../../interface/user.interface';
 import * as data from '../../../../data/country-code';
 import { Country, State, City }  from 'country-state-city';
+import { AuthService } from '../../../../services/auth.service';
+import { NotificationService } from '../../../../services/notification.service';
 
 @Component({
   selector: 'address-modal',
@@ -35,7 +37,9 @@ export class AddressModalComponent {
     private modalService: NgbModal,
     private store: Store,
     private formBuilder: FormBuilder,
-    private cdRef: ChangeDetectorRef
+    private cdRef: ChangeDetectorRef,
+    private authService: AuthService,
+    private notificationService: NotificationService
 
   ) {
     this.form = this.formBuilder.group({
@@ -55,10 +59,44 @@ export class AddressModalComponent {
       }
     });
 
+    this.form.controls['pincode']?.valueChanges
+    .pipe(
+      debounceTime(500),
+      distinctUntilChanged()
+    )
+    .subscribe((value) => {
+      if(value && value.toString().length > 5) {
+        console.log(value);
+
+        let action = new CreateAddress(this.form.value);
+        if(this.address) {
+          action = new UpdateAddress(this.form.value, this.address.id);
+        }
+        this.validatePinCode({
+          city: this.form.controls['city'].value,
+          pincode: value
+        });
+      }
+    });
+
     setTimeout(() => {
       this.form.controls['country_id'].disable();
     }, 500);
 
+  }
+
+  validatePinCode(payload: any) {
+    this.authService.validatePinCode(payload).subscribe({
+      next: (res) => {
+        if(res.status) {
+          this.form.controls['pincode'].setErrors(null);
+        } else {
+          this.form.controls['pincode'].markAsTouched();
+          this.form.controls['pincode'].setErrors({required: true});
+          this.notificationService.showError(res.msg);
+        }
+      }
+    });
   }
 
   countryChange(data: Select2UpdateEvent) {
@@ -90,6 +128,14 @@ export class AddressModalComponent {
       });
     } else {
       this.form.controls['city'].setValue('');
+    }
+  }
+  
+  cityChange(data: Select2UpdateEvent) {
+    if(data && data?.value) {
+      this.form.controls['pincode'].enable();
+    } else {
+      this.form.controls['pincode'].disable();
     }
   }
 

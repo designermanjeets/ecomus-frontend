@@ -45,5 +45,10 @@ export class AuthService {
   logout(): Observable<any> {
     return this.http.post(`${environment.URL}/logout`, {});
   }
+  
+  validatePinCode(payload: string): Observable<any> {
+    return this.http.post(`${environment.URL}/validPincode`, payload);
+  }
+
 
 }
