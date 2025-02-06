@@ -38,15 +38,20 @@ export class SettingState {
     return this.settingService.getSettingOption().pipe(
       tap({
         next: (result) => {
+          let customValue;
           const state = ctx.getState();
          
           if(!state.selectedCurrency && result?.values?.general){
             state.selectedCurrency = result?.values?.general.default_currency;
           }
 
+          if(result.values?.payment_methods?.length) {
+            customValue = JSON.parse(JSON.stringify(result.values));
+            customValue.payment_methods = [result.values.payment_methods[0]];
+          }
           ctx.patchState({
-            ...state,
-            setting: result.values,
+          ...state,
+          setting: customValue,
           });
         },
         error: (err) => {
