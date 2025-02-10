@@ -235,10 +235,8 @@ export class AddressModalComponent {
   
   cityChange(data: Select2UpdateEvent) {
     if(data && data?.value && this.checkIfPinCodeExists) {
-      if(!this.form.controls['pincode'].value) {
-        this.form.controls['area'].setValue('');
-        this.form.controls['pincode'].setValue('');
-      }
+      this.form.controls['area'].setValue('');
+      this.form.controls['pincode'].setValue('');
       this.officeNameData = [];
       const getPINAreaOfficeCircleData = this.pinCodeAreaOfficeCircleDataJSON.filter((dataz: any) => {
         return dataz.District?.toLowerCase() == data.value?.toString().toLowerCase()
