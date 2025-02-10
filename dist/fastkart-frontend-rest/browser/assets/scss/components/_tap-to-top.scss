@@ -1,0 +1,84 @@
+/**=====================
+     Tap to top scss
+==========================**/
+.theme-option {
+  position: fixed;
+  bottom: calc(10px + (25 - 10) * ((100vw - 320px) / (1920 - 320)));
+  right: calc(10px + (25 - 10) * ((100vw - 320px) / (1920 - 320)));
+  z-index: 1;
+  transition: all .3s ease-in-out;
+
+  body.rtl & {
+    right: unset;
+    left: calc(10px + (25 - 10) * ((100vw - 320px) / (1920 - 320)));
+  }
+
+  @include mq-max(md) {
+    bottom: calc(75px + (80 - 75) * ((100vw - 320px) / (1920 - 320)))
+  }
+
+  .back-to-top {
+    cursor: pointer;
+    background-color: var(--theme-color);
+    padding: 0;
+    border-radius: 5px;
+    z-index: 1;
+    margin-top: 12px;
+    position: relative;
+    transform: translateX(70px);
+    opacity: 0;
+    visibility: hidden;
+    display: none;
+
+    &.show {
+      display: block;
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(0)
+    }
+
+    a {
+      @include flex_common;
+      @include pseudowh($width: calc(30px + (40 - 30) * ((100vw - 320px) / (1920 - 320))), $height: calc(30px + (40 - 30) * ((100vw - 320px) / (1920 - 320))));
+      line-height: 1;
+
+      i {
+        font-size: 23px;
+        line-height: 1;
+        color: $white;
+      }
+    }
+  }
+}
+
+.stickyCart {
+  .theme-option {
+    bottom: 107px;
+
+    @include mq-max(md) {
+      bottom: 174px;
+    }
+
+    @include mq-max(sm) {
+      bottom: 149px;
+    }
+  }
+
+  .compare-fix {
+    a {
+      bottom: 107px;
+
+      @include mq-max(md) {
+        bottom: 142px;
+      }
+    }
+  }
+
+  footer {
+    margin-bottom: 98px;
+
+    @include mq-max(md) {
+      margin-bottom: 168px;
+    }
+  }
+}

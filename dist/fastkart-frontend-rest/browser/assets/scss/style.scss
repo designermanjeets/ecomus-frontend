@@ -1,0 +1,134 @@
+.theme-color-1 {
+  --theme-color: #d99f46;
+}
+
+.theme-color-2 {
+  --theme-color: #0baf9a;
+}
+
+.theme-color-3 {
+  --theme-color: #239698;
+}
+
+.theme-color-4 {
+  --theme-color: #6262a6;
+}
+
+.theme-color-5 {
+  --theme-color: #417394;
+}
+
+// utils
+@import "utils/mixin/animation";
+@import "utils/mixin/common";
+@import "utils/mixin/breakpoints";
+
+// components
+@import "components/accordion";
+@import "components/alert";
+@import "components/breadscrumb";
+@import "components/button";
+@import "components/card";
+@import "components/cookie_bar";
+@import "components/confetti";
+@import "components/counter";
+@import "components/country-flag";
+@import "components/form";
+@import "components/label";
+@import "components/loader";
+@import "components/modal";
+@import "components/nav-tabs";
+@import "components/pagination";
+@import "components/ratio";
+@import "components/slider";
+@import "components/tab";
+@import "components/tap-to-top";
+@import "components/theme-setting";
+@import "components/timer";
+@import "components/title";
+@import "components/tooltip";
+
+// Base
+@import "base/reset";
+@import "base/typography";
+
+// Layout
+@import "layout/banner";
+@import "layout/blog";
+@import "layout/brand";
+@import "layout/category";
+@import "layout/footer";
+@import "layout/header";
+@import "layout/home";
+@import "layout/item";
+@import "layout/nav";
+@import "layout/newsletter";
+@import "layout/offer";
+@import "layout/product";
+@import "layout/review";
+@import "layout/service";
+@import "layout/select2";
+
+// Pages
+@import "pages/coming-soon";
+@import "pages/inner_pages";
+@import "pages/checkout";
+@import "pages/offer";
+@import "pages/pos";
+@import "pages/shop_page";
+@import "pages/product_page";
+@import "pages/user-dashboard";
+
+// Themes
+@import "themes/dark";
+@import "themes/rtl";
+
+.user-dashboard-section .dashboard-left-sidebar .user-nav-pills .logout-cls .btn {
+  background-color: #000000;
+  color: #ffffff;
+  padding: 10px;
+}
+header .top-nav .navbar-top .middle-box .search-box .input-group button {
+  background-color: #000000;
+  color: #ffffff;
+  height: 51px;
+  padding: 14px 20px;
+  border-radius: 5px;
+  border: 1px solid #000000;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+footer.section-t-space {
+  margin-top: 30px;
+}
+footer .sub-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px dashed #c1c1c1;
+}
+.btn-animation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  color: white;
+  border-radius: 5px;
+  font-weight: 600;
+  background: transparent;
+  transition: all 0.3s ease;
+  position: relative;
+  background: #ff6b6b;
+  background: linear-gradient(90deg, #1d1d22 0%, #2a2d2d 100%);
+  border: none;
+  z-index: 0;
+}
+.footer-contain a {
+  color: #4a5568 !important;
+}
+.product-left-box img{
+  width: 100% !important;
+}
+.product-left-box .ng-star-inserted {
+  width: 100%;
+}

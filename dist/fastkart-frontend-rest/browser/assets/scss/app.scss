@@ -1,0 +1,16 @@
+@import "./vendors/bootstrap/bootstrap.scss";
+@import "ngx-toastr/toastr-bs5-alert";
+@import "ngx-owl-carousel-o/lib/styles/scss/owl.carousel";
+@import "ngx-owl-carousel-o/lib/styles/scss/owl.theme.default";
+
+@import 'swiper/swiper.scss';
+
+@import "utils/variables";
+@import "style";
+
+.dark {
+  @import "utils/dark_variables";
+  @import "style";
+}
+
+ 

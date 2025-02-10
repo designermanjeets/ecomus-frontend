@@ -1,0 +1,202 @@
+.brand-section {
+  .brand-row {
+    background-color: #f8f8f8;
+    text-align: center;
+    padding: 25px 0;
+    border-radius: 12px;
+    overflow: hidden;
+
+    html.dark & {
+      background-color: #1d1d22;
+    }
+
+    &.no-bg {
+      background-color: transparent;
+      padding: 0;
+    }
+
+    img {
+      height: calc(65px + (110 - 65) * ((100vw - 320px) / (1920 - 320)));
+      width: auto;
+      object-fit: contain;
+    }
+
+    h5 {
+      color: $title-color;
+      margin-block: calc(7px + (10 - 7) * ((100vw - 320px) / (1920 - 320))) calc(4px + (10 - 4) * ((100vw - 320px) / (1920 - 320)));
+    }
+
+    .product-rating {
+      justify-content: center;
+
+      >span {
+        font-size: 16px;
+        color: #787878;
+
+        html.dark & {
+          color: #ddd;
+        }
+      }
+    }
+  }
+
+  .row {
+    @media screen and (min-width: 1401px) {
+      &.row-cols-xxl-6 {
+        >div {
+          &:nth-child(6n+6) {
+            border-right: unset;
+
+            body.rtl & {
+              border-right: unset;
+              border-left: unset;
+            }
+          }
+        }
+      }
+    }
+
+    @media (max-width: 1401px) and (min-width: 991px) {
+      &.row-cols-lg-5 {
+        >div {
+          &:nth-child(6n+6) {
+            border-right: 1px dashed #ddd;
+
+            body.rtl & {
+              border-right: unset;
+              border-left: 1px dashed #ddd;
+
+              html.dark & {
+                border-color: rgba(119, 119, 119, 0.44);
+              }
+            }
+          }
+
+          &:nth-child(5n+5) {
+            border-right: unset;
+
+            body.rtl & {
+              border-right: unset;
+              border-left: unset;
+            }
+          }
+        }
+      }
+    }
+
+    @media (max-width: 992px) and (min-width: 767px) {
+      &.row-cols-md-3 {
+        >div {
+          &:nth-child(5n+5) {
+            border-right: 1px dashed #ddd;
+
+            body.rtl & {
+              border-right: unset;
+              border-left: 1px dashed #ddd;
+
+              html.dark & {
+                border-color: rgba(119, 119, 119, 0.44);
+              }
+            }
+          }
+
+          &:nth-child(3n+3) {
+            border-right: unset;
+
+            body.rtl & {
+              border-right: unset;
+              border-left: unset;
+            }
+          }
+        }
+      }
+    }
+
+    @media (max-width: 768px) {
+      &.row-cols-md-3 {
+        >div {
+          &:nth-child(3n+3) {
+            border-right: 1px dashed #ddd;
+
+            body.rtl & {
+              border-right: unset;
+              border-left: 1px dashed #ddd;
+
+              html.dark & {
+                border-color: rgba(119, 119, 119, 0.44);
+              }
+            }
+          }
+
+          &:nth-child(2n+2) {
+            border-right: unset;
+
+            body.rtl & {
+              border-right: unset;
+              border-left: unset;
+            }
+          }
+        }
+      }
+    }
+
+    >div {
+      border-right: 1px dashed #ddd;
+
+      body.rtl & {
+        border-right: unset;
+        border-left: 1px dashed #ddd;
+
+        html.dark & {
+          border-color: rgba(119, 119, 119, 0.44);
+        }
+      }
+
+      html.dark & {
+        border-color: rgba(119, 119, 119, 0.45);
+      }
+    }
+  }
+}
+
+.brand-effect {
+  .brand-row {
+    a {
+      &:hover {
+        img {
+          filter: grayscale(0);
+          transition: all 0.5s ease;
+        }
+      }
+    }
+
+    img {
+      filter: grayscale(1);
+      transition: all 0.5s ease;
+    }
+  }
+}
+
+.border-brand {
+  .brand-section {
+    .brand-row {
+      background-color: transparent;
+
+      html.dark & {
+        border-color: rgba(119, 119, 119, 0.45);
+      }
+    }
+  }
+}
+
+.brand-box {
+  border-radius: calc(6px + (10 - 6) * ((100vw - 320px) / (1920 - 320)));
+  overflow: hidden;
+  background-color: #f8f8f8;
+
+  h2 {
+    padding: calc(40px + (132 - 40) * ((100vw - 320px) / (1920 - 320)));
+    font-size: calc(24px + (50 - 24) * ((100vw - 320px) / (1920 - 320)));
+    text-align: center;
+  }
+}

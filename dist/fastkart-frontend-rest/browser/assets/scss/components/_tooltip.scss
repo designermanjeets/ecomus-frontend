@@ -1,0 +1,39 @@
+/**=====================
+  Tooltip scss
+==========================**/
+.tooltip {
+  transition: opacity 0.15s linear;
+
+  .tooltip-arrow {
+    &::before {
+      border-top-color: var(--theme-color);
+    }
+  }
+
+  .tooltip-inner {
+    font-weight: 500;
+    background-color: var(--theme-color);
+    color: white;
+  }
+}
+
+.black-tooltip {
+  ~.tooltip {
+    transition: opacity 0.15s linear;
+
+    .tooltip-arrow {
+      &::before {
+        border-top-color: $title-color;
+      }
+    }
+
+    .tooltip-inner {
+      font-weight: 500;
+      background-color: $title-color;
+      color: $white;
+      html.dark & {
+        background-color: #fff;
+      }
+    }
+  }
+}

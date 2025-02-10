@@ -1,0 +1,140 @@
+/**=====================
+    RTL css
+==========================**/
+body[class="rtl"] {
+  direction: rtl;
+  overflow: hidden auto;
+
+  .alert {
+    border-left: unset;
+    border-right: 3px solid #842029;
+  }
+
+  ul {
+    padding-right: 0;
+  }
+
+  .toast-container {
+    .ngx-toastr {
+      padding: 20px 60px 20px 30px !important;
+      background-position: center right 15px;
+    }
+  }
+
+  .form-floating>.form-control:focus~label,
+  .form-floating>.form-control:not(:placeholder-shown)~label,
+  .form-floating>.form-control-plaintext~label,
+  .form-floating>.form-select~label {
+    transform-origin: right;
+  }
+
+  .dropdown-menu {
+    text-align: right;
+  }
+
+  .ms-auto {
+    margin-left: unset !important;
+    margin-right: auto !important;
+  }
+
+  .ms-1 {
+    margin-right: 0.25rem !important;
+    margin-left: unset !important;
+  }
+
+  .me-1 {
+    margin-right: unset !important;
+    margin-left: 0.25rem !important;
+  }
+
+  .ms-2 {
+    margin-left: unset !important;
+    margin-right: 0.5rem !important;
+  }
+
+  .me-2 {
+    margin-right: unset !important;
+    margin-left: 0.5rem !important;
+  }
+
+  .ms-3 {
+    margin-right: 1rem !important;
+    margin-left: unset !important;
+  }
+
+  .me-3 {
+    margin-right: unset !important;
+    margin-left: 1rem !important;
+  }
+
+  .product-list-section {
+    justify-content: flex-start;
+  }
+
+  .input-group {
+    &> :not(:first-child):not(.dropdown-menu):not(.valid-tooltip):not(.valid-feedback):not(.invalid-tooltip):not(.invalid-feedback) {
+      border-top-left-radius: 6px;
+      border-top-right-radius: 0;
+      border-bottom-left-radius: 6px;
+      border-bottom-right-radius: 0;
+      margin: 0;
+    }
+  }
+
+
+  .input-group:not(.has-validation)> :not(:last-child):not(.dropdown-toggle):not(.dropdown-menu):not(.form-floating),
+  .input-group:not(.has-validation)>.dropdown-toggle:nth-last-child(n+3),
+  .input-group:not(.has-validation)>.form-floating:not(:last-child)>.form-control,
+  .input-group:not(.has-validation)>.form-floating:not(:last-child)>.form-select {
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+
+  owl-carousel-o {
+    direction: ltr;
+
+    .owl-stage-outer {
+      .owl-stage {
+        .owl-item {
+          >* {
+            direction: rtl;
+          }
+        }
+      }
+    }
+
+    .custom-progressbar {
+      justify-content: flex-end;
+    }
+
+    .product-box-4 {
+      .product-detail {
+        .price {
+          del {
+            margin-left: 10px;
+            margin-right: unset;
+          }
+        }
+      }
+    }
+
+    .product-box {
+      .product-detail {
+        .price {
+          del {
+            margin-left: 10px;
+            margin-right: unset;
+          }
+        }
+      }
+    }
+  }
+
+  .newsletter-detail {
+    .row {
+      justify-content: flex-start;
+    }
+  }
+}

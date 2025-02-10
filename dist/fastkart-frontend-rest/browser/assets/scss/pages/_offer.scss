@@ -1,0 +1,155 @@
+/**=====================
+   Offer page Scss
+==========================**/
+.coupon-box {
+  position: relative;
+  padding: calc(15px + (27 - 15) * ((100vw - 320px) / (1920 - 320)));
+  background: $light-gray;
+  border-radius: 6px;
+  width: 100%;
+  overflow: hidden;
+  height: 100%;
+
+  .coupon-img {
+    @include pseudowh($width: 55px, $height: 55px);
+    @include flex_common;
+    padding: 10px;
+    background-color: $light-gray;
+    border-radius: 2px;
+    border: 1px solid #efefef;
+
+    .img {
+      width: 33px;
+      height: 33px;
+      object-fit: contain;
+    }
+  }
+
+  .card-name {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .coupon-name {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    img {
+      border-radius: 6px;
+    }
+
+    h5 {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: calc(16px + (20 - 16) * ((100vw - 320px) / (1920 - 320)));
+      &::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        height: 23px;
+        background-color: #1aa488;
+        width: 2px;
+        body.rtl & {
+          left: unset;
+          right: 0;
+        }
+      }
+    }
+
+    h6 {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      margin-top: 3px;
+      color: $content-color;
+    }
+  }
+
+  .coupon-content {
+    margin-top: 15px;
+
+    &.bank-offer-content {
+      margin-top: calc(10px + (20 - 10) * ((100vw - 320px) / (1920 - 320)));
+
+      p {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        font-size: calc(14px + (16 - 14) * ((100vw - 320px) / (1920 - 320)));
+      }
+
+      h6 {
+        margin-top: calc(10px + (20 - 10) * ((100vw - 320px) / (1920 - 320)));
+      }
+    }
+
+    .coupon-apply {
+      @include flex_common($dis: flex, $align: center, $justify: space-between);
+      padding-top: calc(10px + (20 - 10) * ((100vw - 320px) / (1920 - 320)));
+      border-top: 1px dashed rgba($black, 0.12);
+
+      .copy-btn {
+        padding: calc(8px + (10 - 8) * ((100vw - 320px) / (1920 - 320)));
+        line-height: 1;
+        font-size: 14px;
+        position: relative;
+        overflow: hidden;
+        color: var(--theme-color);
+        font-weight: 600;
+
+        &.expired-btn {
+          color: #999;
+          cursor: not-allowed;
+
+          &::before {
+            background-color: rgb(227, 227, 227);
+            opacity: 0.6;
+          }
+        }
+
+        @media screen and (max-width: 1336px) and (min-width: 1399px) {
+          padding: 7px;
+        }
+
+        &:before {
+          @include pos;
+          top: 0;
+          left: 0;
+          @include pseudowh;
+          background-color: var(--theme-color);
+          opacity: 0.1;
+          z-index: -1;
+        }
+      }
+    }
+
+    p {
+      color: $content-color;
+      line-height: 1.5;
+      height: 42px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+  }
+
+  .coupon-bottom {
+    position: absolute;
+    width: 95%;
+    left: 10px;
+    bottom: -1px;
+  }
+
+  .coupon-right {
+    position: absolute;
+    right: -1px;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 90%;
+  }
+}
