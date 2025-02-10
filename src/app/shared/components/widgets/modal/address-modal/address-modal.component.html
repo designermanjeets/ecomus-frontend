@@ -20,17 +20,6 @@
             </div>
           </div>
         </div>
-        <div class="col-12">
-          <div class="">
-            <label class="form-label" for="address1">{{ 'Address' | translate }}</label>
-            <input class="form-control" id="address" type="text" placeholder="{{ 'Enter Address' | translate }}"
-              formControlName="street" />
-            <div class="invalid-feedback"
-              *ngIf="form?.controls?.['street']?.touched && form.controls['street']?.errors?.['required']">
-              {{ 'Street Address is Required' | translate }}
-            </div>
-          </div>
-        </div>
         <div class="col-sm-6">
           <div>
             <label class="form-label" for="address1">{{ 'Country' | translate }}</label>
@@ -55,7 +44,7 @@
             </div>
           </div>
         </div>
-        <div class="col-sm-6">
+        <div class="col-sm-4">
           <div>
             <label class="form-label" for="city">{{ 'City' | translate }}</label>
             <select2 class="custom-select" [data]="cityOptions"
@@ -67,7 +56,18 @@
             </div>
           </div>
         </div>
-        <div class="col-sm-6">
+        <div class="col-sm-4">
+          <div>
+            <label class="form-label" for="city">{{ 'Area' | translate }}</label>
+            <select2 class="custom-select" [data]="officeNameData"
+              [placeholder]="'Enter Area' | translate" formControlName="area" (update)="areaChange($event)"></select2>
+            <div class="invalid-feedback"
+              *ngIf="form?.controls?.['area']?.touched && form.controls['area']?.errors?.['required']">
+              {{ 'Area is Required' | translate }}
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-4">
           <div>
             <label class="form-label" for="pincode">{{ 'Pincode' | translate }}</label>
             <input class="form-control" id="pincode" type="text" maxlength="6" placeholder="{{ 'Enter Pincode' | translate }}"
@@ -83,6 +83,17 @@
                 "
                 >
               {{ 'Pincode is invalid' | translate }}
+            </div>
+          </div>
+        </div>
+        <div class="col-12">
+          <div class="">
+            <label class="form-label" for="address1">{{ 'Address' | translate }}</label>
+            <textarea class="form-control" id="address" type="text" placeholder="{{ 'Enter Address' | translate }}"
+              formControlName="street" rows="5"></textarea>
+            <div class="invalid-feedback"
+              *ngIf="form?.controls?.['street']?.touched && form.controls['street']?.errors?.['required']">
+              {{ 'Street Address is Required' | translate }}
             </div>
           </div>
         </div>
