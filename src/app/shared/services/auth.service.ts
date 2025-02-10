@@ -46,12 +46,13 @@ export class AuthService {
     return this.http.post(`${environment.URL}/logout`, {});
   }
   
-  validatePinCode(payload: string): Observable<any> {
+  validatePinCode(payload: any): Observable<any> {
     return this.http.post(`${environment.URL}/validPincode`, payload);
   }
 
   fetchAreaPINCodeJSON(): Observable<any> {
-    return this.http.get<any>(`assets/pincode_cleaned.json`);
+    return this.http.get<any>(`${environment.URL}/allCitiesList`);
+    // return this.http.get<any>(`assets/pincode_cleaned.json`);
   }
 
 
