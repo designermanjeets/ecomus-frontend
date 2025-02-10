@@ -50,5 +50,9 @@ export class AuthService {
     return this.http.post(`${environment.URL}/validPincode`, payload);
   }
 
+  fetchAreaPINCodeJSON(): Observable<any> {
+    return this.http.get<any>(`assets/pincode_cleaned.json`);
+  }
+
 
 }

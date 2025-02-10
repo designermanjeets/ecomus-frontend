@@ -14,11 +14,11 @@ export class AccountService {
 
   getUserDetails(): Observable<any> {
     const checkLocalStorage = localStorage.getItem("auth");
-    if(checkLocalStorage && JSON.parse(checkLocalStorage).access_token) {
+    if (checkLocalStorage && JSON.parse(checkLocalStorage).access_token) {
       return this.http.get<AccountUser>(`${environment.URL}/self`);
     } else {
       return new Observable((observer) => {
-        observer.next(...JSON.parse(checkLocalStorage || '{}'));
+        observer.next(JSON.parse(checkLocalStorage || '{}'));
         observer.complete();
       });
     }

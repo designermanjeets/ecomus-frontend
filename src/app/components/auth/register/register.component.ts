@@ -11,6 +11,7 @@ import { ThemeOptionState } from '../../../shared/state/theme-option.state';
 import { Option } from '../../../shared/interface/theme-option.interface';
 import { Values } from '../../../shared/interface/setting.interface';
 import * as data from '../../../shared/data/country-code';
+import { NotificationService } from '../../../shared/services/notification.service';
 
 @Component({
   selector: 'app-register',
@@ -37,7 +38,8 @@ export class RegisterComponent {
   constructor(
     private store: Store,
     private router: Router,
-    private formBuilder: FormBuilder
+    private formBuilder: FormBuilder,
+    private notificationService: NotificationService
   ) {
     this.form = this.formBuilder.group({
       name: new FormControl('', [Validators.required]),
@@ -58,6 +60,21 @@ export class RegisterComponent {
         this.reCaptcha = true;
       }
     });
+
+    this.form.get('country_code')?.disable();
+    this.form.controls['phone']?.valueChanges.subscribe((value) => {
+      if(value && value.toString().length < 10) {
+        this.form.controls['phone'].markAsTouched();
+        this.form.controls['phone'].setErrors({invalid: true});
+      }
+      if(value && value.toString().length > 10) {
+        this.form.controls['phone']?.setValue(+value.toString().slice(0, 10), { emitEvent: false });
+      }
+      if(value && value.toString().length === 10) {
+        this.form.controls['phone'].setErrors(null);
+      }
+    });
+
   }
 
   get passwordMatchError() {

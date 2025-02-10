@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, ViewChild } from '@angular/core';
 import { Store, Select } from '@ngxs/store';
 import { NgbRatingConfig } from '@ng-bootstrap/ng-bootstrap';
 import { Observable } from 'rxjs';
@@ -31,8 +31,11 @@ export class BasicProductBoxComponent {
   public currentDate: number | null;
   public saleStartDate: number | null;
 
-  constructor(private store: Store,
-    config: NgbRatingConfig) {
+  constructor(
+    private store: Store,
+    config: NgbRatingConfig,
+    private cdRef: ChangeDetectorRef
+  ) {
 		config.max = 5;
 		config.readonly = true;
 	}
@@ -42,6 +45,13 @@ export class BasicProductBoxComponent {
     this.cartItem$.subscribe(items => {
       this.cartItem = items.find(item => item.product.id == this.product.id)!;
     });
+  }
+
+  ngAfterViewInit() {
+    setTimeout(() => {
+      this.product.rating_count = Math.floor(Math.random() * 3) + 3;
+    }, 500);
+    this.cdRef.detectChanges();
   }
 
   addToCart(product: Product, qty: number) {

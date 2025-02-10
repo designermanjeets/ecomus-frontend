@@ -47,7 +47,8 @@ export class AccountState {
           });
         },
         error: err => { 
-          throw new Error(err?.error?.message);
+          // throw new Error(err?.error?.message);
+          console.log(err);
         }
       })
     );
