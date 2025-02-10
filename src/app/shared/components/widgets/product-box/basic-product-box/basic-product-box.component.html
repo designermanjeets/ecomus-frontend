@@ -1,4 +1,4 @@
-<div class="product-box" [class]="class">
+<div class="product-box" *ngIf="product.store?.id !== 20" [class]="class">
     <div class="label-tag" [ngClass]="product.is_sale_enable ? 'sale-tag' : product.is_featured ? 'featured-tag' : product.is_trending ?
         'trending-tag' : '' " *ngIf="product.is_trending || product.is_sale_enable || product.is_featured">
         <span>{{ (product.is_sale_enable ? 'sale' : product.is_featured ? 'featured' : product.is_trending ? 'trending' : '' ) | translate }}</span>
