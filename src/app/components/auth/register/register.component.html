@@ -37,6 +37,7 @@
                                     <input type="number" class="form-control" id="phone" id="phone" formControlName="phone" placeholder="{{ 'Phone' | translate }}">
                                     <label for="phone">{{ 'Phone Number' | translate }}</label>
                                     <div *ngIf="form.controls['phone'].touched && form.controls['phone'].errors?.['required']" class="invalid-feedback">{{ 'Phone Number Is Required' | translate }}</div>
+                                    <div *ngIf="form.controls['phone'].touched && form.controls['phone'].errors?.['invalid']" class="invalid-feedback">{{ 'Phone Number must be 10 digits.' }}</div>
                                     <select2 class="custom-select intl-tel-input"
                                       [data]="codes"
                                       [templates]="template"
