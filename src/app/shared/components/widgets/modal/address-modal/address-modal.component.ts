@@ -107,6 +107,7 @@ export class AddressModalComponent {
       this.form.controls['country_id'].disable();
       this.form.controls['area'].disable();
       this.form.controls['pincode'].disable();
+      this.form.controls['country_code'].disable();
     }, 500);
 
   }
