@@ -304,9 +304,14 @@ export class AddressModalComponent {
         state_id: value?.state_id,
         city: value?.city,
         pincode: value?.pincode,
+        area: value?.area,
         country_code: value?.country_code,
         phone: value?.phone
       });
+      setTimeout(() => this.form.controls['country_code'].setValue('91'), 300);
+      setTimeout(() => this.form.controls['state_id'].setValue(value?.state_id), 400);
+      setTimeout(() => this.form.controls['city'].setValue(value?.city), 600);
+      setTimeout(() => this.form.controls['area'].setValue(value?.area), 800);
     } else {
       this.address = null;
       this.form.reset();
@@ -317,13 +322,12 @@ export class AddressModalComponent {
   submit(){
 
     this.form.markAllAsTouched();
-
+    this.form.value['country_id'] = 'INDIA';
     let action = new CreateAddress(this.form.value);
 
     if(this.address) {
       action = new UpdateAddress(this.form.value, this.address.id);
     }
-
     if(this.form.valid) {
       this.store.dispatch(action).subscribe({
         complete: () => {

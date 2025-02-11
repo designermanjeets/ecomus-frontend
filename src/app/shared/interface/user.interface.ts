@@ -44,5 +44,6 @@ export interface UserAddress {
     country_code: number;
     phone: number;
     country_id: number;
+    area: string;
     is_default: boolean;
 }

@@ -504,3 +504,41 @@
     </div>
 </section>
 <address-modal #addressModal></address-modal>
+<ng-template #payByQRModal let-data="data">
+    <div class="dashboard-address">
+        <div class="title-header">
+            <div class="d-flex align-items-center w-100 justify-content-between">
+                <h5>{{ 'Payment By QR' }}</h5>
+            </div>
+        </div>
+        <div class="row g-sm-4 g-3" *ngIf="(user$ | async)?.address?.length">
+            <div class="col-xxl-4 col-xl-6 col-lg-12 col-md-6" *ngFor="let address of (user$ | async)?.address; let i = index;">
+                <div class="address-box">
+                    <div>
+                        <div class="label">
+                            <label>{{ address?.title }}</label>
+                        </div>
+                        <div class="table-responsive address-table">
+                            
+                        </div>
+                    </div>
+                    <div class="button-group">
+                        <app-button
+                            [class]="'btn btn-sm add-button'"
+                            [type]="'button'"
+                            [spinner]="false">
+                            <i class="ri-edit-box-line"></i> {{ 'Edit' | translate }}
+                        </app-button>
+                        <app-button
+                            [class]="'btn btn-sm add-button'"
+                            [type]="'button'"
+                            [spinner]="false">
+                            <i class="ri-delete-bin-line"></i> {{ 'Remove' | translate }}
+                        </app-button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</ng-template>

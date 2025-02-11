@@ -156,6 +156,7 @@ export interface PaymentMethods {
    title: string;
    name: string;
    status: boolean;
+   icon?: string;
 }
 
 export interface Analytics {

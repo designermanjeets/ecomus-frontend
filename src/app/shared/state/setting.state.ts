@@ -5,6 +5,7 @@ import { SettingService } from "../services/setting.service";
 import { GetSettingOption, SelectedCurrency } from "../action/setting.action";
 import { Values } from "../interface/setting.interface";
 import { Currency } from "../interface/currency.interface";
+import { icons } from "feather-icons";
 
 export class SettingStateModel {
   setting: Values | null;
@@ -47,7 +48,21 @@ export class SettingState {
 
           if(result.values?.payment_methods?.length) {
             customValue = JSON.parse(JSON.stringify(result.values));
-            customValue.payment_methods = [result.values.payment_methods[0]];
+            const customPayments = [
+              {
+                name: 'sub_paisa',
+                status: true,
+                title: 'Sub Paisa',
+                icons: null
+              },
+              {
+                name: 'payment_by_qr',
+                status: true,
+                title: 'Payment by QR',
+                icon: './assets/images/payment/pay_by_qr.png',
+              },
+            ];
+            customValue.payment_methods = customPayments //[result.values.payment_methods[0]];
           }
           ctx.patchState({
           ...state,

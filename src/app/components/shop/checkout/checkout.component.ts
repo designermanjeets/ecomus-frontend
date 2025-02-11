@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, TemplateRef, ViewChild } from '@angular/core';
 import { Store, Select } from '@ngxs/store';
 import { FormBuilder, FormControl, FormGroup, Validators, FormArray } from '@angular/forms';
 import { Select2Data, Select2UpdateEvent } from 'ng-select2-component';
@@ -22,6 +22,7 @@ import { CountryState } from '../../../shared/state/country.state';
 import { StateState } from '../../../shared/state/state.state';
 import { AuthState } from '../../../shared/state/auth.state';
 import * as data from '../../../shared/data/country-code';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-checkout',
@@ -45,6 +46,7 @@ export class CheckoutComponent {
   
   @ViewChild("addressModal") AddressModal: AddressModalComponent;
   @ViewChild('cpn', { static: false }) cpnRef: ElementRef<HTMLInputElement>;
+  @ViewChild("payByQRModal") payByQRModal: TemplateRef<any>;
 
   public form: FormGroup;
   public coupon: boolean = true;
@@ -59,7 +61,8 @@ export class CheckoutComponent {
   public codes = data.countryCodes;
 
   constructor(private store: Store, private router: Router,
-    private formBuilder: FormBuilder, public cartService: CartService) {
+    private formBuilder: FormBuilder, public cartService: CartService,
+        private modalService: NgbModal) {
     this.store.dispatch(new GetSettingOption());
 
     this.form = this.formBuilder.group({
@@ -230,8 +233,30 @@ export class CheckoutComponent {
 
   selectPaymentMethod(value: string) {
     this.form.controls['payment_method'].setValue(value);
-    this.checkout();
+    // this.checkout();
+    switch (value) {
+      case 'payment_by_qr':
+        // Call Popup for QR Code
+        this.openModal();
+        break;
+    
+      default:
+        break;
+    }
   }
+
+  async openModal() {
+    this.modalService.open(this.payByQRModal, {
+      ariaLabelledBy: 'address-add-Modal',
+      centered: true,
+      windowClass: 'theme-modal modal-lg address-modal'
+    }).result.then((result) => {
+      `Result ${result}`
+    }, (reason) => {
+      console.log(`Reason ${reason}`)
+    });
+  }
+
 
   togglePoint(event: Event) {
     this.form.controls['points_amount'].setValue((<HTMLInputElement>event.target)?.checked);
