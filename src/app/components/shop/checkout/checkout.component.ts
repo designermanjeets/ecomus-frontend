@@ -23,6 +23,9 @@ import { StateState } from '../../../shared/state/state.state';
 import { AuthState } from '../../../shared/state/auth.state';
 import * as data from '../../../shared/data/country-code';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { DomSanitizer } from '@angular/platform-browser';
+// import { PaymentInitModal } from 'pg-test-project';
+// import * as React from 'react';
 
 @Component({
   selector: 'app-checkout',
@@ -60,9 +63,23 @@ export class CheckoutComponent {
   public billingStates$: Observable<Select2Data>;
   public codes = data.countryCodes;
 
-  constructor(private store: Store, private router: Router,
+  public formData!: any;
+
+  // Sub Paisa Config
+  // @ViewChild('SubPaisaSdk', { static: true }) containerRef!: ElementRef;
+  // formData = {
+  //   env: 'stag',
+  //   clientCode: 'LPS01',
+  //   onToggle:() =>this.render(false) 
+  // };
+  // reactRoot: any = null;
+
+  constructor(
+    private store: Store, private router: Router,
     private formBuilder: FormBuilder, public cartService: CartService,
-        private modalService: NgbModal) {
+        private modalService: NgbModal,
+        private sanitizer: DomSanitizer
+      ) {
     this.store.dispatch(new GetSettingOption());
 
     this.form = this.formBuilder.group({
@@ -192,6 +209,12 @@ export class CheckoutComponent {
     return this.form.get("products") as FormArray;
   }
 
+  // private render(isOpen: boolean){
+  //   this.reactRoot.render(
+  //     React.createElement(PaymentInitModal, { ...this.formData as any, isOpen })
+  //   )
+  // }
+
   ngOnInit() {
     this.checkout$.subscribe(data => this.checkoutTotal = data);
     this.products();
@@ -239,10 +262,51 @@ export class CheckoutComponent {
         // Call Popup for QR Code
         this.openModal();
         break;
-    
+      case 'sub_paisa':
+        console.log('Select Sub Paisa Method');
+        this.initiateSubPaisa();
+        // this.openModal();
+        break;  
       default:
         break;
     }
+  }
+
+  initiateSubPaisa() {
+    this.cartService.initiateSubPaisa().subscribe({
+      next: (data) => {
+        if (data) {
+          this.formData = this.sanitizer.bypassSecurityTrustHtml(data?.data);
+          const container = document.getElementById('paymentContainer');
+          if (container) {
+            container.innerHTML = data.data;
+            setTimeout(() => {
+              const submitButton = container.querySelector('#submitButton') as HTMLInputElement;
+              if(submitButton) {
+                submitButton.click();
+              }
+            }, 1000);
+          }
+        }
+      },
+      error: (err) => {
+        console.log(err);
+      }
+    }); // Call Sub Paisa API
+  }
+
+  redirectToPayURL(){
+    this.cartService.redirectToPayUrl().subscribe({
+      next:(data) => {
+        console.log(data);
+        if (data && data.url) {
+          window.open(data.url, '_blank');
+        }
+      },
+      error:(err) => {
+        console.log(err);
+      }
+    });
   }
 
   async openModal() {
@@ -252,8 +316,11 @@ export class CheckoutComponent {
       windowClass: 'theme-modal modal-lg address-modal'
     }).result.then((result) => {
       `Result ${result}`
+      const formDataContainer = document.getElementById('formDataContainer');
+      console.log(formDataContainer);
     }, (reason) => {
-      console.log(`Reason ${reason}`)
+      const formDataContainer = document.getElementById('formDataContainer');
+      console.log(formDataContainer);
     });
   }
 

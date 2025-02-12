@@ -12,7 +12,7 @@ import {
   NgSwitchDefault,
   NgTemplateOutlet,
   isPlatformBrowser
-} from "./chunk-ZOC7KGPD.js";
+} from "./chunk-GY65V5CF.js";
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -62,7 +62,7 @@ import {
   ɵɵtemplate,
   ɵɵtemplateRefExtractor,
   ɵɵviewQuery
-} from "./chunk-I5WWSACA.js";
+} from "./chunk-LVVQT43K.js";
 import "./chunk-6FQGPHO4.js";
 import "./chunk-INSCHJF3.js";
 import {
@@ -70,7 +70,7 @@ import {
   of
 } from "./chunk-LVRZVOCT.js";
 import "./chunk-W44PFRPX.js";
-import "./chunk-WKYGNSYM.js";
+import "./chunk-ASLTLD6L.js";
 
 // node_modules/swiper/angular/fesm2015/swiper_angular.mjs
 var _c0 = ["prevElRef"];

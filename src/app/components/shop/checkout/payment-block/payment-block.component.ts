@@ -18,7 +18,7 @@ export class PaymentBlockComponent {
     // Automatically emit the selectAddress event for the first item if it's available
     if (this.setting && this.setting?.payment_methods?.length! > 0) {
       if(this.setting?.payment_methods?.[0].status) {
-        this.selectPaymentMethod.emit(this.setting?.payment_methods?.[0].name);
+        // this.selectPaymentMethod.emit(this.setting?.payment_methods?.[0].name);
       }
     }
   }

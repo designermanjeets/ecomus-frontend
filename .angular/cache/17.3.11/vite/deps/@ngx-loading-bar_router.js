@@ -1,30 +1,30 @@
 import {
-  LoadingBarModule,
-  LoadingBarService
-} from "./chunk-YH4UKSVR.js";
-import {
   NavigationCancel,
   NavigationEnd,
   NavigationError,
   NavigationStart,
   Router,
   RouterModule
-} from "./chunk-PEFJEQFL.js";
-import "./chunk-GFRUVL3X.js";
-import "./chunk-HXV7KBPD.js";
-import "./chunk-ZOC7KGPD.js";
+} from "./chunk-AOP22ZBE.js";
+import {
+  LoadingBarModule,
+  LoadingBarService
+} from "./chunk-Q3VRGD4L.js";
+import "./chunk-FNX6IRXA.js";
+import "./chunk-5SZJE72U.js";
+import "./chunk-GY65V5CF.js";
 import {
   NgModule,
   setClassMetadata,
   ɵɵdefineInjector,
   ɵɵdefineNgModule,
   ɵɵinject
-} from "./chunk-I5WWSACA.js";
+} from "./chunk-LVVQT43K.js";
 import "./chunk-6FQGPHO4.js";
 import "./chunk-INSCHJF3.js";
 import "./chunk-LVRZVOCT.js";
 import "./chunk-W44PFRPX.js";
-import "./chunk-WKYGNSYM.js";
+import "./chunk-ASLTLD6L.js";
 
 // node_modules/@ngx-loading-bar/router/fesm2020/ngx-loading-bar-router.mjs
 var LoadingBarRouterModule = class {

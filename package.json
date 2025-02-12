@@ -30,6 +30,8 @@
     "@ngxs/store": "^3.8.1",
     "@popperjs/core": "^2.11.8",
     "@types/googlemaps": "^3.43.3",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
     "bootstrap": "^5.2.3",
     "country-state-city": "^3.2.1",
     "feather-icons": "^4.29.0",
@@ -38,8 +40,12 @@
     "ngx-image-zoom": "^2.1.0",
     "ngx-owl-carousel-o": "^17.0.0",
     "ngx-toastr": "^18.0.0",
+    "pg-test-project": "^4.0.9",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
+    "uuid": "^11.0.5",
     "zone.js": "~0.14.2"
   },
   "devDependencies": {

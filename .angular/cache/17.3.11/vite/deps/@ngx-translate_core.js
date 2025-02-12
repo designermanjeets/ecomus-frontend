@@ -18,7 +18,7 @@ import {
   ɵɵdirectiveInject,
   ɵɵgetInheritedFactory,
   ɵɵinject
-} from "./chunk-I5WWSACA.js";
+} from "./chunk-LVVQT43K.js";
 import "./chunk-6FQGPHO4.js";
 import {
   defer,
@@ -37,7 +37,7 @@ import {
 import "./chunk-W44PFRPX.js";
 import {
   __spreadValues
-} from "./chunk-WKYGNSYM.js";
+} from "./chunk-ASLTLD6L.js";
 
 // node_modules/@ngx-translate/core/dist/fesm2022/ngx-translate-core.mjs
 var TranslateLoader = class {

@@ -49,4 +49,24 @@ export class CartService {
     return this.http.post<CartModel>(`${environment.URL}/sync/cart`, payload);
   }
 
+  initiateSubPaisa(): Observable<any> {
+    // return this.http.get<any>(`${environment.URL}/initiate-payment`);
+    // return this.http.get<any>(`https://stage-securepay.sabpaisa.in/SabPaisa/sabPaisaInit?v=1`);
+    return new Observable(observer => {
+      fetch(`${environment.URL}/initiate-payment`)
+        .then(response => response.json())
+        .then(data => {
+          observer.next(data);
+          observer.complete();
+        })
+        .catch(error => {
+          observer.error(error);
+        });
+    });
+  }
+
+  redirectToPayUrl() {
+    return this.http.get<any>(`${environment.URL}/initiate-popup`);
+  }
+
 }

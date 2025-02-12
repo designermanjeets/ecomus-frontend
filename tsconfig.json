@@ -18,6 +18,7 @@
     "importHelpers": true,
     "target": "ES2022",
     "module": "ES2022",
+    "jsx": "react",
     "useDefineForClassFields": false,
     "lib": [
       "ES2022",
@@ -29,6 +30,10 @@
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
-    "strictTemplates": true
+    "strictTemplates": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "exclude": ["node_modules/pg-test-project"],
+    "skipLibCheck": true
   }
 }
