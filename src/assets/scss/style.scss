@@ -173,3 +173,12 @@ $border-radius: 4px;
     margin-top: 20px;
   }
 }
+
+.checkout-section-2 .left-sidebar-checkout .checkout-detail-box>ul>li .checkout-box .checkout-detail .payment-option img {
+  top: 50%;
+  transform: translateY(-50%);
+  position: absolute;
+  left: 140px;
+  right: auto;
+  width: 100px;
+}

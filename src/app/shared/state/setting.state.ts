@@ -58,7 +58,7 @@ export class SettingState {
               {
                 name: 'sub_paisa',
                 status: true,
-                title: 'Sub Paisa',
+                title: 'Sab Paisa',
                 icon: './assets/images/sub_paisa.png'
               },
             ];
