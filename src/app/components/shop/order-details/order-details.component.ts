@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component, NgZone } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Select, Store } from '@ngxs/store';
 import { Observable, Subject, of } from 'rxjs';
@@ -39,7 +39,10 @@ export class OrderDetailsComponent {
   };
 
   constructor(private store: Store,
-    private route: ActivatedRoute) {
+    private route: ActivatedRoute,
+    private ngZone: NgZone,
+    private cdRef: ChangeDetectorRef 
+  ) {
     this.store.dispatch(new GetOrderStatus());
     this.country$.subscribe(country => this.countries = country.data);
     this.state$.subscribe(state => this.states = state.data);

@@ -279,7 +279,7 @@ export class CheckoutComponent {
     }
   }
 
-  initiateSubPaisa() {
+  initiateSubPaisa(action: any) {
     const uuid = uuidv4();
     console.log(uuid)
     this.cartService.initiateSubPaisa(uuid).subscribe({
@@ -295,7 +295,7 @@ export class CheckoutComponent {
               const submitButton = container.querySelector('#submitButton') as HTMLInputElement;
               if(submitButton) {
                 submitButton.click();
-                this.startPollingForPaymentStatus(uuid); 
+                this.startPollingForPaymentStatus(uuid, action); 
               }
             }, 1000);
           }
@@ -307,7 +307,7 @@ export class CheckoutComponent {
     }); // Call Sub Paisa API
   }
   
-  startPollingForPaymentStatus(uuid: any) {
+  startPollingForPaymentStatus(uuid: any, action: any) {
     this.pollingSubscription = interval(this.pollingInterval)
       .pipe(
         switchMap(() => this.cartService.checkPaymentResponse(uuid)), // Call API
@@ -315,11 +315,11 @@ export class CheckoutComponent {
           ...response,
           status: response.status || false
         })),
-        delay(40000), // Delay setting paymentCompleted to true
-        map(response => ({
-          ...response,
-          status: true // Change paymentCompleted to false after 40 seconds of No Activity
-        })),
+        // delay(20000), // Delay setting paymentCompleted to true
+        // map(response => ({
+        //   ...response,
+        //   status: true // Change paymentCompleted to false after 40 seconds of No Activity
+        // })),
         takeWhile((response: { status: boolean }) => !response.status, true)
       )
       .subscribe({
@@ -327,7 +327,7 @@ export class CheckoutComponent {
           console.log('Payment Status:', response);
           if (response.status) {
             this.pollingSubscription.unsubscribe(); // Stop polling
-            this.handlePaymentSuccess(response);
+            this.handlePaymentSuccess(response, action);
           }
         },
         error: (err) => {
@@ -337,14 +337,18 @@ export class CheckoutComponent {
   }
   
 
-  handlePaymentSuccess(response: any) {
+  handlePaymentSuccess(response: any, action: any) {
     console.log('Payment was successful:', response);
+    console.log('Call /order here now', action);
     if(response.status === true) {
-      console.log('Redirect to Success or Fail');
-      this.router.navigate([ 'order/checkout-success' ], { queryParams: { order_status: response.R } });
-    } else {
-      console.log('Payment in Pending State');
+      this.store.dispatch(new PlaceOrder(action));
     }
+    // if(response.status === true) {
+    //   console.log('Redirect to Success or Fail');
+    //   this.router.navigate([ 'order/checkout-success' ], { queryParams: { order_status: response.R } });
+    // } else {
+    //   console.log('Payment in Pending State');
+    // }
   }
 
   async checkPaymentResponse(uuid: any) {
@@ -484,16 +488,19 @@ export class CheckoutComponent {
 
   placeorder() {
     if(this.form.valid) {
-      // if(this.cpnRef && !this.cpnRef.nativeElement.value) {
-      //   this.form.controls['coupon'].reset();
-      // }
-      // this.store.dispatch(new PlaceOrder(this.form.value));
+      if(this.cpnRef && !this.cpnRef.nativeElement.value) {
+        this.form.controls['coupon'].reset();
+      }
 
+      const formData = {
+        ...this.form.value,
+        // payment_method: 'cod' 
+      }
 
-      let action = new PlaceOrder(this.form.value);
-      this.loading = true;
+      let action = new PlaceOrder(formData);
+      // this.store.dispatch(new PlaceOrder(formData));
 
-      this.initiateSubPaisa();
+      this.initiateSubPaisa(formData);
 
       // setTimeout(() => {
         
