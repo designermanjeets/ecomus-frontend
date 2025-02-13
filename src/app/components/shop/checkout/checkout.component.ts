@@ -327,7 +327,7 @@ export class CheckoutComponent {
           console.log('Payment Status:', response);
           if (response.status) {
             this.pollingSubscription.unsubscribe(); // Stop polling
-            this.handlePaymentSuccess(response, action);
+            this.handlePaymentSuccess(response, action, uuid);
           }
         },
         error: (err) => {
@@ -337,11 +337,11 @@ export class CheckoutComponent {
   }
   
 
-  handlePaymentSuccess(response: any, action: any) {
+  handlePaymentSuccess(response: any, action: any, uuid: any) {
     console.log('Payment was successful:', response);
     console.log('Call /order here now', action);
     if(response.status === true) {
-      this.store.dispatch(new PlaceOrder(action));
+      this.store.dispatch(new PlaceOrder(Object.assign({}, action, { uuid: uuid })));
     }
     // if(response.status === true) {
     //   console.log('Redirect to Success or Fail');
