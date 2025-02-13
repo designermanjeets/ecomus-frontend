@@ -72,6 +72,8 @@ export class CheckoutComponent {
   private pollingSubscription!: Subscription;
   private pollingInterval = 5000; // Poll every 5 seconds
 
+  storeData: any;
+
   // Sub Paisa Config
   // @ViewChild('SubPaisaSdk', { static: true }) containerRef!: ElementRef;
   // formData = {
@@ -281,8 +283,23 @@ export class CheckoutComponent {
 
   initiateSubPaisa(action: any) {
     const uuid = uuidv4();
-    console.log(this.form.value)
-    this.cartService.initiateSubPaisa(uuid).subscribe({
+    const userData = localStorage.getItem('account');
+    const payload = {
+      // ...this.form.value,
+      uuid,
+      // ...JSON.parse(userData || ''),
+      ...JSON.parse(userData || '').user,
+      checkout: this.storeData?.order?.checkout
+      // ...JSON.parse(userData || '').user.address[0]
+    }
+    // console.log('Store Data', this.storeData)
+    this.cartService.initiateSubPaisa(
+      { 
+        uuid: payload.uuid, 
+        email: payload.email,
+        total: this.storeData?.order?.checkout?.total?.total
+      }
+    ).subscribe({
       next: (data) => {
         if (data) {
           this.formData = this.sanitizer.bypassSecurityTrustHtml(data?.data);
@@ -473,6 +490,9 @@ export class CheckoutComponent {
     if(this.form.valid) {
       this.loading = true;
       this.store.dispatch(new Checkout(this.form.value)).subscribe({
+        next:(value) => {
+          this.storeData = value;
+        },
         error: (err) => {
           this.loading = false;
           throw new Error(err);

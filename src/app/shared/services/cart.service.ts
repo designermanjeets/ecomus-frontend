@@ -50,14 +50,14 @@ export class CartService {
     return this.http.post<CartModel>(`${environment.URL}/sync/cart`, payload);
   }
 
-  initiateSubPaisa(uuid: any): Observable<any> {
+  initiateSubPaisa(data: any): Observable<any> {
     return new Observable(observer => {
       fetch(`${environment.URL}/initiate-payment`,{
         method: 'POST',
         headers: {
           'Content-Type': 'application/json' // Ensure JSON data format
         },
-        body: JSON.stringify({ uuid: uuid })
+        body: JSON.stringify(data)
       })
         .then(response => response.json())
         .then(data => {
