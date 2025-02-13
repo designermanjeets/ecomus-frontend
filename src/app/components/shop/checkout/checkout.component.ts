@@ -297,7 +297,10 @@ export class CheckoutComponent {
       { 
         uuid: payload.uuid, 
         email: payload.email,
-        total: this.storeData?.order?.checkout?.total?.total
+        total: this.storeData?.order?.checkout?.total?.total,
+        phone: JSON.parse(userData || '').user.phone,
+        name: JSON.parse(userData || '').user.name,
+        address: JSON.parse(userData || '').user.address[0].city + ' ' + JSON.parse(userData || '').user.address[0].area
       }
     ).subscribe({
       next: (data) => {
