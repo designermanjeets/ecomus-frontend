@@ -93,6 +93,10 @@ export class CheckoutSuccessComponent {
     //
   }
 
+  goToHome() {
+    this.router.navigateByUrl('/');
+  }
+
   selectShippingAddress(id: number) {
     if(id) {
       this.form.controls['shipping_address_id'].setValue(Number(id));

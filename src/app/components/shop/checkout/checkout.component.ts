@@ -313,19 +313,19 @@ export class CheckoutComponent {
         switchMap(() => this.cartService.checkPaymentResponse(uuid)), // Call API
         map(response => ({
           ...response,
-          paymentCompleted: response.paymentCompleted || false
+          status: response.status || false
         })),
-        delay(10000), // Delay setting paymentCompleted to true
-        map(response => ({
-          ...response,
-          paymentCompleted: true // Change paymentCompleted to true after 10 seconds
-        })),
-        takeWhile((response: { paymentCompleted: boolean }) => !response.paymentCompleted, true)
+        // delay(10000), // Delay setting paymentCompleted to true
+        // map(response => ({
+        //   ...response,
+        //   paymentCompleted: true // Change paymentCompleted to true after 10 seconds
+        // })),
+        takeWhile((response: { status: boolean }) => !response.status, true)
       )
       .subscribe({
         next: (response) => {
           console.log('Payment Status:', response);
-          if (response.paymentCompleted) {
+          if (response.status) {
             this.pollingSubscription.unsubscribe(); // Stop polling
             this.handlePaymentSuccess(response);
           }
@@ -339,7 +339,7 @@ export class CheckoutComponent {
 
   handlePaymentSuccess(response: any) {
     console.log('Payment was successful:', response);
-    if(response.R === true || response.R === false) {
+    if(response.status === true) {
       console.log('Redirect to Success or Fail');
       this.router.navigate([ 'order/checkout-success' ], { queryParams: { order_status: response.R } });
     } else {
