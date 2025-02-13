@@ -315,11 +315,11 @@ export class CheckoutComponent {
           ...response,
           status: response.status || false
         })),
-        // delay(10000), // Delay setting paymentCompleted to true
-        // map(response => ({
-        //   ...response,
-        //   paymentCompleted: true // Change paymentCompleted to true after 10 seconds
-        // })),
+        delay(40000), // Delay setting paymentCompleted to true
+        map(response => ({
+          ...response,
+          status: true // Change paymentCompleted to false after 40 seconds of No Activity
+        })),
         takeWhile((response: { status: boolean }) => !response.status, true)
       )
       .subscribe({
