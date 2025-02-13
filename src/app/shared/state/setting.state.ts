@@ -59,7 +59,7 @@ export class SettingState {
                 name: 'sub_paisa',
                 status: true,
                 title: 'Sub Paisa',
-                icons: null
+                icon: './assets/images/sub_paisa.png'
               },
             ];
             customValue.payment_methods = customPayments //[result.values.payment_methods[0]];

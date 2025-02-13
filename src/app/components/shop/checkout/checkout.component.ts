@@ -281,7 +281,7 @@ export class CheckoutComponent {
 
   initiateSubPaisa(action: any) {
     const uuid = uuidv4();
-    console.log(uuid)
+    console.log(this.form.value)
     this.cartService.initiateSubPaisa(uuid).subscribe({
       next: (data) => {
         if (data) {
