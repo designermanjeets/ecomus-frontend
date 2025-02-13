@@ -4,6 +4,7 @@ import { Observable, Subject } from "rxjs";
 import { environment } from "../../../environments/environment";
 import { Cart, CartAddOrUpdate, CartModel } from "../interface/cart.interface";
 
+
 @Injectable({
   providedIn: "root",
 })
@@ -49,11 +50,15 @@ export class CartService {
     return this.http.post<CartModel>(`${environment.URL}/sync/cart`, payload);
   }
 
-  initiateSubPaisa(): Observable<any> {
-    // return this.http.get<any>(`${environment.URL}/initiate-payment`);
-    // return this.http.get<any>(`https://stage-securepay.sabpaisa.in/SabPaisa/sabPaisaInit?v=1`);
+  initiateSubPaisa(uuid: any): Observable<any> {
     return new Observable(observer => {
-      fetch(`${environment.URL}/initiate-payment`)
+      fetch(`${environment.URL}/initiate-payment`,{
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json' // Ensure JSON data format
+        },
+        body: JSON.stringify({ uuid: uuid })
+      })
         .then(response => response.json())
         .then(data => {
           observer.next(data);
@@ -65,8 +70,12 @@ export class CartService {
     });
   }
 
+  checkPaymentResponse(uuid: any): Observable<any> {
+    return this.http.post<any>(`${environment.URL}/check-payment-response`,{ uuid: uuid});
+  }
+
   redirectToPayUrl() {
-    return this.http.get<any>(`${environment.URL}/initiate-popup`);
+    return this.http.post<any>(`${environment.URL}/payment-response`,{});
   }
 
 }

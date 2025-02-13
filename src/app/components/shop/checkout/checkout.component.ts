@@ -3,7 +3,7 @@ import { Store, Select } from '@ngxs/store';
 import { FormBuilder, FormControl, FormGroup, Validators, FormArray } from '@angular/forms';
 import { Select2Data, Select2UpdateEvent } from 'ng-select2-component';
 import { Router } from '@angular/router';
-import { Observable, map, of } from 'rxjs';
+import { Observable, Subscription, map, of } from 'rxjs';
 import { Breadcrumb } from '../../../shared/interface/breadcrumb';
 import { AccountUser } from "../../../shared/interface/account.interface";
 import { AccountState } from '../../../shared/state/account.state';
@@ -24,6 +24,10 @@ import { AuthState } from '../../../shared/state/auth.state';
 import * as data from '../../../shared/data/country-code';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { DomSanitizer } from '@angular/platform-browser';
+import { interval } from 'rxjs';
+import { delay, switchMap, takeWhile, tap } from 'rxjs/operators';
+import { OrderService } from '../../../shared/services/order.service';
+import { v4 as uuidv4 } from 'uuid';
 // import { PaymentInitModal } from 'pg-test-project';
 // import * as React from 'react';
 
@@ -65,6 +69,9 @@ export class CheckoutComponent {
 
   public formData!: any;
 
+  private pollingSubscription!: Subscription;
+  private pollingInterval = 5000; // Poll every 5 seconds
+
   // Sub Paisa Config
   // @ViewChild('SubPaisaSdk', { static: true }) containerRef!: ElementRef;
   // formData = {
@@ -78,7 +85,8 @@ export class CheckoutComponent {
     private store: Store, private router: Router,
     private formBuilder: FormBuilder, public cartService: CartService,
         private modalService: NgbModal,
-        private sanitizer: DomSanitizer
+        private sanitizer: DomSanitizer,
+        private orderService: OrderService
       ) {
     this.store.dispatch(new GetSettingOption());
 
@@ -263,8 +271,7 @@ export class CheckoutComponent {
         this.openModal();
         break;
       case 'sub_paisa':
-        console.log('Select Sub Paisa Method');
-        this.initiateSubPaisa();
+        this.checkout();
         // this.openModal();
         break;  
       default:
@@ -273,17 +280,22 @@ export class CheckoutComponent {
   }
 
   initiateSubPaisa() {
-    this.cartService.initiateSubPaisa().subscribe({
+    const uuid = uuidv4();
+    console.log(uuid)
+    this.cartService.initiateSubPaisa(uuid).subscribe({
       next: (data) => {
         if (data) {
           this.formData = this.sanitizer.bypassSecurityTrustHtml(data?.data);
           const container = document.getElementById('paymentContainer');
           if (container) {
             container.innerHTML = data.data;
+            const form = container.querySelector('form') as HTMLFormElement;
             setTimeout(() => {
+              form.setAttribute('target', '_blank');
               const submitButton = container.querySelector('#submitButton') as HTMLInputElement;
               if(submitButton) {
                 submitButton.click();
+                this.startPollingForPaymentStatus(uuid); 
               }
             }, 1000);
           }
@@ -294,8 +306,65 @@ export class CheckoutComponent {
       }
     }); // Call Sub Paisa API
   }
+  
+  startPollingForPaymentStatus(uuid: any) {
+    this.pollingSubscription = interval(this.pollingInterval)
+      .pipe(
+        switchMap(() => this.cartService.checkPaymentResponse(uuid)), // Call API
+        map(response => ({
+          ...response,
+          paymentCompleted: response.paymentCompleted || false
+        })),
+        delay(10000), // Delay setting paymentCompleted to true
+        map(response => ({
+          ...response,
+          paymentCompleted: true // Change paymentCompleted to true after 10 seconds
+        })),
+        takeWhile((response: { paymentCompleted: boolean }) => !response.paymentCompleted, true)
+      )
+      .subscribe({
+        next: (response) => {
+          console.log('Payment Status:', response);
+          if (response.paymentCompleted) {
+            this.pollingSubscription.unsubscribe(); // Stop polling
+            this.handlePaymentSuccess(response);
+          }
+        },
+        error: (err) => {
+          console.error('Error checking payment status:', err);
+        }
+      });
+  }
+  
 
-  redirectToPayURL(){
+  handlePaymentSuccess(response: any) {
+    console.log('Payment was successful:', response);
+    if(response.R === true || response.R === false) {
+      console.log('Redirect to Success or Fail');
+      this.router.navigate([ 'order/checkout-success' ], { queryParams: { order_status: response.R } });
+    } else {
+      console.log('Payment in Pending State');
+    }
+  }
+
+  async checkPaymentResponse(uuid: any) {
+    this.cartService.checkPaymentResponse(uuid).subscribe({
+      next:(data) => {
+        console.log(data);
+        if(data.R === true || data.R === false) {
+          console.log('Redirect to Success or Fail');
+          this.router.navigate([ 'order/checkout-success' ], { queryParams: { order_status: data.R } });
+        } else {
+          console.log('Payment in Pending State');
+        }
+      },
+      error:(err) => {
+        console.log(err);
+      }
+    });
+  }
+
+  async redirectToPayURL() {
     this.cartService.redirectToPayUrl().subscribe({
       next:(data) => {
         console.log(data);
@@ -415,10 +484,54 @@ export class CheckoutComponent {
 
   placeorder() {
     if(this.form.valid) {
-      if(this.cpnRef && !this.cpnRef.nativeElement.value) {
-        this.form.controls['coupon'].reset();
-      }
-      this.store.dispatch(new PlaceOrder(this.form.value));
+      // if(this.cpnRef && !this.cpnRef.nativeElement.value) {
+      //   this.form.controls['coupon'].reset();
+      // }
+      // this.store.dispatch(new PlaceOrder(this.form.value));
+
+
+      let action = new PlaceOrder(this.form.value);
+      this.loading = true;
+
+      this.initiateSubPaisa();
+
+      // setTimeout(() => {
+        
+      // this.orderService.placeOrder(action?.payload).pipe().subscribe({
+
+      //   next: result => {
+      //     if((action.payload.payment_method == 'cod' || action.payload.payment_method == 'bank_transfer') && !result.is_guest) {
+      //       this.router.navigateByUrl(`/account/order/details/${result.order_number}`);
+      //     } else if((action.payload.payment_method == 'cod' || action.payload.payment_method == 'bank_transfer') && result.is_guest) {
+      //       this.router.navigate([ 'order/details' ], { queryParams: { order_number: result.order_number, email_or_phone: action?.payload.email } });
+      //     } else {
+      //       window.open(result.url, "_self");
+      //     }
+      //     this.loading = false;
+      //   },
+      //   error: err => {
+
+      //     this.loading = false;
+      //     const result = {
+      //       order_number: '9999',
+      //       url: '',
+      //       is_guest: false
+      //     };
+      //     console.log(result)
+      //     this.router.navigateByUrl('order/checkout-success')
+      //     // if((action.payload.payment_method == 'sub_paisa' || action.payload.payment_method == 'cod' || action.payload.payment_method == 'bank_transfer') && !result.is_guest) {
+      //     //   this.router.navigateByUrl(`/account/order/details/${result.order_number}`);
+      //     // } else if((action.payload.payment_method == 'cod' || action.payload.payment_method == 'bank_transfer') && result.is_guest) {
+      //     //   this.router.navigate([ 'order/details' ], { queryParams: { order_number: result.order_number, email_or_phone: action?.payload.email } });
+      //     // } else {
+      //     //   window.open(result.url, "_self");
+      //     // }
+      //     // throw new Error(err?.error?.message);
+      //   }
+      // });
+
+      // }, 6000);
+      // this.initiateSubPaisa();
     }
   }
 

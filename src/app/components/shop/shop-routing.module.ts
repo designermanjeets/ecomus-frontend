@@ -29,6 +29,7 @@ import { OrderDetailsComponent } from './order-details/order-details.component';
 import { BrandComponent } from './brand/brand.component';
 import { CategoryComponent } from './category/category.component';
 import { CategoryResolver } from '../../shared/resolvers/category.resolver';
+import { CheckoutSuccessComponent } from './checkout/checkout-success/checkout-success.component';
 
 const routes: Routes = [
   {
@@ -97,6 +98,11 @@ const routes: Routes = [
     resolve: {
       data: CategoryResolver
     }
+  },
+  {
+    path: 'order/checkout-success',
+    component: CheckoutSuccessComponent,
+    canActivate: [CheckoutGuard]
   },
 ];
 

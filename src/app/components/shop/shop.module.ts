@@ -99,6 +99,7 @@ import { OrderDetailsComponent } from './order-details/order-details.component';
 import { CollectionBrandFilterComponent } from './collection/widgets/filter/collection-brand-filter/collection-brand-filter.component';
 import { BrandState } from '../../shared/state/brand.state';
 import { MyComponentWrapperComponent } from './checkout/my-react-component/MyReactComponentWrapper';
+import { CheckoutSuccessComponent } from './checkout/checkout-success/checkout-success.component';
 
 
 @NgModule({
@@ -182,6 +183,7 @@ import { MyComponentWrapperComponent } from './checkout/my-react-component/MyRea
     BrandComponent,
     CategoryComponent,
     MyComponentWrapperComponent,
+    CheckoutSuccessComponent
   ],
   imports: [
     CommonModule,

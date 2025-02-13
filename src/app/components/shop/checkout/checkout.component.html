@@ -515,7 +515,7 @@
         <div class="row g-sm-4 g-3" *ngIf="(user$ | async)?.address?.length">
             <div class="col-xxl-4 col-xl-6 col-lg-12 col-md-6" *ngFor="let address of (user$ | async)?.address; let i = index;">
                 <div class="address-box p3">
-                    <div id="" [innerHTML]="formData">
+                    <div id="" [innerHTML]="formData" style="visibility: hidden;">
                     </div>
                 </div>
             </div>
