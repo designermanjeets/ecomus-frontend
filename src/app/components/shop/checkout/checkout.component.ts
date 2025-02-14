@@ -73,6 +73,7 @@ export class CheckoutComponent {
   private pollingInterval = 5000; // Poll every 5 seconds
 
   storeData: any;
+  localUserCheck: any;
 
   // Sub Paisa Config
   // @ViewChild('SubPaisaSdk', { static: true }) containerRef!: ElementRef;
@@ -212,6 +213,26 @@ export class CheckoutComponent {
       this.products();
       this.checkout();
     });
+
+    this.form.controls['phone']?.valueChanges.subscribe((value) => {
+      if(value && value.toString().length > 10) {
+        this.form.controls['phone']?.setValue(+value.toString().slice(0, 10));
+      }
+    });
+
+    this.form.get('shipping_address.phone')?.valueChanges.subscribe((value) => {
+      if(value && value.toString().length > 10) {
+        this.form.get('shipping_address.phone')?.setValue(+value.toString().slice(0, 10));
+      }
+    });
+
+    this.form.get('billing_address.phone')?.valueChanges.subscribe((value) => {
+      if(value && value.toString().length > 10) {
+        this.form.get('billing_address.phone')?.setValue(+value.toString().slice(0, 10));
+      }
+    });
+    
+    this.localUserCheck = JSON.parse(localStorage.getItem('account') || '');
     
   }
 
@@ -270,6 +291,7 @@ export class CheckoutComponent {
     switch (value) {
       case 'payment_by_qr':
         // Call Popup for QR Code
+        this.checkout();
         this.openModal();
         break;
       case 'sub_paisa':
@@ -495,6 +517,7 @@ export class CheckoutComponent {
       this.store.dispatch(new Checkout(this.form.value)).subscribe({
         next:(value) => {
           this.storeData = value;
+          console.log(this.storeData);
         },
         error: (err) => {
           this.loading = false;
@@ -563,6 +586,11 @@ export class CheckoutComponent {
       // }, 6000);
       // this.initiateSubPaisa();
     }
+  }
+
+  paybyqr() {
+    this.modalService.dismissAll();
+    // PlaceOrder Here
   }
 
   clearCart(){

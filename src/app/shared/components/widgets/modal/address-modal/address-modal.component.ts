@@ -74,7 +74,10 @@ export class AddressModalComponent {
       }
     });
 
-    this.downloadPINAreaExcelJSON();
+    const localUserCheck = JSON.parse(localStorage.getItem('account') || '');
+    if(localUserCheck?.user?.access_token) {
+      this.downloadPINAreaExcelJSON();
+    }
 
     this.form.controls['pincode']?.valueChanges
     .pipe(

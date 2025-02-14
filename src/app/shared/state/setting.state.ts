@@ -53,7 +53,7 @@ export class SettingState {
               //   name: 'payment_by_qr',
               //   status: true,
               //   title: 'Payment by QR',
-              //   icon: './assets/images/payment/pay_by_qr.png',
+              //   // icon: './assets/images/payment/pay_by_qr.png',
               // },
               {
                 name: 'sub_paisa',

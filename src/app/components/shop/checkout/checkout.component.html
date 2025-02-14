@@ -131,7 +131,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <!-- <div class="col-md-6">
                                         <div class="mb-3 form-box">
                                             <label for="spincode" class="form-label">{{ 'Pincode' | translate }}</label>
                                             <input type="text" class="form-control" formControlName="pincode"  id="spincode" placeholder="{{ 'Enter Pincode' | translate }}">
@@ -139,7 +139,7 @@
                                                 {{ 'Pincode is Required' | translate }}
                                             </div>
                                         </div>
-                                    </div>
+                                    </div> -->
                                     <div class="col-md-12 phone-field">
                                         <div class="form-box position-relative">
                                           <label class="form-label" for="phone">{{ 'Phone Number' | translate }}</label>
@@ -227,7 +227,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <!-- <div class="col-md-6">
                                         <div class="mb-3 form-box">
                                             <label for="pincode" class="form-label">{{ 'Pincode' | translate }}</label>
                                             <input type="text" class="form-control" formControlName="pincode" id="pincode" placeholder="{{ 'Enter Pincode' | translate }}">
@@ -235,7 +235,7 @@
                                                 {{ 'Pincode is Required' | translate }}
                                             </div>
                                         </div>
-                                    </div>
+                                    </div> -->
                                     <div class="col-md-12 phone-field">
                                         <div class="form-box position-relative">
                                           <label class="form-label" for="phone">{{ 'Phone Number' | translate }}</label>
@@ -251,7 +251,7 @@
                                             </ng-template>
                                           </select2>
                                           <input type="number" class="form-control intl-input-padding" formControlName="phone"
-                                            placeholder="{{ 'Enter Phone' | translate }}" name="phone">
+                                            placeholder="{{ 'Enter Phone' | translate }}" name="phone" maxlength="10" minlength="10">
                                         </div>
                                         <div *ngIf="form.get('billing_address.phone')?.touched && form.get('billing_address.phone')?.errors?.['required']" class="invalid-feedback">
                                             {{ 'Phone is Required' | translate }}
@@ -277,6 +277,7 @@
                                 <h2>{{ 'No Payment Options Found' | translate }}</h2>
                             </div>
                             <app-payment-block
+                                *ngIf="(accessToken$ | async)"
                                 [setting]="(setting$ | async)!"
                                 (selectPaymentMethod)="selectPaymentMethod($event)">
                             </app-payment-block>
@@ -354,7 +355,8 @@
                                     <div class="empty-box" *ngIf="!(user$ | async)">
                                         <h2>{{ 'No Payment Options Found' | translate }}</h2>
                                     </div>
-                                    <app-payment-block
+                                    <app-payment-block 
+                                        *ngIf="(accessToken$ | async)"
                                         [setting]="(setting$ | async)!"
                                         (selectPaymentMethod)="selectPaymentMethod($event)">
                                     </app-payment-block>
@@ -506,17 +508,83 @@
 <address-modal #addressModal></address-modal>
 <div id="paymentContainer" style="visibility: hidden;"></div>
 <ng-template #payByQRModal let-data="data">
-    <div class="dashboard-address">
+    <div class="dashboard-address p-5">
         <div class="title-header">
             <div class="d-flex align-items-center w-100 justify-content-between">
                 <h5>{{ 'Payment By QR' }}</h5>
             </div>
         </div>
-        <div class="row g-sm-4 g-3" *ngIf="(user$ | async)?.address?.length">
-            <div class="col-xxl-4 col-xl-6 col-lg-12 col-md-6" *ngFor="let address of (user$ | async)?.address; let i = index;">
+        <div class="row g-sm-4 g-3">
+            <div class="col-12">
                 <div class="address-box p3">
-                    <div id="" [innerHTML]="formData" style="visibility: hidden;">
-                    </div>
+                    <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1">
+                            <title>UPI Payment Modal</title>
+                            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+                            <style>
+                                .modal-header {
+                                    background-color: #007bff;
+                                    color: white;
+                                    border-bottom: none;
+                                }
+                                .modal-body {
+                                    text-align: center;
+                                }
+                                .qr-container {
+                                    border: 1px solid #ddd;
+                                    padding: 10px;
+                                    border-radius: 5px;
+                                }
+                                .payment-icons img {
+                                    /* width: 40px; */
+                                    margin: 5px;
+                                }
+                                .upi-id {
+                                    font-weight: bold;
+                                    background-color: #f8f9fa;
+                                    padding: 5px;
+                                    border-radius: 5px;
+                                    display: inline-block;
+                                }
+                            </style>
+                        </head>
+                        <body>
+
+                        <!-- Payment Modal -->
+                        <div>
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Order ID: <span class="badge bg-light text-dark">#9990</span></h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="qr-container">
+                                            <img src="/assets/images/QR_Code.png" alt="QR Code" class="img-fluid">
+                                        </div>
+                                        <p class="mt-2 upi-id">9643790758&amp;YESBANK</p>
+                                        <p class="text-muted">
+                                            Please scan the QR code with any UPI app to pay for your order. 
+                                            After payment, enter the UPI Reference ID or Transaction Number (e.g. 401422121258) on the next screen.
+                                            We’ll manually verify your payment using the provided information.
+                                        </p>
+                                        <div class="payment-icons">
+                                            <img src="/assets/images/payments.png" alt="UPI">
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <h5 class="me-auto">₹ 1100.00</h5>
+                                        <button type="button" class="btn btn-primary" (click)="paybyqr()">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        </body>
+                        </html>
+
                 </div>
             </div>
         </div>
