@@ -329,15 +329,28 @@ export class CheckoutComponent {
         if (data) {
           this.formData = this.sanitizer.bypassSecurityTrustHtml(data?.data);
           const container = document.getElementById('paymentContainer');
+        
           if (container) {
             container.innerHTML = data.data;
             const form = container.querySelector('form') as HTMLFormElement;
+        
             setTimeout(() => {
-              form.setAttribute('target', '_blank');
-              const submitButton = container.querySelector('#submitButton') as HTMLInputElement;
-              if(submitButton) {
-                submitButton.click();
-                this.startPollingForPaymentStatus(uuid, action); 
+              // Open a new controlled window
+              const paymentWindow = window.open('', '_blank');
+        
+              if (paymentWindow) {
+                // Write form HTML into the new tab
+                paymentWindow.document.write(form.outerHTML);
+                paymentWindow.document.close(); // Render form
+        
+                // Auto-submit the form
+                const submitButton = paymentWindow.document.querySelector('#submitButton') as HTMLInputElement;
+                if (submitButton) {
+                  submitButton.click();
+                  this.startPollingForPaymentStatus(uuid, action, paymentWindow); // Start polling
+                }
+              } else {
+                console.error("Popup blocked. Please allow pop-ups for this site.");
               }
             }, 1000);
           }
@@ -349,26 +362,34 @@ export class CheckoutComponent {
     }); // Call Sub Paisa API
   }
   
-  startPollingForPaymentStatus(uuid: any, action: any) {
+  startPollingForPaymentStatus(uuid: any, action: any, paymentWindow: Window | null) {
     this.pollingSubscription = interval(this.pollingInterval)
       .pipe(
-        switchMap(() => this.cartService.checkPaymentResponse(uuid)), // Call API
+        switchMap(() => this.cartService.checkPaymentResponse(uuid)),
         map(response => ({
           ...response,
           status: response.status || false
         })),
-        delay(60000), // Delay setting paymentCompleted to true
+        delay(60000), // Wait before forcing status update
         map(response => ({
           ...response,
-          status: true // Change paymentCompleted to false after 40 seconds of No Activity
+          status: true // Force status to true after 60s if still false
         })),
         takeWhile((response: { status: boolean }) => !response.status, true)
       )
       .subscribe({
         next: (response) => {
           console.log('Payment Status:', response);
+  
           if (response.status) {
             this.pollingSubscription.unsubscribe(); // Stop polling
+  
+            // ✅ Close the controlled window
+            if (paymentWindow && !paymentWindow.closed) {
+              paymentWindow.close();
+              console.log("Payment window closed automatically.");
+            }
+  
             this.handlePaymentSuccess(response, action, uuid);
           }
         },
@@ -377,7 +398,6 @@ export class CheckoutComponent {
         }
       });
   }
-  
 
   handlePaymentSuccess(response: any, action: any, uuid: any) {
     console.log('Payment was successful:', response);
