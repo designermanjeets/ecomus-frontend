@@ -357,11 +357,11 @@ export class CheckoutComponent {
           ...response,
           status: response.status || false
         })),
-        // delay(20000), // Delay setting paymentCompleted to true
-        // map(response => ({
-        //   ...response,
-        //   status: true // Change paymentCompleted to false after 40 seconds of No Activity
-        // })),
+        delay(20000), // Delay setting paymentCompleted to true
+        map(response => ({
+          ...response,
+          status: true // Change paymentCompleted to false after 40 seconds of No Activity
+        })),
         takeWhile((response: { status: boolean }) => !response.status, true)
       )
       .subscribe({
@@ -601,6 +601,7 @@ export class CheckoutComponent {
     // this.store.dispatch(new Clear());
     this.store.dispatch(new ClearCart());
     this.form.reset();
+    this.pollingSubscription && this.pollingSubscription.unsubscribe();
   }
 
 }
