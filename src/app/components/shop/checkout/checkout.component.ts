@@ -335,20 +335,31 @@ export class CheckoutComponent {
             const form = container.querySelector('form') as HTMLFormElement;
         
             setTimeout(() => {
-              // Open a new controlled window
-              const paymentWindow = window.open('', '_blank');
+              // ✅ Open a popup window (instead of a new tab)
+              const paymentWindow = window.open(
+                '', 
+                'PaymentWindow', 
+                'width=600,height=700,left=100,top=100,resizable=yes,scrollbars=yes'
+              );
         
               if (paymentWindow) {
-                // Write form HTML into the new tab
-                paymentWindow.document.write(form.outerHTML);
-                paymentWindow.document.close(); // Render form
+                paymentWindow.document.write(`
+                  <html>
+                    <head>
+                      <title>Payment</title>
+                    </head>
+                    <body>
+                      ${form.outerHTML}
+                      <script>
+                        document.getElementById('submitButton').click();
+                      </script>
+                    </body>
+                  </html>
+                `);
+                paymentWindow.document.close(); // Ensure the document is fully loaded
         
-                // Auto-submit the form
-                const submitButton = paymentWindow.document.querySelector('#submitButton') as HTMLInputElement;
-                if (submitButton) {
-                  submitButton.click();
-                  this.startPollingForPaymentStatus(uuid, action, paymentWindow); // Start polling
-                }
+                // ✅ Start polling for payment status
+                this.startPollingForPaymentStatus(uuid, action, paymentWindow);
               } else {
                 console.error("Popup blocked. Please allow pop-ups for this site.");
               }
@@ -384,10 +395,10 @@ export class CheckoutComponent {
           if (response.status) {
             this.pollingSubscription.unsubscribe(); // Stop polling
   
-            // ✅ Close the controlled window
+            // ✅ Close the popup window
             if (paymentWindow && !paymentWindow.closed) {
               paymentWindow.close();
-              console.log("Payment window closed automatically.");
+              console.log("Payment popup closed automatically.");
             }
   
             this.handlePaymentSuccess(response, action, uuid);
