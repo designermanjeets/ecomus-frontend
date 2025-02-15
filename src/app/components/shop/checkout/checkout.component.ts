@@ -374,40 +374,72 @@ export class CheckoutComponent {
   }
   
   startPollingForPaymentStatus(uuid: any, action: any, paymentWindow: Window | null) {
-    this.pollingSubscription = interval(this.pollingInterval)
-      .pipe(
-        switchMap(() => this.cartService.checkPaymentResponse(uuid)),
-        map(response => ({
-          ...response,
-          status: response.status || false
-        })),
-        delay(60000), // Wait before forcing status update
-        map(response => ({
-          ...response,
-          status: true // Force status to true after 60s if still false
-        })),
-        takeWhile((response: { status: boolean }) => !response.status, true)
-      )
-      .subscribe({
-        next: (response) => {
-          console.log('Payment Status:', response);
-  
-          if (response.status) {
-            this.pollingSubscription.unsubscribe(); // Stop polling
-  
-            // ✅ Close the popup window
-            if (paymentWindow && !paymentWindow.closed) {
-              paymentWindow.close();
-              console.log("Payment popup closed automatically.");
+    if (!paymentWindow) return;
+
+    // Start monitoring the payment window's URL
+    const urlCheckInterval = setInterval(() => {
+        try {
+            if (paymentWindow.closed) {
+                console.log("Payment window closed.");
+                clearInterval(urlCheckInterval);
+                return;
             }
-  
-            this.handlePaymentSuccess(response, action, uuid);
-          }
-        },
-        error: (err) => {
-          console.error('Error checking payment status:', err);
+
+            const currentUrl = paymentWindow.location.href;
+            console.log("Current Payment Window URL:", currentUrl);
+
+            // Check if the URL contains a success or failure redirect
+            if (currentUrl.includes("success") || currentUrl.includes("failure")) {
+                console.log("Redirect detected, closing window.");
+                clearInterval(urlCheckInterval);
+
+                // Optionally, process the response
+                this.handlePaymentSuccess({ status: true, url: currentUrl }, action, uuid);
+
+                // Close the window
+                paymentWindow.close();
+            }
+        } catch (error) {
+            // Catches CORS-related issues if the domain changes
+            console.warn("Unable to access payment window URL (possible CORS issue).");
         }
-      });
+    }, 1000); // Check every second
+
+    // Continue polling for payment status
+    this.pollingSubscription = interval(this.pollingInterval)
+        .pipe(
+            switchMap(() => this.cartService.checkPaymentResponse(uuid)),
+            map(response => ({
+                ...response,
+                status: response.status || false
+            })),
+            delay(60000), // Wait before forcing status update
+            map(response => ({
+                ...response,
+                status: true // Force status to true after 60s if still false
+            })),
+            takeWhile((response: { status: boolean }) => !response.status, true)
+        )
+        .subscribe({
+            next: (response) => {
+                console.log('Payment Status:', response);
+
+                if (response.status) {
+                    this.pollingSubscription.unsubscribe(); // Stop polling
+
+                    // Close the popup window if still open
+                    if (paymentWindow && !paymentWindow.closed) {
+                        paymentWindow.close();
+                        console.log("Payment popup closed automatically.");
+                    }
+
+                    this.handlePaymentSuccess(response, action, uuid);
+                }
+            },
+            error: (err) => {
+                console.error('Error checking payment status:', err);
+            }
+        });
   }
 
   handlePaymentSuccess(response: any, action: any, uuid: any) {
