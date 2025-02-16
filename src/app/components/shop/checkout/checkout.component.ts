@@ -381,15 +381,15 @@ export class CheckoutComponent {
     // ✅ Start monitoring the payment window's URL and check if it's closed
     const urlCheckInterval = setInterval(() => {
         try {
-            // if (paymentWindow.closed) {
-            //     console.log("Payment window closed manually or due to an issue.");
-            //     clearInterval(urlCheckInterval);
-            //     windowClosedManually = true;
+            if (paymentWindow.closed) {
+                console.log("Payment window closed manually or due to an issue.");
+                clearInterval(urlCheckInterval);
+                windowClosedManually = true;
 
-            //     // ✅ If closed manually, inform the frontend
-            //     // this.handlePaymentSuccess({ status: false, reason: "Window closed manually" }, action, uuid);
-            //     return;
-            // }
+                // ✅ If closed manually, inform the frontend
+                this.handlePaymentSuccess({ status: false, reason: "Window closed manually" }, action, uuid);
+                return;
+            }
 
             const currentUrl = paymentWindow.location.href;
             console.log("Current Payment Window URL:", currentUrl);
@@ -451,15 +451,15 @@ export class CheckoutComponent {
         });
 
     // ✅ Also track if window is closed without success/failure using `onbeforeunload`
-    const windowCloseCheck = setInterval(() => {
-        if (paymentWindow.closed && !windowClosedManually) {
-            console.log("Payment window closed manually.");
-            clearInterval(windowCloseCheck);
+    // const windowCloseCheck = setInterval(() => {
+    //     if (paymentWindow.closed && !windowClosedManually) {
+    //         console.log("Payment window closed manually.");
+    //         clearInterval(windowCloseCheck);
 
-            // ✅ Inform frontend that payment might be incomplete
-            this.handlePaymentSuccess({ status: false, reason: "Window closed manually before success/failure" }, action, uuid);
-        }
-    }, 1000);
+    //         // ✅ Inform frontend that payment might be incomplete
+    //         this.handlePaymentSuccess({ status: false, reason: "Window closed manually before success/failure" }, action, uuid);
+    //     }
+    // }, 1000);
 }
 
 
