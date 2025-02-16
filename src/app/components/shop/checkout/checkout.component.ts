@@ -381,15 +381,15 @@ export class CheckoutComponent {
     // ✅ Start monitoring the payment window's URL and check if it's closed
     const urlCheckInterval = setInterval(() => {
         try {
-            if (paymentWindow.closed) {
-                console.log("Payment window closed manually or due to an issue.");
-                clearInterval(urlCheckInterval);
-                windowClosedManually = true;
+            // if (paymentWindow.closed) {
+            //     console.log("Payment window closed manually or due to an issue.");
+            //     clearInterval(urlCheckInterval);
+            //     windowClosedManually = true;
 
-                // ✅ If closed manually, inform the frontend
-                this.handlePaymentSuccess({ status: false, reason: "Window closed manually" }, action, uuid);
-                return;
-            }
+            //     // ✅ If closed manually, inform the frontend
+            //     // this.handlePaymentSuccess({ status: false, reason: "Window closed manually" }, action, uuid);
+            //     return;
+            // }
 
             const currentUrl = paymentWindow.location.href;
             console.log("Current Payment Window URL:", currentUrl);
@@ -466,14 +466,7 @@ export class CheckoutComponent {
   handlePaymentSuccess(response: any, action: any, uuid: any) {
     console.log('Payment was successful:', response);
     console.log('Call /order here now', action);
-
-    if(response.status === true) {
-      this.store.dispatch(new PlaceOrder(Object.assign({}, action, { uuid: uuid })));
-    }
-
-    if(response.status === false) {
-      this.store.dispatch(new PlaceOrder(Object.assign({}, action, { uuid: uuid })));
-    }
+    this.store.dispatch(new PlaceOrder(Object.assign({}, action, { uuid: uuid })));
   }
 
   async checkPaymentResponse(uuid: any) {
