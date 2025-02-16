@@ -376,28 +376,32 @@ export class CheckoutComponent {
   startPollingForPaymentStatus(uuid: any, action: any, paymentWindow: Window | null) {
     if (!paymentWindow) return;
 
-    // Start monitoring the payment window's URL
+    let windowClosedManually = false;
+
+    // ✅ Start monitoring the payment window's URL and check if it's closed
     const urlCheckInterval = setInterval(() => {
         try {
             if (paymentWindow.closed) {
-                console.log("Payment window closed.");
+                console.log("Payment window closed manually or due to an issue.");
                 clearInterval(urlCheckInterval);
+                windowClosedManually = true;
+
+                // ✅ If closed manually, inform the frontend
+                this.handlePaymentSuccess({ status: false, reason: "Window closed manually" }, action, uuid);
                 return;
             }
 
             const currentUrl = paymentWindow.location.href;
             console.log("Current Payment Window URL:", currentUrl);
 
-            // Check if the URL contains a success or failure redirect
+            // ✅ Check if redirected to success or failure page
             if (currentUrl.includes("success") || currentUrl.includes("failure")) {
                 console.log("Redirect detected, closing window.");
                 clearInterval(urlCheckInterval);
-
-                // Optionally, process the response
-                this.handlePaymentSuccess({ status: true, url: currentUrl }, action, uuid);
-
-                // Close the window
                 paymentWindow.close();
+
+                // ✅ Process the response
+                this.handlePaymentSuccess({ status: true, url: currentUrl }, action, uuid);
             }
         } catch (error) {
             // Catches CORS-related issues if the domain changes
@@ -405,7 +409,7 @@ export class CheckoutComponent {
         }
     }, 1000); // Check every second
 
-    // Continue polling for payment status
+    // ✅ Continue polling for payment status
     this.pollingSubscription = interval(this.pollingInterval)
         .pipe(
             switchMap(() => this.cartService.checkPaymentResponse(uuid)),
@@ -427,7 +431,7 @@ export class CheckoutComponent {
                 if (response.status) {
                     this.pollingSubscription.unsubscribe(); // Stop polling
 
-                    // Close the popup window if still open
+                    // ✅ Close the popup window if still open
                     if (paymentWindow && !paymentWindow.closed) {
                         paymentWindow.close();
                         console.log("Payment popup closed automatically.");
@@ -438,22 +442,38 @@ export class CheckoutComponent {
             },
             error: (err) => {
                 console.error('Error checking payment status:', err);
+            },
+            complete: () => {
+                if (windowClosedManually) {
+                    console.log("Polling stopped: Payment window was closed manually.");
+                }
             }
         });
-  }
+
+    // ✅ Also track if window is closed without success/failure using `onbeforeunload`
+    const windowCloseCheck = setInterval(() => {
+        if (paymentWindow.closed && !windowClosedManually) {
+            console.log("Payment window closed manually.");
+            clearInterval(windowCloseCheck);
+
+            // ✅ Inform frontend that payment might be incomplete
+            this.handlePaymentSuccess({ status: false, reason: "Window closed manually before success/failure" }, action, uuid);
+        }
+    }, 1000);
+}
+
 
   handlePaymentSuccess(response: any, action: any, uuid: any) {
     console.log('Payment was successful:', response);
     console.log('Call /order here now', action);
+
     if(response.status === true) {
       this.store.dispatch(new PlaceOrder(Object.assign({}, action, { uuid: uuid })));
     }
-    // if(response.status === true) {
-    //   console.log('Redirect to Success or Fail');
-    //   this.router.navigate([ 'order/checkout-success' ], { queryParams: { order_status: response.R } });
-    // } else {
-    //   console.log('Payment in Pending State');
-    // }
+
+    if(response.status === false) {
+      this.store.dispatch(new PlaceOrder(Object.assign({}, action, { uuid: uuid })));
+    }
   }
 
   async checkPaymentResponse(uuid: any) {
