@@ -49,12 +49,12 @@ export class SettingState {
           if(result.values?.payment_methods?.length) {
             customValue = JSON.parse(JSON.stringify(result.values));
             const customPayments = [
-              {
-                name: 'neoKred',
-                status: true,
-                title: 'Payment by QR',
-                // icon: './assets/images/payment/pay_by_qr.png',
-              },
+              // {
+              //   name: 'neoKred',
+              //   status: true,
+              //   title: 'Payment by QR',
+              //   // icon: './assets/images/payment/pay_by_qr.png',
+              // },
               {
                 name: 'sub_paisa',
                 status: true,
