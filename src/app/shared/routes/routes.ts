@@ -17,10 +17,18 @@ export const content: Routes = [
     },
 
     {
-        path: 'return-exchange',
+        path: 'return-policy',
         loadChildren: () =>
             import('../../return-exchange/return-exchange.module').then(
                 (m) => m.ReturnExchangeModule
+            ),
+    },
+
+    {
+        path: 'refund-and-cancellation',
+        loadChildren: () =>
+            import('../../refund-and-cancellation/refund-and-cancellation.module').then(
+                (m) => m.RefundAndCancellationModule
             ),
     },
 
@@ -33,7 +41,7 @@ export const content: Routes = [
     },
 
     {
-        path: "shipping-delivery",
+        path: "shipping-policy",
         loadChildren: () => import("../../shipping-delevary/shipping-delevary.module").then((m) => m.ShippingDelevaryModule)
     },
 

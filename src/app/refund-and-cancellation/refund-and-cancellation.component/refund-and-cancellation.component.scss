@@ -1,0 +1,44 @@
+.policy-container {
+    padding: 20px;
+    width: 60%;
+    padding-top: 30px;
+    margin: auto;
+    line-height: 1.6;
+  }
+  
+ 
+  .policy-container h2 {
+    color: #000;
+    font-size: 30px;
+    padding-bottom: 20px;
+  }
+  .policy-container h1{
+    color: #000;
+    font-size: 35px;
+    line-height: 60px;
+    margin-bottom: 30px;
+  }
+  
+  .policy-container ul {
+    list-style-type: disc;
+    margin: 0px;
+    padding: 0px;
+  }
+  
+  .policy-container p,
+  .policy-container address {
+    color: #000;
+    white-space: pre-wrap; /* Maintains address formatting */
+  }
+@media(max-width:1000px){
+    .policy-container{
+        width: 90%;
+    }
+    h1{
+        font-size: 25px !important;
+        line-height: 30px !important;
+    }
+    h2{
+        font-size: 19px !important;
+    }
+}
