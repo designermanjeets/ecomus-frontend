@@ -13,7 +13,7 @@ export class CurrencySymbolPipe implements PipeTransform {
 
   @Select(SettingState.selectedCurrency) selectedCurrency$: Observable<Currency>;
 
-  public symbol: string = '$';
+  public symbol: string = '₹';
   public setting: Values;
   public selectedCurrency: Currency;
 
