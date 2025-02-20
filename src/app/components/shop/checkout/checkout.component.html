@@ -561,23 +561,36 @@
                                         <h5 class="modal-title">Order ID: <span class="badge bg-light text-dark">#9990</span></h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
-                                    <div class="modal-body">
-                                        <div class="qr-container">
-                                            <img src="/assets/images/QR_Code.png" alt="QR Code" class="img-fluid">
-                                        </div>
-                                        <p class="mt-2 upi-id">9643790758&amp;YESBANK</p>
-                                        <p class="text-muted">
-                                            Please scan the QR code with any UPI app to pay for your order. 
-                                            After payment, enter the UPI Reference ID or Transaction Number (e.g. 401422121258) on the next screen.
-                                            We’ll manually verify your payment using the provided information.
-                                        </p>
-                                        <div class="payment-icons">
-                                            <img src="/assets/images/payments.png" alt="UPI">
-                                        </div>
+                                    <div class="modal-body payByNeoKred">
+                                        <app-loader *ngIf="loading"></app-loader>
+                                        <ng-container *ngIf="!payByNeoStep">
+                                            <div class="qr-container">
+                                                <img src="/assets/images/QR_Code.png" alt="QR Code" class="img-fluid">
+                                            </div>
+                                            <p class="mt-2 upi-id">9643790758&amp;YESBANK</p>
+                                            <p class="text-muted">
+                                                Please scan the QR code with any UPI app to pay for your order. 
+                                                After payment, enter the UPI Reference ID or Transaction Number (e.g. 401422121258) on the next screen.
+                                                We’ll manually verify your payment using the provided information.
+                                            </p>
+                                            <div class="payment-icons">
+                                                <img src="/assets/images/payments.png" alt="UPI">
+                                                <ul class="upi_bar">
+                                                    <li><a [href]="payByNeoKredIntentSaveDataUpiIntentString('gpay_upi')" (click)="checkTransectionStatusNeoKred()"></a></li>
+                                                    <li><a [href]="payByNeoKredIntentSaveDataUpiIntentString('phone_pay_upi')" (click)="checkTransectionStatusNeoKred()"></a></li>
+                                                    <li><a [href]="payByNeoKredIntentSaveDataUpiIntentString('paytm_upi')" (click)="checkTransectionStatusNeoKred()"></a></li>
+                                                    <li><a [href]="payByNeoKredIntentSaveDataUpiIntentString('bhim_upi')" (click)="checkTransectionStatusNeoKred()"></a></li>
+                                                </ul>
+                                            </div>
+                                        </ng-container>
+                                        <ng-container *ngIf="payByNeoStep">
+                                            <p>Enter 14 Digits Number</p>
+                                        </ng-container>
                                     </div>
                                     <div class="modal-footer">
                                         <h5 class="me-auto">₹ 1100.00</h5>
-                                        <button type="button" class="btn btn-primary" (click)="paybyqr()">Close</button>
+                                        <button type="button" class="btn btn-primary" (click)="paybyNeoNext()" *ngIf="!payByNeoStep">Next</button>
+                                        <button type="button" class="btn btn-primary" (click)="paybyNeoDone()" *ngIf="payByNeoStep">Close</button>
                                     </div>
                                 </div>
                             </div>

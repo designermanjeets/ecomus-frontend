@@ -70,6 +70,67 @@ export class CartService {
     });
   }
 
+  initiateNeoKredIntent(data: any): Observable<any> {
+    return new Observable(observer => {
+      fetch(`${environment.URL}/payin/api/v2/t1/external/upi/qr/generate/intent`,{
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      })
+        .then(response => response.json())
+        .then(data => {
+          const sampleSuccessData = {
+              "status": "INITIATED",
+              "upiIntentString": "upi://pay?pa=neo.nktest@finobank&pn=Neokred%20Testing&mc=4722&tr=NKFV25MnxbamiuX2yH4prBzKrYU&tn=Test&am=2&cu=INR&mode=05&orgid=187064&catagory=01&url=https://www.finobank.com/&sign=MEUCIE8Z5drg7nT1H/SJuWwSSIR3fqTl5b8XwIE24ofSts/oAiEArL0YOAtyuGOz7btmSKgpcm8OvKs06R2TipWg5e81DW8=",
+              "amount": 2,
+              "transactionId": "NKFV25MnxbamiuX2yH4prBzKrYU",
+              "orderId": "NKOjXCK6q3RKDg2VxKSHjzXoD",
+              "refId": "11076d22-1874-4524-815f-68499040f763"
+          };
+          observer.next(sampleSuccessData);
+          observer.complete();
+        })
+        .catch(error => {
+          observer.error(error);
+        });
+    });
+  }
+
+  checkTransectionStatusNeoKred(neoKredIntent: any) {
+    return new Observable(observer => {
+      fetch(`${environment.URL}/payin/api/v2/t1/external/upi/qr/status`,{
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(neoKredIntent)
+      })
+        .then(response => response.json())
+        .then(data => {
+          const sampleNeoKredPaymentSuccessData = {
+              "upiId": "1234567890@okaxis",
+              "amount": "1.00",
+              "custRefNo": "436252327683",
+              "mcc": "1234",
+              "transactionId": "NKFV25ckGdVy6w7Fh4oVr5LWhvm",
+              "upiTxnId": "SBI0cdde598916b440bb7966a7c4e3ae0c0",
+              "txnTime": "NA",
+              "orderId": "NKOqFkASKcsx4QrWU3C5vxEXJ",
+              "refId": "30eb1146-30d3-47d1-a7d2-36e66586fcab",
+              "status": "SUCCESS",
+              "customerName":"CUSTOMER NAME"
+          };
+          observer.next(sampleNeoKredPaymentSuccessData);
+          observer.complete();
+        })
+        .catch(error => {
+          observer.error(error);
+        });
+    });
+  }
+
   checkPaymentResponse(uuid: any): Observable<any> {
     return this.http.post<any>(`${environment.URL}/check-payment-response`,{ uuid: uuid});
   }

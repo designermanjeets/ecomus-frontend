@@ -24,8 +24,8 @@
                             <li>
                                 <p class="text-content">
                                     <span class="text-title">{{ 'address' | translate }}: </span>
-                                    {{ address?.street }}, {{ address?.city }}, {{ address?.state?.name }},
-                                    {{ address?.country?.name }}
+                                    {{ address?.street }}, {{ address?.city }}, {{ address?.area }},
+                                    {{ address?.country_id }}
                                 </p>
                             </li>
                             <li *ngIf="address.pincode">

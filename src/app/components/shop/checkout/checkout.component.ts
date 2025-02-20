@@ -75,6 +75,9 @@ export class CheckoutComponent {
   storeData: any;
   localUserCheck: any;
 
+  payByNeoKredIntentSaveData: any;
+  payByNeoStep = 0;
+
   // Sub Paisa Config
   // @ViewChild('SubPaisaSdk', { static: true }) containerRef!: ElementRef;
   // formData = {
@@ -289,14 +292,13 @@ export class CheckoutComponent {
     this.form.controls['payment_method'].setValue(value);
     // this.checkout();
     switch (value) {
-      case 'payment_by_qr':
-        // Call Popup for QR Code
+      case 'neoKred':
+        // Call Popup for NeoKred QR Code
         this.checkout();
-        this.openModal();
+        this.initiateNeoKredPaymentIntent();
         break;
       case 'sub_paisa':
         this.checkout();
-        // this.openModal();
         break;  
       default:
         break;
@@ -449,19 +451,7 @@ export class CheckoutComponent {
                 }
             }
         });
-
-    // ✅ Also track if window is closed without success/failure using `onbeforeunload`
-    // const windowCloseCheck = setInterval(() => {
-    //     if (paymentWindow.closed && !windowClosedManually) {
-    //         console.log("Payment window closed manually.");
-    //         clearInterval(windowCloseCheck);
-
-    //         // ✅ Inform frontend that payment might be incomplete
-    //         this.handlePaymentSuccess({ status: false, reason: "Window closed manually before success/failure" }, action, uuid);
-    //     }
-    // }, 1000);
-}
-
+  }
 
   handlePaymentSuccess(response: any, action: any, uuid: any) {
     console.log('Payment was successful:', response);
@@ -500,7 +490,72 @@ export class CheckoutComponent {
     });
   }
 
-  async openModal() {
+  initiateNeoKredPaymentIntent() { // https://apidocument-cb.netlify.app/#intent-generation
+    this.cartService.initiateNeoKredIntent(
+      { 
+        uuid: 'payload.uuid', 
+        email: 'payload.email',
+        amount: "1",
+        remark: "test",
+        refId: "NKTEST"
+      }
+    ).subscribe({
+      next: (data) => {
+        console.log(data);
+        this.openNeoKredModal(data);
+      },
+      error: (err) => {
+        console.log(err);
+      }
+    }); // https://apidocument-cb.netlify.app/#intent-generation
+  }
+
+  checkTransectionStatusNeoKred() { // https://apidocument-cb.netlify.app/#transaction-status
+    this.payByNeoStep = 1;
+    this.loading = true;
+    this.pollingSubscription = interval(this.pollingInterval)
+        .pipe(
+            switchMap(() => this.cartService.checkTransectionStatusNeoKred(
+              { 
+                uuid: 'payload.uuid', 
+                email: 'payload.email',
+                transactionId: "NKFV2ie9NpNUGTa5cETbpBDNoKM"
+              })
+            ),
+            map((response: any) => ({
+                ...response,
+                status: response.status || false
+            })),
+            delay(10000), // Wait before forcing status update
+            map(response => ({
+                ...response,
+                status: true // Force status to true after 60s if still false
+            })),
+            takeWhile((response: { status: boolean }) => !response.status, true)
+        )
+        .subscribe({
+            next: (response) => {
+                console.log('Payment Status:', response);
+
+                if (response.status) {
+                    this.loading = false;
+                    this.pollingSubscription.unsubscribe(); // Stop polling
+
+                    // this.handlePaymentSuccess(response, action, uuid);
+                }
+            },
+            error: (err) => {
+                console.error('Error checking payment status:', err);
+            },
+            complete: () => {
+              //
+            }
+        });
+  }
+
+  async openNeoKredModal(data: any) {
+    this.payByNeoKredIntentSaveData = data;
+    console.log(this.payByNeoKredIntentSaveData);
     this.modalService.open(this.payByQRModal, {
       ariaLabelledBy: 'address-add-Modal',
       centered: true,
@@ -513,6 +568,33 @@ export class CheckoutComponent {
       const formDataContainer = document.getElementById('formDataContainer');
       console.log(formDataContainer);
     });
+  }
+
+  payByNeoKredIntentSaveDataUpiIntentString(upi:string) {
+    switch (upi) {
+      case 'gpay_upi':
+        return this.payByNeoKredIntentSaveData.upiIntentString.replace("upi://pay?", "tez://pay?");
+      case 'phone_pay_upi':
+        return this.payByNeoKredIntentSaveData.upiIntentString.replace("upi://pay?", "phonepe://pay?");
+      case 'paytm_upi':
+        return this.payByNeoKredIntentSaveData.upiIntentString.replace("upi://pay?", "paytmmp://pay?");
+      case 'bhim_upi':
+        break;
+        // return this.payByNeoKredIntentSaveData.upiIntentString.replace()
+      default:
+        break;
+    }
+
+  }
+
+  paybyNeoNext() {
+    this.payByNeoStep = 1;
+  }
+
+  paybyNeoDone() {
+    this.payByNeoStep = 0;
+    this.modalService.dismissAll();
+    this.pollingSubscription.unsubscribe();
   }
 
 

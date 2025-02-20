@@ -1,0 +1,31 @@
+.upi_bar {
+    margin: 0;
+    padding: 0;
+    margin-top: -65px;
+    li {
+        a {
+            display: block;
+            border: 1px solid #000;
+            width: 50px;
+            height: 50px;
+        }
+    }
+}
+.payment-icons {
+    width: 260px;
+    border: 1px solid #000;
+    display: inline-block;
+}
+
+
+::ng-deep .payByNeoKred {
+    app-loader {
+        width: 500px;
+        height: 500px;
+        display: inline-block;
+    }
+    .loader-wrapper, .custom-loader-wrapper {
+        position: absolute;
+        height: 500px
+    }
+}
