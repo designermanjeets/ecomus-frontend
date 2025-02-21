@@ -294,15 +294,14 @@ export class CheckoutComponent {
     switch (value) {
       case 'neoKred':
         // Call Popup for NeoKred QR Code
-        this.checkout();
+        this.checkout(value);
         this.initiateNeoKredPaymentIntent();
         break;
       case 'sub_paisa':
         this.checkout();
         break;  
-      case 'generate-cash-free':
-        this.checkout();
-        this.initiateCashFreePaymentIntent();
+      case 'cash_free':
+        this.checkout(value);
         break;  
       default:
         break;
@@ -582,7 +581,7 @@ export class CheckoutComponent {
       next: (response) => {
         if (response?.R && response?.data) {
           try {
-            const cashFreeData = JSON.parse(response.data); // Parsing `data` string
+            const cashFreeData = response.data;
             
             if (cashFreeData?.payment_link) {
               // Open the payment page in a new tab/window
@@ -759,7 +758,7 @@ export class CheckoutComponent {
     }
   }
 
-  checkout() {
+  checkout(payment_method?:string) {
     // If has coupon error while checkout
     if(this.couponError){
       this.couponError = null;
@@ -773,6 +772,9 @@ export class CheckoutComponent {
         next:(value) => {
           this.storeData = value;
           console.log(this.storeData);
+          if(payment_method === 'cash_free'){
+            this.initiateCashFreePaymentIntent();
+          }
         },
         error: (err) => {
           this.loading = false;

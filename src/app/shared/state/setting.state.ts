@@ -56,7 +56,7 @@ export class SettingState {
               //   // icon: './assets/images/payment/pay_by_qr.png',
               // },
               {
-                name: 'generate-cash-free',
+                name: 'cash_free',
                 status: true,
                 title: 'Cash Free',
                 icon: './assets/images/cash_free.jpg',
