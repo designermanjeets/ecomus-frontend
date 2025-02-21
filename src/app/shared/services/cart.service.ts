@@ -131,6 +131,30 @@ export class CartService {
     });
   }
 
+  initiateCashFreeIntent(data: any): Observable<any> {
+    return new Observable(observer => {
+      fetch(`${environment.URL}/generate-cash-free`,{
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      })
+        .then(response => response.json())
+        .then(data => {
+          observer.next(data);
+          observer.complete();
+        })
+        .catch(error => {
+          observer.error(error);
+        });
+    });
+  }
+
+  checkTransectionStatusCashFree(uuid: any) {
+    return this.http.post<any>(`${environment.URL}/check-payment-response`,{ uuid: uuid});
+  }
+
   checkPaymentResponse(uuid: any): Observable<any> {
     return this.http.post<any>(`${environment.URL}/check-payment-response`,{ uuid: uuid});
   }

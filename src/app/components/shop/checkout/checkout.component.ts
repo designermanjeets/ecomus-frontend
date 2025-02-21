@@ -300,6 +300,10 @@ export class CheckoutComponent {
       case 'sub_paisa':
         this.checkout();
         break;  
+      case 'generate-cash-free':
+        this.checkout();
+        this.initiateCashFreePaymentIntent();
+        break;  
       default:
         break;
     }
@@ -490,6 +494,8 @@ export class CheckoutComponent {
     });
   }
 
+  // NeoKred
+
   initiateNeoKredPaymentIntent() { // https://apidocument-cb.netlify.app/#intent-generation
     this.cartService.initiateNeoKredIntent(
       { 
@@ -549,6 +555,97 @@ export class CheckoutComponent {
             },
             complete: () => {
               //
+            }
+        });
+  }
+
+  // CashFree Payment Integration
+  initiateCashFreePaymentIntent() {
+    const uuid = uuidv4();
+    const userData = localStorage.getItem('account');
+    const parsedUserData = JSON.parse(userData || '{}')?.user || {};
+
+    const payload = {
+      uuid,
+      ...parsedUserData,
+      checkout: this.storeData?.order?.checkout
+    };
+
+    this.cartService.initiateCashFreeIntent({
+      uuid: payload.uuid,
+      email: payload.email,
+      total: this.storeData?.order?.checkout?.total?.total,
+      phone: parsedUserData.phone,
+      name: parsedUserData.name,
+      address: `${parsedUserData.address?.[0]?.city || ''} ${parsedUserData.address?.[0]?.area || ''}`
+    }).subscribe({
+      next: (response) => {
+        if (response?.R && response?.data) {
+          try {
+            const cashFreeData = JSON.parse(response.data); // Parsing `data` string
+            
+            if (cashFreeData?.payment_link) {
+              // Open the payment page in a new tab/window
+              const paymentWindow = window.open(
+                cashFreeData.payment_link, 
+                'PaymentWindow', 
+                'width=600,height=700,left=100,top=100,resizable=yes,scrollbars=yes'
+              );
+
+              if (!paymentWindow) {
+                console.error("Popup blocked. Please allow pop-ups for this site.");
+              } else {
+                // Start polling for payment status
+                this.checkTransactionStatusCashFree(cashFreeData.order_id);
+              }
+            } else {
+              console.error("Invalid response: Payment link is missing.");
+            }
+          } catch (error) {
+            console.error("Error parsing CashFree response:", error);
+          }
+        } else {
+          console.error("Payment initiation failed:", response?.msg);
+        }
+      },
+      error: (err) => {
+        console.log("Error initiating payment:", err);
+      }
+    });
+  }
+
+  checkTransactionStatusCashFree(orderId: string) { // https://www.cashfree.com/docs/payments/online/web/redirect
+    this.payByNeoStep = 1;
+    this.loading = true;
+  
+    this.pollingSubscription = interval(this.pollingInterval)
+        .pipe(
+            switchMap(() => this.cartService.checkTransectionStatusCashFree({ order_id: orderId })),
+            map((response: any) => ({
+                ...response,
+                status: response?.order_status === "PAID" // Ensure status is based on actual CashFree response
+            })),
+            delay(120000), // Wait 2 minutes before forcing status update
+            map(response => ({
+                ...response,
+                status: true // Force status to true after 2 minutes if still false
+            })),
+            takeWhile((response: { status: boolean }) => !response.status, true)
+        )
+        .subscribe({
+            next: (response) => {
+                console.log('Payment Status:', response);
+
+                if (response.status) {
+                    this.loading = false;
+                    this.pollingSubscription.unsubscribe(); // Stop polling
+
+                    // Handle success
+                    this.checkPaymentResponse(response);
+                }
+            },
+            error: (err) => {
+                console.error('Error checking payment status:', err);
             }
         });
   }
