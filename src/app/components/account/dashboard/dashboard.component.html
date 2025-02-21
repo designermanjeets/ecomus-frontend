@@ -73,11 +73,11 @@
                                     </td>
                                 </tr>
                                 <tr *ngIf="address">
-                                    <td>{{ 'Adress'| translate}}:</td>
+                                    <td>{{ 'Address'| translate}}:</td>
                                     <td>
                                         {{ address.street }}
-                                        {{ address.city }}, {{ address.state?.name }},
-                                        {{ address.country?.name }} {{ address.pincode }}
+                                        {{ address.city }}, {{ address.area }},
+                                        {{ address.country_id }} {{ address.pincode }}
                                     </td>
                                 </tr>
                             </tbody>
