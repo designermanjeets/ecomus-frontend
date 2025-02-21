@@ -160,7 +160,7 @@ export class CheckoutSuccessComponent {
     this.pollingSubscription = interval(this.pollingInterval)
       .pipe(
         delay(10000),
-        switchMap(() => this.cartService.checkPaymentResponse({})), // Ensure it returns an Observable<{ paymentCompleted: boolean }>
+        switchMap(() => this.cartService.checkPaymentResponse({}, '')), // Ensure it returns an Observable<{ paymentCompleted: boolean }>
         takeWhile((response: { paymentCompleted: boolean }) => !response.paymentCompleted, true) // Stop when payment is completed
       )
       .subscribe({

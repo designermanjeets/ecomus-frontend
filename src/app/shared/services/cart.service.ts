@@ -151,12 +151,12 @@ export class CartService {
     });
   }
 
-  checkTransectionStatusCashFree(uuid: any) {
-    return this.http.post<any>(`${environment.URL}/check-payment-response`,{ uuid: uuid});
+  checkTransectionStatusCashFree(uuid: any, payment_method: string) {
+    return this.http.post<any>(`${environment.URL}/check-payment-response`,{ uuid: uuid, payment_method});
   }
 
-  checkPaymentResponse(uuid: any): Observable<any> {
-    return this.http.post<any>(`${environment.URL}/check-payment-response`,{ uuid: uuid});
+  checkPaymentResponse(uuid: any, payment_method: string): Observable<any> {
+    return this.http.post<any>(`${environment.URL}/check-payment-response`,{ uuid: uuid, payment_method});
   }
 
   redirectToPayUrl() {

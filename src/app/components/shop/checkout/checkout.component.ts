@@ -77,6 +77,7 @@ export class CheckoutComponent {
 
   payByNeoKredIntentSaveData: any;
   payByNeoStep = 0;
+  payment_method = '';
 
   // Sub Paisa Config
   // @ViewChild('SubPaisaSdk', { static: true }) containerRef!: ElementRef;
@@ -290,15 +291,15 @@ export class CheckoutComponent {
 
   selectPaymentMethod(value: string) {
     this.form.controls['payment_method'].setValue(value);
+    this.payment_method = value;
     // this.checkout();
     switch (value) {
       case 'neoKred':
         // Call Popup for NeoKred QR Code
         this.checkout(value);
-        this.initiateNeoKredPaymentIntent();
         break;
       case 'sub_paisa':
-        this.checkout();
+        this.checkout(value);
         break;  
       case 'cash_free':
         this.checkout(value);
@@ -308,7 +309,7 @@ export class CheckoutComponent {
     }
   }
 
-  initiateSubPaisa(action: any) {
+  initiateSubPaisa(action: any, payment_method: string) {
     const uuid = uuidv4();
     const userData = localStorage.getItem('account');
     const payload = {
@@ -364,7 +365,7 @@ export class CheckoutComponent {
                 paymentWindow.document.close(); // Ensure the document is fully loaded
         
                 // ✅ Start polling for payment status
-                this.startPollingForPaymentStatus(uuid, action, paymentWindow);
+                this.startPollingForPaymentStatus(uuid, action, paymentWindow, payment_method);
               } else {
                 console.error("Popup blocked. Please allow pop-ups for this site.");
               }
@@ -378,7 +379,7 @@ export class CheckoutComponent {
     }); // Call Sub Paisa API
   }
   
-  startPollingForPaymentStatus(uuid: any, action: any, paymentWindow: Window | null) {
+  startPollingForPaymentStatus(uuid: any, action: any, paymentWindow: Window | null, payment_method: string) {
     if (!paymentWindow) return;
 
     let windowClosedManually = false;
@@ -392,7 +393,7 @@ export class CheckoutComponent {
                 windowClosedManually = true;
 
                 // ✅ If closed manually, inform the frontend
-                this.handlePaymentSuccess({ status: false, reason: "Window closed manually" }, action, uuid);
+                this.handlePaymentSuccess({ status: false, reason: "Window closed manually" }, action, uuid, payment_method);
                 return;
             }
 
@@ -406,7 +407,7 @@ export class CheckoutComponent {
                 paymentWindow.close();
 
                 // ✅ Process the response
-                this.handlePaymentSuccess({ status: true, url: currentUrl }, action, uuid);
+                this.handlePaymentSuccess({ status: true, url: currentUrl }, action, uuid, payment_method);
             }
         } catch (error) {
             // Catches CORS-related issues if the domain changes
@@ -417,7 +418,7 @@ export class CheckoutComponent {
     // ✅ Continue polling for payment status
     this.pollingSubscription = interval(this.pollingInterval)
         .pipe(
-            switchMap(() => this.cartService.checkPaymentResponse(uuid)),
+            switchMap(() => this.cartService.checkPaymentResponse(uuid, payment_method)),
             map(response => ({
                 ...response,
                 status: response.status || false
@@ -442,7 +443,7 @@ export class CheckoutComponent {
                         console.log("Payment popup closed automatically.");
                     }
 
-                    this.handlePaymentSuccess(response, action, uuid);
+                    this.handlePaymentSuccess(response, action, uuid, 'sub_paisa');
                 }
             },
             error: (err) => {
@@ -456,14 +457,14 @@ export class CheckoutComponent {
         });
   }
 
-  handlePaymentSuccess(response: any, action: any, uuid: any) {
+  handlePaymentSuccess(response: any, action: any, uuid: any, payment_method: string) {
     console.log('Payment was successful:', response);
     console.log('Call /order here now', action);
-    this.store.dispatch(new PlaceOrder(Object.assign({}, action, { uuid: uuid })));
+    this.store.dispatch(new PlaceOrder(Object.assign({}, action, { uuid: uuid, payment_method })));
   }
 
-  async checkPaymentResponse(uuid: any) {
-    this.cartService.checkPaymentResponse(uuid).subscribe({
+  async checkPaymentResponse(uuid: any, payment_method: string) {
+    this.cartService.checkPaymentResponse(uuid, payment_method).subscribe({
       next:(data) => {
         console.log(data);
         if(data.R === true || data.R === false) {
@@ -559,7 +560,7 @@ export class CheckoutComponent {
   }
 
   // CashFree Payment Integration
-  initiateCashFreePaymentIntent() {
+  initiateCashFreePaymentIntent(payment_method: string) {
     const uuid = uuidv4();
     const userData = localStorage.getItem('account');
     const parsedUserData = JSON.parse(userData || '{}')?.user || {};
@@ -595,7 +596,8 @@ export class CheckoutComponent {
                 console.error("Popup blocked. Please allow pop-ups for this site.");
               } else {
                 // Start polling for payment status
-                this.checkTransactionStatusCashFree(cashFreeData.order_id);
+                let action = new PlaceOrder(this.form.value);
+                this.checkTransactionStatusCashFree(uuid, action.payload, paymentWindow, payment_method);
               }
             } else {
               console.error("Invalid response: Payment link is missing.");
@@ -613,40 +615,99 @@ export class CheckoutComponent {
     });
   }
 
-  checkTransactionStatusCashFree(orderId: string) { // https://www.cashfree.com/docs/payments/online/web/redirect
-    this.payByNeoStep = 1;
-    this.loading = true;
-  
-    this.pollingSubscription = interval(this.pollingInterval)
-        .pipe(
-            switchMap(() => this.cartService.checkTransectionStatusCashFree({ order_id: orderId })),
-            map((response: any) => ({
-                ...response,
-                status: response?.order_status === "PAID" // Ensure status is based on actual CashFree response
-            })),
-            delay(120000), // Wait 2 minutes before forcing status update
-            map(response => ({
-                ...response,
-                status: true // Force status to true after 2 minutes if still false
-            })),
-            takeWhile((response: { status: boolean }) => !response.status, true)
-        )
-        .subscribe({
-            next: (response) => {
-                console.log('Payment Status:', response);
+  checkTransactionStatusCashFree(uuid: any, action: any, paymentWindow: Window | null, payment_method: string) {
+    if (!paymentWindow) return;
 
-                if (response.status) {
-                    this.loading = false;
-                    this.pollingSubscription.unsubscribe(); // Stop polling
+    let windowClosedManually = false;
 
-                    // Handle success
-                    this.checkPaymentResponse(response);
-                }
-            },
-            error: (err) => {
-                console.error('Error checking payment status:', err);
+    // ✅ Start monitoring the payment window's URL and check if it's closed
+    const urlCheckInterval = setInterval(() => {
+        try {
+            if (paymentWindow.closed) {
+                console.log("Payment window closed manually or due to an issue.");
+                clearInterval(urlCheckInterval);
+                windowClosedManually = true;
+
+                // ✅ If closed manually, inform the frontend
+                this.handlePaymentSuccess({ status: false, reason: "Window closed manually" }, action, uuid, payment_method);
+                return;
             }
-        });
+
+            const currentUrl = paymentWindow.location.href;
+            console.log("Current Payment Window URL:", currentUrl);
+
+            // ✅ Check if redirected to success or failure page
+            if (currentUrl.includes("success") || currentUrl.includes("failure")) {
+                console.log("Redirect detected, closing window.");
+                clearInterval(urlCheckInterval);
+                paymentWindow.close();
+
+                // ✅ Process the response
+                this.handlePaymentSuccess({ status: true, url: currentUrl }, action, uuid, payment_method);
+            }
+        } catch (error) {
+            // Catches CORS-related issues if the domain changes
+            console.warn("Unable to access payment window URL (possible CORS issue).");
+        }
+    }, 1000); // Check every second
+
+    // ✅ Continue polling for payment status
+    this.pollingSubscription = interval(this.pollingInterval)
+      .pipe(
+          switchMap(() => this.cartService.checkTransectionStatusCashFree(uuid, payment_method)),
+          map(response => ({
+              ...response,
+              status: response.status || false
+          })),
+          delay(20000), // Wait before forcing status update
+          map(response => ({
+              ...response,
+              status: true // Force status to true after 60s if still false
+          })),
+          takeWhile((response: { status: boolean }) => !response.status, true)
+      )
+      .subscribe({
+          next: (response) => {
+              console.log('Payment Status:', response);
+
+              if (response.status) {
+                  this.pollingSubscription.unsubscribe(); // Stop polling
+
+                  // ✅ Close the popup window if still open
+                  if (paymentWindow && !paymentWindow.closed) {
+                      paymentWindow.close();
+                      console.log("Payment popup closed automatically.");
+                  }
+
+                  this.handlePaymentSuccess(response, action, uuid, payment_method);
+              }
+          },
+          error: (err) => {
+              console.error('Error checking payment status:', err);
+          },
+          complete: () => {
+              if (windowClosedManually) {
+                  console.log("Polling stopped: Payment window was closed manually.");
+              }
+          }
+      });
+  }
+
+  async checkTransectionStatusCashFree(uuid: any,payment_method: string) {
+    this.cartService.checkTransectionStatusCashFree(uuid, payment_method).subscribe({
+      next:(data) => {
+        console.log(data);
+        if(data.R === true || data.R === false) {
+          console.log('Redirect to Success or Fail');
+          this.router.navigate([ 'order/checkout-success' ], { queryParams: { order_status: data.R } });
+        } else {
+          console.log('Payment in Pending State');
+        }
+      },
+      error:(err) => {
+        console.log(err);
+      }
+    });
   }
 
   async openNeoKredModal(data: any) {
@@ -772,9 +833,6 @@ export class CheckoutComponent {
         next:(value) => {
           this.storeData = value;
           console.log(this.storeData);
-          if(payment_method === 'cash_free'){
-            this.initiateCashFreePaymentIntent();
-          }
         },
         error: (err) => {
           this.loading = false;
@@ -797,51 +855,20 @@ export class CheckoutComponent {
 
       const formData = {
         ...this.form.value,
-        // payment_method: 'cod' 
       }
 
       let action = new PlaceOrder(formData);
       // this.store.dispatch(new PlaceOrder(formData));
 
-      this.initiateSubPaisa(formData);
-
-      // setTimeout(() => {
-        
-      // this.orderService.placeOrder(action?.payload).pipe().subscribe({
-
-      //   next: result => {
-      //     if((action.payload.payment_method == 'cod' || action.payload.payment_method == 'bank_transfer') && !result.is_guest) {
-      //       this.router.navigateByUrl(`/account/order/details/${result.order_number}`);
-      //     } else if((action.payload.payment_method == 'cod' || action.payload.payment_method == 'bank_transfer') && result.is_guest) {
-      //       this.router.navigate([ 'order/details' ], { queryParams: { order_number: result.order_number, email_or_phone: action?.payload.email } });
-      //     } else {
-      //       window.open(result.url, "_self");
-      //     }
-      //     this.loading = false;
-      //   },
-      //   error: err => {
-
-      //     this.loading = false;
-      //     const result = {
-      //       order_number: '9999',
-      //       url: '',
-      //       is_guest: false
-      //     };
-      //     console.log(result)
-      //     this.router.navigateByUrl('order/checkout-success')
-      //     // if((action.payload.payment_method == 'sub_paisa' || action.payload.payment_method == 'cod' || action.payload.payment_method == 'bank_transfer') && !result.is_guest) {
-      //     //   this.router.navigateByUrl(`/account/order/details/${result.order_number}`);
-      //     // } else if((action.payload.payment_method == 'cod' || action.payload.payment_method == 'bank_transfer') && result.is_guest) {
-      //     //   this.router.navigate([ 'order/details' ], { queryParams: { order_number: result.order_number, email_or_phone: action?.payload.email } });
-      //     // } else {
-      //     //   window.open(result.url, "_self");
-      //     // }
-      //     // throw new Error(err?.error?.message);
-      //   }
-      // });
-
-      // }, 6000);
-      // this.initiateSubPaisa();
+      if(this.payment_method === 'cash_free'){
+        this.initiateCashFreePaymentIntent(this.payment_method);
+      }
+      if(this.payment_method === 'sub_paisa'){
+        this.initiateSubPaisa(formData, this.payment_method);
+      }
+      if(this.payment_method === 'neoKred') {
+        this.initiateNeoKredPaymentIntent();
+      }
     }
   }
 
