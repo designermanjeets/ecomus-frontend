@@ -32,6 +32,13 @@ export const content: Routes = [
             ),
     },
 
+
+    {
+        path: "Contact-Us",
+        loadChildren: () => import("../../contact-us/contact-us.module").then((m) => m.ContactUsModule)
+    },
+    
+
     {
         path: 'term-condition',
         loadChildren: () =>

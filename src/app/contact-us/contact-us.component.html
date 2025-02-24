@@ -1,0 +1,47 @@
+<div class="container">
+    <div class="contact-details">
+      <h2>Contact Us</h2>
+      <p>We’d love to hear from you! Reach out to us using the details below.</p>
+      <div class="contact-info">
+        <p><strong>Company Name:</strong> STYLEXIO FASHION FABRIC PRIVATE LIMITED</p>
+        <p><strong>Address:</strong> Office No-1404 Galaxy Diamond Plaza 13th Floor, Plot No C-1A Sector 4 Greater Noida, I.A. Surajpur, Gautam Buddha Nagar, Noida, Uttar Pradesh, India, 201301</p>
+        <p><strong>Mobile:</strong> <a href="tel:+918368711465"> +91 8920874879
+        </a></p>
+        <p><strong>Website:</strong> <a href="https://stylexio.in" target="_blank"> stylexio.in</a></p>
+      </div>
+    </div>
+  
+    <div class="contact-form">
+      <h2>Get in Touch</h2>
+      <form [formGroup]="contactForm" (ngSubmit)="onSubmit()">
+  
+        <label for="name">Name</label>
+        <input type="text" id="name" formControlName="name">
+        <div *ngIf="contactForm.get('name')?.invalid && contactForm.get('name')?.touched" class="error">
+          Name should contain only letters and spaces.
+        </div>
+      
+        <label for="email">Email</label>
+        <input type="email" id="email" formControlName="email">
+        <div *ngIf="contactForm.get('email')?.invalid && contactForm.get('email')?.touched" class="error">
+          Enter a valid email address.
+        </div>
+      
+        <label for="phone">Phone</label>
+        <input type="tel" id="phone" formControlName="phone">
+        <div *ngIf="contactForm.get('phone')?.invalid && contactForm.get('phone')?.touched" class="error">
+          Phone number should be exactly 10 digits.
+        </div>
+      
+        <label for="message">Message</label>
+        <textarea id="message" formControlName="message" rows="4"></textarea>
+        <div *ngIf="contactForm.get('message')?.invalid && contactForm.get('message')?.touched" class="error">
+          Message field cannot be empty.
+        </div>
+      
+        <button type="submit" [disabled]="contactForm.invalid" class="sub-btn">Submit</button>
+      </form>
+      
+    </div>
+  </div>
+  
