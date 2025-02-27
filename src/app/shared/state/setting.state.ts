@@ -63,7 +63,7 @@ export class SettingState {
               },
               {
                 name: 'zyaada_pay',
-                status: true,
+                status: false,
                 title: 'Zyaada Pay',
                 icon: './assets/images/zyaada_pay_logo.jpg',
               },
