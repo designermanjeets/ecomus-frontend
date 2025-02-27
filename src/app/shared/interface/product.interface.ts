@@ -9,6 +9,8 @@ import { Review } from "./review.interface";
 import { Brand } from "./brand.interface";
 
 export interface ProductModel extends PaginateModel {
+    isHidden: boolean;
+    hiddenBox: boolean;
     data: Product[];
 }
 

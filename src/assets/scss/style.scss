@@ -182,3 +182,7 @@ $border-radius: 4px;
   right: auto;
   width: 100px;
 }
+
+app-product-box:has(.hidden) {
+  display: none !important;
+}
