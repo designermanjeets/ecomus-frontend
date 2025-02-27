@@ -292,7 +292,6 @@ export class CheckoutComponent {
   selectPaymentMethod(value: string) {
     this.form.controls['payment_method'].setValue(value);
     this.payment_method = value;
-    // this.checkout();
     switch (value) {
       case 'neoKred':
         // Call Popup for NeoKred QR Code
@@ -304,6 +303,9 @@ export class CheckoutComponent {
       case 'cash_free':
         this.checkout(value);
         break;  
+      case 'zyaada_pay':
+        this.checkout(value);
+        break;
       default:
         break;
     }
@@ -693,6 +695,142 @@ export class CheckoutComponent {
       });
   }
 
+  // Zyaada Pay Payment Integration
+  initiateZyaadaPayPaymentIntent(payment_method: string) {
+    const uuid = uuidv4();
+    const userData = localStorage.getItem('account');
+    const parsedUserData = JSON.parse(userData || '{}')?.user || {};
+
+    const payload = {
+      uuid,
+      ...parsedUserData,
+      checkout: this.storeData?.order?.checkout
+    };
+
+    this.cartService.initiateZyaadaPayIntent({
+      uuid: payload.uuid,
+      email: payload.email,
+      total: this.storeData?.order?.checkout?.total?.total,
+      phone: parsedUserData.phone,
+      name: parsedUserData.name,
+      address: `${parsedUserData.address?.[0]?.city || ''} ${parsedUserData.address?.[0]?.area || ''}`
+    }).subscribe({
+      next: (response) => {
+        if (response?.R && response?.data) {
+          try {
+            const zyaadaPayData = response.data;
+
+            console.log(zyaadaPayData);
+            
+            if (zyaadaPayData?.payment_url) {
+              // Open the payment page in a new tab/window
+              const paymentWindow = window.open(
+                zyaadaPayData.payment_url, 
+                'PaymentWindow', 
+                'width=600,height=700,left=100,top=100,resizable=yes,scrollbars=yes'
+              );
+
+              if (!paymentWindow) {
+                console.error("Popup blocked. Please allow pop-ups for this site.");
+              } else {
+                // Start polling for payment status
+                let action = new PlaceOrder(this.form.value);
+                this.checkTransactionStatusZyaadaPay(uuid, action.payload, paymentWindow, payment_method);
+              }
+            } else {
+              console.error("Invalid response: Payment link is missing.");
+            }
+          } catch (error) {
+              console.error("Error parsing Zyaada Pay response:", error);
+          }
+        } else {
+          console.error("Payment initiation failed:", response?.msg);
+        }
+      },
+      error: (err) => {
+        console.log("Error initiating payment:", err);
+      }
+    });
+  }
+
+  checkTransactionStatusZyaadaPay(uuid: any, action: any, paymentWindow: Window | null, payment_method: string) {
+    if (!paymentWindow) return;
+
+    let windowClosedManually = false;
+
+    // ✅ Start monitoring the payment window's URL and check if it's closed
+    const urlCheckInterval = setInterval(() => {
+        try {
+            if (paymentWindow.closed) {
+                console.log("Payment window closed manually or due to an issue.");
+                clearInterval(urlCheckInterval);
+                windowClosedManually = true;
+
+                // ✅ If closed manually, inform the frontend
+                this.handlePaymentSuccess({ status: false, reason: "Window closed manually" }, action, uuid, payment_method);
+                return;
+            }
+
+            const currentUrl = paymentWindow.location.href;
+            console.log("Current Payment Window URL:", currentUrl);
+
+            // ✅ Check if redirected to success or failure page
+            if (currentUrl.includes("success") || currentUrl.includes("failure")) {
+                console.log("Redirect detected, closing window.");
+                clearInterval(urlCheckInterval);
+                paymentWindow.close();
+
+                // ✅ Process the response
+                this.handlePaymentSuccess({ status: true, url: currentUrl }, action, uuid, payment_method);
+            }
+        } catch (error) {
+            // Catches CORS-related issues if the domain changes
+            console.warn("Unable to access payment window URL (possible CORS issue).");
+        }
+    }, 1000); // Check every second
+
+    // ✅ Continue polling for payment status
+    this.pollingSubscription = interval(this.pollingInterval)
+      .pipe(
+          switchMap(() => this.cartService.checkTransectionStatusZyaadaPay(uuid, payment_method)),
+          map(response => ({
+              ...response,
+              status: response.status || false
+          })),
+          delay(120000), // Wait before forcing status update
+          map(response => ({
+              ...response,
+              status: true // Force status to true after 60s if still false
+          })),
+          takeWhile((response: { status: boolean }) => !response.status, true)
+      )
+      .subscribe({
+          next: (response) => {
+              console.log('Payment Status:', response);
+
+              if (response.status) {
+                  this.pollingSubscription.unsubscribe(); // Stop polling
+
+                  // ✅ Close the popup window if still open
+                  if (paymentWindow && !paymentWindow.closed) {
+                      paymentWindow.close();
+                      console.log("Payment popup closed automatically.");
+                  }
+
+                  this.handlePaymentSuccess(response, action, uuid, payment_method);
+              }
+          },
+          error: (err) => {
+              console.error('Error checking payment status:', err);
+          },
+          complete: () => {
+              if (windowClosedManually) {
+                  console.log("Polling stopped: Payment window was closed manually.");
+              }
+          }
+      });
+  }
+
   async checkTransectionStatusCashFree(uuid: any,payment_method: string) {
     this.cartService.checkTransectionStatusCashFree(uuid, payment_method).subscribe({
       next:(data) => {
@@ -868,6 +1006,9 @@ export class CheckoutComponent {
       }
       if(this.payment_method === 'neoKred') {
         this.initiateNeoKredPaymentIntent();
+      }
+      if(this.payment_method === 'zyaada_pay') {
+        this.initiateZyaadaPayPaymentIntent(this.payment_method);
       }
     }
   }
