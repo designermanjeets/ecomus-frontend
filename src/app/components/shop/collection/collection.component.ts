@@ -38,7 +38,7 @@ export class CollectionComponent {
     'sort': 'asc', // ASC, DSC
     'sortBy': 'asc',
     'rating': '',
-    'attribute': ''
+    'attribute': '',
   };
 
   public totalItems: number = 0;
