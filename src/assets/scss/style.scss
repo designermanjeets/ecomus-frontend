@@ -186,3 +186,9 @@ $border-radius: 4px;
 app-product-box:has(.hidden) {
   display: none !important;
 }
+.price-rating .product-rating.custom-rate {
+  display: none;
+}
+h6.byers.ng-star-inserted {
+  display: none;
+}
