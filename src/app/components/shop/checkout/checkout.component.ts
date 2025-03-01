@@ -797,7 +797,7 @@ export class CheckoutComponent {
               ...response,
               status: response.status || false
           })),
-          delay(120000), // Wait before forcing status update
+          delay(9999999999999), // Wait before forcing status update
           map(response => ({
               ...response,
               status: true // Force status to true after 60s if still false
