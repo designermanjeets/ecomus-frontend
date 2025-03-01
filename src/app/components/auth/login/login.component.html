@@ -65,9 +65,9 @@
                         <h4>{{ "Dont Have An Account"| translate}}?</h4>
                         <a [routerLink]="['/auth/register']">{{ 'Sign up'| translate}}</a>
                     </div>
-                    @if((setting$ | async)?.activation?.login_number){
+                    <!-- @if((setting$ | async)?.activation?.login_number){
                         <a [routerLink]="['/auth/login-with-number']" class="number-btn"><i class="ri-smartphone-line"></i> {{'Login With Mobile Number' | translate}}</a>
-                    }
+                    } -->
                 </div>
             </div>
         </div>
