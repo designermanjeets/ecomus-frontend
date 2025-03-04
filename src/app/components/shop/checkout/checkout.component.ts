@@ -255,84 +255,21 @@ export class CheckoutComponent {
     this.products();
     
     // Check if returning from payment on iOS
-    const returnUrl = sessionStorage.getItem('paymentReturnUrl');
-    if (returnUrl) {
-      const paymentUuid = sessionStorage.getItem('paymentUuid');
-      const paymentMethod = sessionStorage.getItem('paymentMethod');
+    const paymentUuid = sessionStorage.getItem('payment_uuid');
+    const paymentMethod = sessionStorage.getItem('payment_method');
+    const paymentAction = sessionStorage.getItem('payment_action');
+    
+    if (paymentUuid && paymentMethod && paymentAction) {
+      // Clear session storage
+      sessionStorage.removeItem('payment_uuid');
+      sessionStorage.removeItem('payment_method');
+      sessionStorage.removeItem('payment_action');
       
-      if (paymentUuid && paymentMethod) {
-        // Clear the stored data
-        sessionStorage.removeItem('paymentReturnUrl');
-        sessionStorage.removeItem('paymentUuid');
-        sessionStorage.removeItem('paymentMethod');
-        
-        // Check payment status based on the payment method
-        switch(paymentMethod) {
-          case 'neoKred':
-            this.cartService.checkTransectionStatusNeoKred(paymentUuid, paymentMethod).subscribe({
-              next: (response) => {
-                console.log('NeoKred Payment Status after return:', response);
-                if (response.status) {
-                  let action = new PlaceOrder(this.form.value);
-                  this.handlePaymentSuccess(response, action, paymentUuid, paymentMethod);
-                }
-              },
-              error: (err) => {
-                console.error('Error checking NeoKred payment status after return:', err);
-              }
-            });
-            break;
-            
-          case 'cash_free':
-            this.cartService.checkTransectionStatusCashFree(paymentUuid, paymentMethod).subscribe({
-              next: (response) => {
-                console.log('CashFree Payment Status after return:', response);
-                if (response.status) {
-                  let action = new PlaceOrder(this.form.value);
-                  this.handlePaymentSuccess(response, action, paymentUuid, paymentMethod);
-                }
-              },
-              error: (err) => {
-                console.error('Error checking CashFree payment status after return:', err);
-              }
-            });
-            break;
-            
-          case 'zyaada_pay':
-            this.cartService.checkTransectionStatusZyaadaPay(paymentUuid, paymentMethod).subscribe({
-              next: (response) => {
-                console.log('ZyaadaPay Payment Status after return:', response);
-                if (response.status) {
-                  let action = new PlaceOrder(this.form.value);
-                  this.handlePaymentSuccess(response, action, paymentUuid, paymentMethod);
-                }
-              },
-              error: (err) => {
-                console.error('Error checking ZyaadaPay payment status after return:', err);
-              }
-            });
-            break;
-            
-          case 'sub_paisa':
-            this.cartService.checkPaymentResponse(paymentUuid, paymentMethod).subscribe({
-              next: (response) => {
-                console.log('SubPaisa Payment Status after return:', response);
-                if (response.status) {
-                  let action = new PlaceOrder(this.form.value);
-                  this.handlePaymentSuccess(response, action, paymentUuid, paymentMethod);
-                }
-              },
-              error: (err) => {
-                console.error('Error checking SubPaisa payment status after return:', err);
-              }
-            });
-            break;
-            
-          default:
-            console.error('Unknown payment method:', paymentMethod);
-            break;
-        }
-      }
+      // Parse the stored action
+      const action = JSON.parse(paymentAction);
+      
+      // Check payment status and complete order
+      this.completeIOSPayment(paymentUuid, action, paymentMethod);
     }
   }
 
@@ -423,10 +360,11 @@ export class CheckoutComponent {
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
             
             if (isIOS) {
-              // For iOS devices, store the current state and submit the form in the current window
-              sessionStorage.setItem('paymentReturnUrl', window.location.href);
-              sessionStorage.setItem('paymentUuid', uuid);
-              sessionStorage.setItem('paymentMethod', payment_method);
+              // For iOS devices, use the iOS payment handler
+              let action = new PlaceOrder(this.form.value);
+              sessionStorage.setItem('payment_uuid', uuid);
+              sessionStorage.setItem('payment_method', payment_method);
+              sessionStorage.setItem('payment_action', JSON.stringify(action.payload));
               
               // Submit the form in the current window
               form.target = '_self';
@@ -618,16 +556,9 @@ export class CheckoutComponent {
               const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
               
               if (isIOS) {
-                // For iOS devices, open in the same window with history management
-                const currentLocation = window.location.href;
-                
-                // Store current page state to return to after payment
-                sessionStorage.setItem('paymentReturnUrl', currentLocation);
-                sessionStorage.setItem('paymentUuid', uuid);
-                sessionStorage.setItem('paymentMethod', payment_method);
-                
-                // Redirect to payment page
-                window.location.href = cashFreeData.payment_url;
+                // For iOS devices, use the iOS payment handler
+                let action = new PlaceOrder(this.form.value);
+                this.handleIOSPayment(uuid, action, payment_method, cashFreeData.payment_url);
               } else {
                 // For other devices, use popup as before
                 const paymentWindow = window.open(
@@ -762,16 +693,9 @@ export class CheckoutComponent {
               const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
               
               if (isIOS) {
-                // For iOS devices, open in the same window with history management
-                const currentLocation = window.location.href;
-                
-                // Store current page state to return to after payment
-                sessionStorage.setItem('paymentReturnUrl', currentLocation);
-                sessionStorage.setItem('paymentUuid', uuid);
-                sessionStorage.setItem('paymentMethod', payment_method);
-                
-                // Redirect to payment page
-                window.location.href = cashFreeData.payment_link;
+                // For iOS devices, use the iOS payment handler
+                let action = new PlaceOrder(this.form.value);
+                this.handleIOSPayment(uuid, action, payment_method, cashFreeData.payment_link);
               } else {
                 // For other devices, use popup as before
                 const paymentWindow = window.open(
@@ -914,16 +838,9 @@ export class CheckoutComponent {
               const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
               
               if (isIOS) {
-                // For iOS devices, open in the same window with history management
-                const currentLocation = window.location.href;
-                
-                // Store current page state to return to after payment
-                sessionStorage.setItem('paymentReturnUrl', currentLocation);
-                sessionStorage.setItem('paymentUuid', uuid);
-                sessionStorage.setItem('paymentMethod', payment_method);
-                
-                // Redirect to payment page
-                window.location.href = zyaadaPayData.payment_url;
+                // For iOS devices, use the iOS payment handler
+                let action = new PlaceOrder(this.form.value);
+                this.handleIOSPayment(uuid, action, payment_method, zyaadaPayData.payment_url);
               } else {
                 // For other devices, use popup as before
                 const paymentWindow = window.open(
@@ -1230,6 +1147,33 @@ export class CheckoutComponent {
     this.store.dispatch(new ClearCart());
     this.form.reset();
     this.pollingSubscription && this.pollingSubscription.unsubscribe();
+  }
+
+  // Add this method to handle iOS payment redirects
+  private handleIOSPayment(uuid: string, action: any, payment_method: string, paymentUrl: string) {
+    // Store payment information in sessionStorage
+    sessionStorage.setItem('payment_uuid', uuid);
+    sessionStorage.setItem('payment_method', payment_method);
+    sessionStorage.setItem('payment_action', JSON.stringify(action.payload));
+    
+    // Redirect to payment gateway
+    window.location.href = paymentUrl;
+  }
+
+  // Method to complete iOS payment
+  private completeIOSPayment(uuid: string, actionPayload: any, payment_method: string) {
+    // Create a new action with the stored payload
+    const action = { payload: { ...actionPayload, uuid, payment_method } };
+    
+    // Dispatch the PlaceOrder action to complete the order
+    this.store.dispatch(new PlaceOrder(action.payload)).subscribe({
+      next: (result) => {
+        console.log('Order placed successfully after iOS payment');
+      },
+      error: (err) => {
+        console.error('Error placing order after iOS payment:', err);
+      }
+    });
   }
 
 }
