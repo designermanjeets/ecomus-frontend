@@ -412,80 +412,23 @@ export class CheckoutComponent {
   
   startPollingForPaymentStatus(uuid: any, action: any, paymentWindow: Window | null, payment_method: string) {
     if (!paymentWindow) return;
-
-    let windowClosedManually = false;
-
-    // ✅ Start monitoring the payment window's URL and check if it's closed
-    const urlCheckInterval = setInterval(() => {
-        try {
-            if (paymentWindow.closed) {
-                console.log("Payment window closed manually or due to an issue.");
-                clearInterval(urlCheckInterval);
-                windowClosedManually = true;
-
-                // ✅ If closed manually, inform the frontend
-                this.handlePaymentSuccess({ status: false, reason: "Window closed manually" }, action, uuid, payment_method);
-                return;
-            }
-
-            const currentUrl = paymentWindow.location.href;
-            console.log("Current Payment Window URL:", currentUrl);
-
-            // ✅ Check if redirected to success or failure page
-            if (currentUrl.includes("success") || currentUrl.includes("failure")) {
-                console.log("Redirect detected, closing window.");
-                clearInterval(urlCheckInterval);
-                paymentWindow.close();
-
-                // ✅ Process the response
-                this.handlePaymentSuccess({ status: true, url: currentUrl }, action, uuid, payment_method);
-            }
-        } catch (error) {
-            // Catches CORS-related issues if the domain changes
-            console.warn("Unable to access payment window URL (possible CORS issue).");
+    
+    let windowCheckInterval = setInterval(() => {
+      try {
+        if (paymentWindow.closed) {
+          console.log("Payment window closed manually or due to an issue.");
+          clearInterval(windowCheckInterval);
+          this.checkPaymentStatusAfterWindowClosed(uuid, action, payment_method);
+          return;
         }
-    }, 1000); // Check every second
-
-    // ✅ Continue polling for payment status
-    this.pollingSubscription = interval(this.pollingInterval)
-        .pipe(
-            switchMap(() => this.cartService.checkPaymentResponse(uuid, payment_method)),
-            map(response => ({
-                ...response,
-                status: response.status || false
-            })),
-            delay(9999999999999), // Wait before forcing status update
-            map(response => ({
-                ...response,
-                status: true // Force status to true after 60s if still false
-            })),
-            takeWhile((response: { status: boolean }) => !response.status, true)
-        )
-        .subscribe({
-            next: (response) => {
-                console.log('Payment Status:', response);
-
-                if (response.status) {
-                    this.pollingSubscription.unsubscribe(); // Stop polling
-
-                    // ✅ Close the popup window if still open
-                    if (paymentWindow && !paymentWindow.closed) {
-                        paymentWindow.close();
-                        console.log("Payment popup closed automatically.");
-                    }
-
-                    this.handlePaymentSuccess(response, action, uuid, 'sub_paisa');
-                }
-            },
-            error: (err) => {
-                console.error('Error checking payment status:', err);
-            },
-            complete: () => {
-                if (windowClosedManually) {
-                    console.log("Polling stopped: Payment window was closed manually.");
-                }
-            }
-        });
+      } catch (error) {
+        console.warn("Unable to check payment window state:", error);
+        clearInterval(windowCheckInterval);
+        this.checkPaymentStatusAfterWindowClosed(uuid, action, payment_method);
+      }
+    }, 1000);
+    
+    this.startPaymentStatusPolling(uuid, action, payment_method, windowCheckInterval);
   }
 
   handlePaymentSuccess(response: any, action: any, uuid: any, payment_method: string) {
@@ -591,75 +534,139 @@ export class CheckoutComponent {
     }); // https://apidocument-cb.netlify.app/#intent-generation
   }
 
-  checkTransectionStatusNeoKred(uuid: any, action: any, paymentWindow: Window | null, payment_method: string) { // https://apidocument-cb.netlify.app/#transaction-status
+  checkTransectionStatusNeoKred(uuid: any, action: any, paymentWindow: Window | null, payment_method: string) {
     if (!paymentWindow) return;
 
     let windowClosedManually = false;
 
-    // ✅ Start monitoring the payment window's URL and check if it's closed
-    const urlCheckInterval = setInterval(() => {
-      if (paymentWindow.closed) {
-        console.log("Payment window closed manually or due to an issue.");
-        clearInterval(urlCheckInterval);
-        windowClosedManually = true;
-        
-        this.handlePaymentSuccess({ status: false, reason: "Window closed manually" }, action, uuid, payment_method);
-        return;
+    // Only check if the window is closed, don't try to access its properties
+    const windowCheckInterval = setInterval(() => {
+      try {
+        // This only checks if the window is closed, not its content
+        if (paymentWindow.closed) {
+          console.log("Payment window closed manually or due to an issue.");
+          clearInterval(windowCheckInterval);
+          windowClosedManually = true;
+          
+          // If window is closed, check payment status via API
+          this.checkPaymentStatusAfterWindowClosed(uuid, action, payment_method);
+          return;
+        }
+      } catch (error) {
+        // If any error occurs, clear the interval and check status via API
+        console.warn("Unable to check payment window state:", error);
+        clearInterval(windowCheckInterval);
+        this.checkPaymentStatusAfterWindowClosed(uuid, action, payment_method);
       }
+    }, 1000);
 
-      const currentUrl = paymentWindow.location.href;
-      console.log("Current Payment Window URL:", currentUrl);
-      
-      if (currentUrl.includes("success") || currentUrl.includes("failure")) {
-        console.log("Redirect detected, closing window.");
-        clearInterval(urlCheckInterval);
-        paymentWindow.close();
+    // Start polling for payment status via API regardless of window state
+    this.startPaymentStatusPolling(uuid, action, payment_method, windowCheckInterval);
+  }
 
-        this.handlePaymentSuccess({ status: true, url: currentUrl }, action, uuid, payment_method);
-      } else {
-        console.log('Payment in Pending State');
-      }
-    }, 1000); // Check every second for NeoKred
-
-    // ✅ Continue polling for payment status
-    this.pollingSubscription = interval(this.pollingInterval)
-      .pipe(
-          switchMap(() => this.cartService.checkTransectionStatusNeoKred(uuid, payment_method)),
-          map(response => ({
-              ...response,
-              status: response.status || false
-          })),
-          delay(9999999999999), // Wait before forcing status update
-          map(response => ({
-              ...response,
-              status: true // Force status to true after 60s if still false
-          })),
-          takeWhile((response: { status: boolean }) => !response.status, true)
-      )
-      .subscribe({
+  // New method to check payment status after window is closed
+  private checkPaymentStatusAfterWindowClosed(uuid: any, action: any, payment_method: string) {
+    // Make a single check for payment status
+    switch(payment_method) {
+      case 'neoKred':
+        this.cartService.checkTransectionStatusNeoKred(uuid, payment_method).subscribe({
           next: (response) => {
-              console.log('Payment Status:', response);
-
-              if (response.status) {
-                  this.pollingSubscription.unsubscribe(); // Stop polling
-
-                  // ✅ Close the popup window if still open
-                  if (paymentWindow && !paymentWindow.closed) {
-                      paymentWindow.close();
-                      console.log("Payment popup closed automatically.");
+            console.log('Payment status after window closed:', response);
+            if (response.status) {
+              this.handlePaymentSuccess(response, action, uuid, payment_method);
+            } else {
+              // Wait a bit and check again, payment might be processing
+              setTimeout(() => {
+                this.cartService.checkTransectionStatusNeoKred(uuid, payment_method).subscribe({
+                  next: (finalResponse) => {
+                    if (finalResponse.status) {
+                      this.handlePaymentSuccess(finalResponse, action, uuid, payment_method);
+                    }
                   }
-
-                  this.handlePaymentSuccess(response, action, uuid, payment_method);
-              }
+                });
+              }, 3000);
+            }
           },
           error: (err) => {
-              console.error('Error checking payment status:', err);
-          },
-          complete: () => {
-              if (windowClosedManually) {
-                  console.log("Polling stopped: Payment window was closed manually.");
-              }
+            console.error('Error checking payment status after window closed:', err);
           }
+        });
+        break;
+      case 'cash_free':
+        this.cartService.checkTransectionStatusCashFree(uuid, payment_method).subscribe({
+          next: (response) => {
+            if (response.status) {
+              this.handlePaymentSuccess(response, action, uuid, payment_method);
+            }
+          }
+        });
+        break;
+      case 'zyaada_pay':
+        this.cartService.checkTransectionStatusZyaadaPay(uuid, payment_method).subscribe({
+          next: (response) => {
+            if (response.status) {
+              this.handlePaymentSuccess(response, action, uuid, payment_method);
+            }
+          }
+        });
+        break;
+      case 'sub_paisa':
+        this.cartService.checkPaymentResponse(uuid, payment_method).subscribe({
+          next: (response) => {
+            if (response.status) {
+              this.handlePaymentSuccess(response, action, uuid, payment_method);
+            }
+          }
+        });
+        break;
+    }
+  }
+
+  // New method to start polling for payment status
+  private startPaymentStatusPolling(uuid: any, action: any, payment_method: string, windowCheckInterval: any) {
+    // Poll for payment status via API
+    this.pollingSubscription = interval(5000) // Check every 5 seconds
+      .pipe(
+        switchMap(() => {
+          switch(payment_method) {
+            case 'neoKred':
+              return this.cartService.checkTransectionStatusNeoKred(uuid, payment_method);
+            case 'cash_free':
+              return this.cartService.checkTransectionStatusCashFree(uuid, payment_method);
+            case 'zyaada_pay':
+              return this.cartService.checkTransectionStatusZyaadaPay(uuid, payment_method);
+            case 'sub_paisa':
+              return this.cartService.checkPaymentResponse(uuid, payment_method);
+            default:
+              return of({ status: false });
+          }
+        }),
+        takeWhile(response => !response.status, true)
+      )
+      .subscribe({
+        next: (response) => {
+          console.log(`${payment_method} Payment Status:`, response);
+          
+          if (response.status) {
+            // Payment successful
+            this.pollingSubscription.unsubscribe();
+            clearInterval(windowCheckInterval);
+            
+            // Close payment window if still open
+            try {
+              if (!window.closed) {
+                window.close();
+              }
+            } catch (e) {
+              console.log("Could not close payment window:", e);
+            }
+            
+            this.handlePaymentSuccess(response, action, uuid, payment_method);
+          }
+        },
+        error: (err) => {
+          console.error(`Error checking ${payment_method} payment status:`, err);
+        }
       });
   }
 
@@ -730,80 +737,23 @@ export class CheckoutComponent {
 
   checkTransactionStatusCashFree(uuid: any, action: any, paymentWindow: Window | null, payment_method: string) {
     if (!paymentWindow) return;
-
-    let windowClosedManually = false;
-
-    // ✅ Start monitoring the payment window's URL and check if it's closed
-    const urlCheckInterval = setInterval(() => {
-        try {
-            if (paymentWindow.closed) {
-                console.log("Payment window closed manually or due to an issue.");
-                clearInterval(urlCheckInterval);
-                windowClosedManually = true;
-
-                // ✅ If closed manually, inform the frontend
-                this.handlePaymentSuccess({ status: false, reason: "Window closed manually" }, action, uuid, payment_method);
-                return;
-            }
-
-            const currentUrl = paymentWindow.location.href;
-            console.log("Current Payment Window URL:", currentUrl);
-
-            // ✅ Check if redirected to success or failure page
-            if (currentUrl.includes("success") || currentUrl.includes("failure")) {
-                console.log("Redirect detected, closing window.");
-                clearInterval(urlCheckInterval);
-                paymentWindow.close();
-
-                // ✅ Process the response
-                this.handlePaymentSuccess({ status: true, url: currentUrl }, action, uuid, payment_method);
-            }
-        } catch (error) {
-            // Catches CORS-related issues if the domain changes
-            console.warn("Unable to access payment window URL (possible CORS issue).");
+    
+    let windowCheckInterval = setInterval(() => {
+      try {
+        if (paymentWindow.closed) {
+          console.log("Payment window closed manually or due to an issue.");
+          clearInterval(windowCheckInterval);
+          this.checkPaymentStatusAfterWindowClosed(uuid, action, payment_method);
+          return;
         }
-    }, 1000); // Check every second
-
-    // ✅ Continue polling for payment status
-    this.pollingSubscription = interval(this.pollingInterval)
-      .pipe(
-          switchMap(() => this.cartService.checkTransectionStatusCashFree(uuid, payment_method)),
-          map(response => ({
-              ...response,
-              status: response.status || false
-          })),
-          delay(9999999999999), // Wait before forcing status update
-          map(response => ({
-              ...response,
-              status: true // Force status to true after 60s if still false
-          })),
-          takeWhile((response: { status: boolean }) => !response.status, true)
-      )
-      .subscribe({
-          next: (response) => {
-              console.log('Payment Status:', response);
-
-              if (response.status) {
-                  this.pollingSubscription.unsubscribe(); // Stop polling
-
-                  // ✅ Close the popup window if still open
-                  if (paymentWindow && !paymentWindow.closed) {
-                      paymentWindow.close();
-                      console.log("Payment popup closed automatically.");
-                  }
-
-                  this.handlePaymentSuccess(response, action, uuid, payment_method);
-              }
-          },
-          error: (err) => {
-              console.error('Error checking payment status:', err);
-          },
-          complete: () => {
-              if (windowClosedManually) {
-                  console.log("Polling stopped: Payment window was closed manually.");
-              }
-          }
-      });
+      } catch (error) {
+        console.warn("Unable to check payment window state:", error);
+        clearInterval(windowCheckInterval);
+        this.checkPaymentStatusAfterWindowClosed(uuid, action, payment_method);
+      }
+    }, 1000);
+    
+    this.startPaymentStatusPolling(uuid, action, payment_method, windowCheckInterval);
   }
 
   // Zyaada Pay Payment Integration
@@ -875,80 +825,23 @@ export class CheckoutComponent {
 
   checkTransactionStatusZyaadaPay(uuid: any, action: any, paymentWindow: Window | null, payment_method: string) {
     if (!paymentWindow) return;
-
-    let windowClosedManually = false;
-
-    // ✅ Start monitoring the payment window's URL and check if it's closed
-    const urlCheckInterval = setInterval(() => {
-        try {
-            if (paymentWindow.closed) {
-                console.log("Payment window closed manually or due to an issue.");
-                clearInterval(urlCheckInterval);
-                windowClosedManually = true;
-
-                // ✅ If closed manually, inform the frontend
-                this.handlePaymentSuccess({ status: false, reason: "Window closed manually" }, action, uuid, payment_method);
-                return;
-            }
-
-            const currentUrl = paymentWindow.location.href;
-            console.log("Current Payment Window URL:", currentUrl);
-
-            // ✅ Check if redirected to success or failure page
-            if (currentUrl.includes("success") || currentUrl.includes("failure")) {
-                console.log("Redirect detected, closing window.");
-                clearInterval(urlCheckInterval);
-                paymentWindow.close();
-
-                // ✅ Process the response
-                this.handlePaymentSuccess({ status: true, url: currentUrl }, action, uuid, payment_method);
-            }
-        } catch (error) {
-            // Catches CORS-related issues if the domain changes
-            console.warn("Unable to access payment window URL (possible CORS issue).");
+    
+    let windowCheckInterval = setInterval(() => {
+      try {
+        if (paymentWindow.closed) {
+          console.log("Payment window closed manually or due to an issue.");
+          clearInterval(windowCheckInterval);
+          this.checkPaymentStatusAfterWindowClosed(uuid, action, payment_method);
+          return;
         }
-    }, 1000); // Check every second
-
-    // ✅ Continue polling for payment status
-    this.pollingSubscription = interval(this.pollingInterval)
-      .pipe(
-          switchMap(() => this.cartService.checkTransectionStatusZyaadaPay(uuid, payment_method)),
-          map(response => ({
-              ...response,
-              status: response.status || false
-          })),
-          delay(9999999999999), // Wait before forcing status update
-          map(response => ({
-              ...response,
-              status: true // Force status to true after 60s if still false
-          })),
-          takeWhile((response: { status: boolean }) => !response.status, true)
-      )
-      .subscribe({
-          next: (response) => {
-              console.log('Payment Status:', response);
-
-              if (response.status) {
-                  this.pollingSubscription.unsubscribe(); // Stop polling
-
-                  // ✅ Close the popup window if still open
-                  if (paymentWindow && !paymentWindow.closed) {
-                      paymentWindow.close();
-                      console.log("Payment popup closed automatically.");
-                  }
-
-                  this.handlePaymentSuccess(response, action, uuid, payment_method);
-              }
-          },
-          error: (err) => {
-              console.error('Error checking payment status:', err);
-          },
-          complete: () => {
-              if (windowClosedManually) {
-                  console.log("Polling stopped: Payment window was closed manually.");
-              }
-          }
-      });
+      } catch (error) {
+        console.warn("Unable to check payment window state:", error);
+        clearInterval(windowCheckInterval);
+        this.checkPaymentStatusAfterWindowClosed(uuid, action, payment_method);
+      }
+    }, 1000);
+    
+    this.startPaymentStatusPolling(uuid, action, payment_method, windowCheckInterval);
   }
 
   async checkTransectionStatusCashFree(uuid: any,payment_method: string) {
