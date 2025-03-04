@@ -253,6 +253,87 @@ export class CheckoutComponent {
   ngOnInit() {
     this.checkout$.subscribe(data => this.checkoutTotal = data);
     this.products();
+    
+    // Check if returning from payment on iOS
+    const returnUrl = sessionStorage.getItem('paymentReturnUrl');
+    if (returnUrl) {
+      const paymentUuid = sessionStorage.getItem('paymentUuid');
+      const paymentMethod = sessionStorage.getItem('paymentMethod');
+      
+      if (paymentUuid && paymentMethod) {
+        // Clear the stored data
+        sessionStorage.removeItem('paymentReturnUrl');
+        sessionStorage.removeItem('paymentUuid');
+        sessionStorage.removeItem('paymentMethod');
+        
+        // Check payment status based on the payment method
+        switch(paymentMethod) {
+          case 'neoKred':
+            this.cartService.checkTransectionStatusNeoKred(paymentUuid, paymentMethod).subscribe({
+              next: (response) => {
+                console.log('NeoKred Payment Status after return:', response);
+                if (response.status) {
+                  let action = new PlaceOrder(this.form.value);
+                  this.handlePaymentSuccess(response, action, paymentUuid, paymentMethod);
+                }
+              },
+              error: (err) => {
+                console.error('Error checking NeoKred payment status after return:', err);
+              }
+            });
+            break;
+            
+          case 'cash_free':
+            this.cartService.checkTransectionStatusCashFree(paymentUuid, paymentMethod).subscribe({
+              next: (response) => {
+                console.log('CashFree Payment Status after return:', response);
+                if (response.status) {
+                  let action = new PlaceOrder(this.form.value);
+                  this.handlePaymentSuccess(response, action, paymentUuid, paymentMethod);
+                }
+              },
+              error: (err) => {
+                console.error('Error checking CashFree payment status after return:', err);
+              }
+            });
+            break;
+            
+          case 'zyaada_pay':
+            this.cartService.checkTransectionStatusZyaadaPay(paymentUuid, paymentMethod).subscribe({
+              next: (response) => {
+                console.log('ZyaadaPay Payment Status after return:', response);
+                if (response.status) {
+                  let action = new PlaceOrder(this.form.value);
+                  this.handlePaymentSuccess(response, action, paymentUuid, paymentMethod);
+                }
+              },
+              error: (err) => {
+                console.error('Error checking ZyaadaPay payment status after return:', err);
+              }
+            });
+            break;
+            
+          case 'sub_paisa':
+            this.cartService.checkPaymentResponse(paymentUuid, paymentMethod).subscribe({
+              next: (response) => {
+                console.log('SubPaisa Payment Status after return:', response);
+                if (response.status) {
+                  let action = new PlaceOrder(this.form.value);
+                  this.handlePaymentSuccess(response, action, paymentUuid, paymentMethod);
+                }
+              },
+              error: (err) => {
+                console.error('Error checking SubPaisa payment status after return:', err);
+              }
+            });
+            break;
+            
+          default:
+            console.error('Unknown payment method:', paymentMethod);
+            break;
+        }
+      }
+    }
   }
 
   products() {
@@ -315,14 +396,10 @@ export class CheckoutComponent {
     const uuid = uuidv4();
     const userData = localStorage.getItem('account');
     const payload = {
-      // ...this.form.value,
       uuid,
-      // ...JSON.parse(userData || ''),
       ...JSON.parse(userData || '').user,
       checkout: this.storeData?.order?.checkout
-      // ...JSON.parse(userData || '').user.address[0]
     }
-    // console.log('Store Data', this.storeData)
     this.cartService.initiateSubPaisa(
       { 
         uuid: payload.uuid, 
@@ -342,36 +419,50 @@ export class CheckoutComponent {
             container.innerHTML = data.data;
             const form = container.querySelector('form') as HTMLFormElement;
         
-            setTimeout(() => {
-              // ✅ Open a popup window (instead of a new tab)
-              const paymentWindow = window.open(
-                '', 
-                'PaymentWindow', 
-                'width=600,height=700,left=100,top=100,resizable=yes,scrollbars=yes'
-              );
-        
-              if (paymentWindow) {
-                paymentWindow.document.write(`
-                  <html>
-                    <head>
-                      <title>Payment</title>
-                    </head>
-                    <body>
-                      ${form.outerHTML}
-                      <script>
-                        document.getElementById('submitButton').click();
-                      </script>
-                    </body>
-                  </html>
-                `);
-                paymentWindow.document.close(); // Ensure the document is fully loaded
-        
-                // ✅ Start polling for payment status
-                this.startPollingForPaymentStatus(uuid, action, paymentWindow, payment_method);
-              } else {
-                console.error("Popup blocked. Please allow pop-ups for this site.");
-              }
-            }, 1000);
+            // Check if running on iOS
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+            
+            if (isIOS) {
+              // For iOS devices, store the current state and submit the form in the current window
+              sessionStorage.setItem('paymentReturnUrl', window.location.href);
+              sessionStorage.setItem('paymentUuid', uuid);
+              sessionStorage.setItem('paymentMethod', payment_method);
+              
+              // Submit the form in the current window
+              form.target = '_self';
+              form.submit();
+            } else {
+              // For other devices, use popup as before
+              setTimeout(() => {
+                const paymentWindow = window.open(
+                  '', 
+                  'PaymentWindow', 
+                  'width=600,height=700,left=100,top=100,resizable=yes,scrollbars=yes'
+                );
+
+                if (paymentWindow) {
+                  paymentWindow.document.write(`
+                    <html>
+                      <head>
+                        <title>Payment</title>
+                      </head>
+                      <body>
+                        ${form.outerHTML}
+                        <script>
+                          document.getElementById('submitButton').click();
+                        </script>
+                      </body>
+                    </html>
+                  `);
+                  paymentWindow.document.close();
+
+                  // Start polling for payment status
+                  this.startPollingForPaymentStatus(uuid, action, paymentWindow, payment_method);
+                } else {
+                  console.error("Popup blocked. Please allow pop-ups for this site.");
+                }
+              }, 1000);
+            }
           }
         }
       },
@@ -523,19 +614,35 @@ export class CheckoutComponent {
             const cashFreeData = response.data;
             
             if (cashFreeData?.payment_url) {
-              // Open the payment page in a new tab/window
-              const paymentWindow = window.open(
-                cashFreeData.payment_url, 
-                'PaymentWindow', 
-                'width=600,height=700,left=100,top=100,resizable=yes,scrollbars=yes'
-              );
-
-              if (!paymentWindow) {
-                console.error("Popup blocked. Please allow pop-ups for this site.");
+              // Check if running on iOS
+              const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+              
+              if (isIOS) {
+                // For iOS devices, open in the same window with history management
+                const currentLocation = window.location.href;
+                
+                // Store current page state to return to after payment
+                sessionStorage.setItem('paymentReturnUrl', currentLocation);
+                sessionStorage.setItem('paymentUuid', uuid);
+                sessionStorage.setItem('paymentMethod', payment_method);
+                
+                // Redirect to payment page
+                window.location.href = cashFreeData.payment_url;
               } else {
-                // Start polling for payment status
-                let action = new PlaceOrder(this.form.value);
-                this.checkTransectionStatusNeoKred(uuid, action.payload, paymentWindow, payment_method);
+                // For other devices, use popup as before
+                const paymentWindow = window.open(
+                  cashFreeData.payment_url, 
+                  'PaymentWindow', 
+                  'width=600,height=700,left=100,top=100,resizable=yes,scrollbars=yes'
+                );
+
+                if (!paymentWindow) {
+                  console.error("Popup blocked. Please allow pop-ups for this site.");
+                } else {
+                  // Start polling for payment status
+                  let action = new PlaceOrder(this.form.value);
+                  this.checkTransectionStatusNeoKred(uuid, action.payload, paymentWindow, payment_method);
+                }
               }
             } else {
               console.error("Invalid response: Payment link is missing.");
@@ -651,19 +758,35 @@ export class CheckoutComponent {
             const cashFreeData = response.data;
             
             if (cashFreeData?.payment_link) {
-              // Open the payment page in a new tab/window
-              const paymentWindow = window.open(
-                cashFreeData.payment_link, 
-                'PaymentWindow', 
-                'width=600,height=700,left=100,top=100,resizable=yes,scrollbars=yes'
-              );
-
-              if (!paymentWindow) {
-                console.error("Popup blocked. Please allow pop-ups for this site.");
+              // Check if running on iOS
+              const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+              
+              if (isIOS) {
+                // For iOS devices, open in the same window with history management
+                const currentLocation = window.location.href;
+                
+                // Store current page state to return to after payment
+                sessionStorage.setItem('paymentReturnUrl', currentLocation);
+                sessionStorage.setItem('paymentUuid', uuid);
+                sessionStorage.setItem('paymentMethod', payment_method);
+                
+                // Redirect to payment page
+                window.location.href = cashFreeData.payment_link;
               } else {
-                // Start polling for payment status
-                let action = new PlaceOrder(this.form.value);
-                this.checkTransactionStatusCashFree(uuid, action.payload, paymentWindow, payment_method);
+                // For other devices, use popup as before
+                const paymentWindow = window.open(
+                  cashFreeData.payment_link, 
+                  'PaymentWindow', 
+                  'width=600,height=700,left=100,top=100,resizable=yes,scrollbars=yes'
+                );
+
+                if (!paymentWindow) {
+                  console.error("Popup blocked. Please allow pop-ups for this site.");
+                } else {
+                  // Start polling for payment status
+                  let action = new PlaceOrder(this.form.value);
+                  this.checkTransactionStatusCashFree(uuid, action.payload, paymentWindow, payment_method);
+                }
               }
             } else {
               console.error("Invalid response: Payment link is missing.");
@@ -787,19 +910,35 @@ export class CheckoutComponent {
             console.log(zyaadaPayData);
             
             if (zyaadaPayData?.payment_url) {
-              // Open the payment page in a new tab/window
-              const paymentWindow = window.open(
-                zyaadaPayData.payment_url, 
-                'PaymentWindow', 
-                'width=600,height=700,left=100,top=100,resizable=yes,scrollbars=yes'
-              );
-
-              if (!paymentWindow) {
-                console.error("Popup blocked. Please allow pop-ups for this site.");
+              // Check if running on iOS
+              const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+              
+              if (isIOS) {
+                // For iOS devices, open in the same window with history management
+                const currentLocation = window.location.href;
+                
+                // Store current page state to return to after payment
+                sessionStorage.setItem('paymentReturnUrl', currentLocation);
+                sessionStorage.setItem('paymentUuid', uuid);
+                sessionStorage.setItem('paymentMethod', payment_method);
+                
+                // Redirect to payment page
+                window.location.href = zyaadaPayData.payment_url;
               } else {
-                // Start polling for payment status
-                let action = new PlaceOrder(this.form.value);
-                this.checkTransactionStatusZyaadaPay(uuid, action.payload, paymentWindow, payment_method);
+                // For other devices, use popup as before
+                const paymentWindow = window.open(
+                  zyaadaPayData.payment_url, 
+                  'PaymentWindow', 
+                  'width=600,height=700,left=100,top=100,resizable=yes,scrollbars=yes'
+                );
+
+                if (!paymentWindow) {
+                  console.error("Popup blocked. Please allow pop-ups for this site.");
+                } else {
+                  // Start polling for payment status
+                  let action = new PlaceOrder(this.form.value);
+                  this.checkTransactionStatusZyaadaPay(uuid, action.payload, paymentWindow, payment_method);
+                }
               }
             } else {
               console.error("Invalid response: Payment link is missing.");
