@@ -73,6 +73,12 @@ export class SettingState {
                 title: 'Sab Paisa',
                 icon: './assets/images/sub_paisa.png'
               },
+              {
+                name: 'ease_buzz',
+                status: true,
+                title: 'Ease Buzz',
+                icon: './assets/images/easebuzz.png'
+              },
             ];
             customValue.payment_methods = customPayments //[result.values.payment_methods[0]];
           }

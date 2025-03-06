@@ -93,7 +93,9 @@ export class ProductState {
   @Action(GetProducts)
   getProducts(ctx: StateContext<ProductStateModel>, action: GetProducts) {
     this.productService.skeletonLoader = true;
-    if (action.payload) { action.payload['store_id'] = 19 }
+    if (action.payload) { 
+      action.payload['store_id'] = '19';
+    }
     return this.productService.getProducts(action.payload).pipe(
       tap({
         next: (result: ProductModel) => {
@@ -139,6 +141,7 @@ export class ProductState {
 
   @Action(GetCategoryProducts)
   getCategoryProducts(ctx: StateContext<ProductStateModel>, action: GetProducts) {
+    if (action.payload) { action.payload['store_id'] = 19 }
     return this.productService.getProducts(action.payload).pipe(
       tap({
         next: (result: ProductModel) => {

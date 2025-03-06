@@ -324,6 +324,9 @@ export class CheckoutComponent {
       case 'zyaada_pay':
         this.checkout(value);
         break;
+      case 'ease_buzz':
+        this.checkout(value);
+        break;
       default:
         break;
     }
@@ -745,9 +748,100 @@ export class CheckoutComponent {
         return this.cartService.checkTransectionStatusZyaadaPay(uuid, payment_method);
       case 'sub_paisa':
         return this.cartService.checkPaymentResponse(uuid, payment_method);
+      case 'ease_buzz':
+        return this.cartService.checkTransectionStatusEaseBuzz(uuid, payment_method)
       default:
         return of({ status: false });
     }
+  }
+
+  // Ease Buzz
+
+  initiateEaseBuzzPaymentIntent(payment_method: string) {
+    const uuid = uuidv4();
+    const userData = localStorage.getItem('account');
+    const parsedUserData = JSON.parse(userData || '{}')?.user || {};
+
+    const payload = {
+      uuid,
+      ...parsedUserData,
+      checkout: this.storeData?.order?.checkout
+    };
+
+    this.cartService.initiateEaseBuzzIntent({
+      uuid: payload.uuid,
+      email: payload.email,
+      total: this.storeData?.order?.checkout?.total?.total,
+      name: parsedUserData.name,
+      address: `${parsedUserData.address?.[0]?.city || ''} ${parsedUserData.address?.[0]?.area || ''}`,
+      phone: parsedUserData.phone,
+    }).subscribe({
+      next: (response) => {
+        console.log(response);
+        if (response?.R && response?.data) {
+          try {
+            const easeBuzzData = response.data;
+            
+            if (easeBuzzData?.payment_url) {
+              // Check if running on iOS
+              const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+              
+              if (isIOS) {
+                // For iOS devices, use the iOS payment handler
+                let action = new PlaceOrder(this.form.value);
+                this.handleIOSPayment(uuid, action, payment_method, easeBuzzData.payment_url);
+              } else {
+                // For other devices, use popup as before
+                const paymentWindow = window.open(
+                  easeBuzzData.payment_url, 
+                  'PaymentWindow', 
+                  'width=600,height=700,left=100,top=100,resizable=yes,scrollbars=yes'
+                );
+
+                if (!paymentWindow) {
+                  console.error("Popup blocked. Please allow pop-ups for this site.");
+                } else {
+                  // Start polling for payment status
+                  let action = new PlaceOrder(this.form.value);
+                  this.checkTransactionStatusEaseBuzz(uuid, action.payload, paymentWindow, payment_method);
+                }
+              }
+            } else {
+              console.error("Invalid response: Payment link is missing.");
+            }
+          } catch (error) {
+            console.error("Error parsing Ease Buzz response:", error);
+          }
+        } else {
+          console.error("Payment initiation failed:", response?.msg);
+        }
+      },
+      error: (err) => {
+        console.log(err);
+      }
+    });
+  }
+
+  checkTransactionStatusEaseBuzz(uuid: any, action: any, paymentWindow: Window | null, payment_method: string) {
+    if (!paymentWindow) return;
+    
+    let windowCheckInterval = setInterval(() => {
+      try {
+        if (paymentWindow.closed) {
+          console.log("Payment window closed manually or due to an issue.");
+          clearInterval(windowCheckInterval);
+          this.checkPaymentStatusAfterWindowClosed(uuid, action, payment_method);
+          return;
+        }
+      } catch (error) {
+        console.warn("Unable to check payment window state:", error);
+        clearInterval(windowCheckInterval);
+        this.checkPaymentStatusAfterWindowClosed(uuid, action, payment_method);
+      }
+    }, 1000);
+    
+    this.startPaymentStatusPolling(uuid, action, payment_method, windowCheckInterval, paymentWindow);
+
   }
 
   // CashFree Payment Integration
@@ -1102,6 +1196,9 @@ export class CheckoutComponent {
       }
       if(this.payment_method === 'zyaada_pay') {
         this.initiateZyaadaPayPaymentIntent(this.payment_method);
+      }
+      if(this.payment_method === 'ease_buzz') {
+        this.initiateEaseBuzzPaymentIntent(this.payment_method);
       }
     }
   }
