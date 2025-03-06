@@ -359,58 +359,21 @@ export class CheckoutComponent {
             container.innerHTML = data.data;
             const form = container.querySelector('form') as HTMLFormElement;
         
-            // Check if running on iOS
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+            // Store payment info in session storage
+            sessionStorage.setItem('payment_uuid', uuid);
+            sessionStorage.setItem('payment_method', payment_method);
+            sessionStorage.setItem('payment_action', JSON.stringify(this.form.value));
             
-            if (isIOS) {
-              // For iOS devices, use the iOS payment handler
-              let action = new PlaceOrder(this.form.value);
-              sessionStorage.setItem('payment_uuid', uuid);
-              sessionStorage.setItem('payment_method', payment_method);
-              sessionStorage.setItem('payment_action', JSON.stringify(action.payload));
-              
-              // Submit the form in the current window
-              form.target = '_self';
-              form.submit();
-            } else {
-              // For other devices, use popup as before
-              setTimeout(() => {
-                const paymentWindow = window.open(
-                  '', 
-                  'PaymentWindow', 
-                  'width=600,height=700,left=100,top=100,resizable=yes,scrollbars=yes'
-                );
-
-                if (paymentWindow) {
-                  paymentWindow.document.write(`
-                    <html>
-                      <head>
-                        <title>Payment</title>
-                      </head>
-                      <body>
-                        ${form.outerHTML}
-                        <script>
-                          document.getElementById('submitButton').click();
-                        </script>
-                      </body>
-                    </html>
-                  `);
-                  paymentWindow.document.close();
-
-                  // Start polling for payment status
-                  this.startPollingForPaymentStatus(uuid, action, paymentWindow, payment_method);
-                } else {
-                  console.error("Popup blocked. Please allow pop-ups for this site.");
-                }
-              }, 1000);
-            }
+            // Submit the form in the current window
+            form.target = '_self';
+            form.submit();
           }
         }
       },
       error: (err) => {
         console.log(err);
       }
-    }); // Call Sub Paisa API
+    });
   }
   
   startPollingForPaymentStatus(uuid: any, action: any, paymentWindow: Window | null, payment_method: string) {
@@ -488,7 +451,7 @@ export class CheckoutComponent {
 
   // NeoKred
 
-  initiateNeoKredPaymentIntent(payment_method: string) { // https://apidocument-cb.netlify.app/#intent-generation
+  initiateNeoKredPaymentIntent(payment_method: string) {
     const uuid = uuidv4();
     const userData = localStorage.getItem('account');
     const parsedUserData = JSON.parse(userData || '{}')?.user || {};
@@ -513,29 +476,13 @@ export class CheckoutComponent {
             const cashFreeData = response.data;
             
             if (cashFreeData?.payment_url) {
-              // Check if running on iOS
-              const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+              // Store payment info in session storage
+              sessionStorage.setItem('payment_uuid', uuid);
+              sessionStorage.setItem('payment_method', payment_method);
+              sessionStorage.setItem('payment_action', JSON.stringify(this.form.value));
               
-              if (isIOS) {
-                // For iOS devices, use the iOS payment handler
-                let action = new PlaceOrder(this.form.value);
-                this.handleIOSPayment(uuid, action, payment_method, cashFreeData.payment_url);
-              } else {
-                // For other devices, use popup as before
-                const paymentWindow = window.open(
-                  cashFreeData.payment_url, 
-                  'PaymentWindow', 
-                  'width=600,height=700,left=100,top=100,resizable=yes,scrollbars=yes'
-                );
-
-                if (!paymentWindow) {
-                  console.error("Popup blocked. Please allow pop-ups for this site.");
-                } else {
-                  // Start polling for payment status
-                  let action = new PlaceOrder(this.form.value);
-                  this.checkTransectionStatusNeoKred(uuid, action.payload, paymentWindow, payment_method);
-                }
-              }
+              // Open in current tab
+              window.location.href = cashFreeData.payment_url;
             } else {
               console.error("Invalid response: Payment link is missing.");
             }
@@ -549,37 +496,33 @@ export class CheckoutComponent {
       error: (err) => {
         console.log(err);
       }
-    }); // https://apidocument-cb.netlify.app/#intent-generation
+    });
   }
 
-  checkTransectionStatusNeoKred(uuid: any, action: any, paymentWindow: Window | null, payment_method: string) {
-    if (!paymentWindow) return;
-
-    let windowClosedManually = false;
-
-    // Only check if the window is closed, don't try to access its properties
-    const windowCheckInterval = setInterval(() => {
-      try {
-        // This only checks if the window is closed, not its content
-        if (paymentWindow.closed) {
-          console.log("Payment window closed manually or due to an issue.");
-          clearInterval(windowCheckInterval);
-          windowClosedManually = true;
-          
-          // If window is closed, check payment status via API
-          this.checkPaymentStatusAfterWindowClosed(uuid, action, payment_method);
-          return;
+  checkTransectionStatusNeoKred(uuid: any, payment_method: string) {
+    this.cartService.checkTransectionStatusNeoKred(uuid, payment_method)
+      .subscribe({
+      next: (response) => {
+        console.log('Payment status after window closed:', response);
+        if (response.status) {
+          this.handlePaymentSuccess(response, this.form.value, uuid, payment_method);
+        } else {
+          // Wait a bit and check again, payment might be processing
+          setTimeout(() => {
+            this.cartService.checkTransectionStatusNeoKred(uuid, payment_method).subscribe({
+              next: (finalResponse) => {
+                if (finalResponse.status) {
+                  this.handlePaymentSuccess(finalResponse, this.form.value, uuid, payment_method);
+                }
+              }
+            });
+          }, 3000);
         }
-      } catch (error) {
-        // If any error occurs, clear the interval and check status via API
-        console.warn("Unable to check payment window state:", error);
-        clearInterval(windowCheckInterval);
-        this.checkPaymentStatusAfterWindowClosed(uuid, action, payment_method);
+      },
+      error: (err) => {
+        console.error('Error checking payment status after window closed:', err);
       }
-    }, 1000);
-
-    // Start polling for payment status via API regardless of window state
-    this.startPaymentStatusPolling(uuid, action, payment_method, windowCheckInterval, paymentWindow);
+    });
   }
 
   // New method to check payment status after window is closed
@@ -587,29 +530,7 @@ export class CheckoutComponent {
     // Make a single check for payment status
     switch(payment_method) {
       case 'neoKred':
-        this.cartService.checkTransectionStatusNeoKred(uuid, payment_method)
-          .subscribe({
-          next: (response) => {
-            console.log('Payment status after window closed:', response);
-            if (response.status) {
-              this.handlePaymentSuccess(response, action, uuid, payment_method);
-            } else {
-              // Wait a bit and check again, payment might be processing
-              setTimeout(() => {
-                this.cartService.checkTransectionStatusNeoKred(uuid, payment_method).subscribe({
-                  next: (finalResponse) => {
-                    if (finalResponse.status) {
-                      this.handlePaymentSuccess(finalResponse, action, uuid, payment_method);
-                    }
-                  }
-                });
-              }, 3000);
-            }
-          },
-          error: (err) => {
-            console.error('Error checking payment status after window closed:', err);
-          }
-        });
+        this.checkTransectionStatusNeoKred(uuid, payment_method);
         break;
       case 'cash_free':
         this.cartService.checkTransectionStatusCashFree(uuid, payment_method).subscribe({
@@ -777,35 +698,18 @@ export class CheckoutComponent {
       phone: parsedUserData.phone,
     }).subscribe({
       next: (response) => {
-        console.log(response);
         if (response?.R && response?.data) {
           try {
             const easeBuzzData = response.data;
             
             if (easeBuzzData?.payment_url) {
-              // Check if running on iOS
-              const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+              // Store payment info in session storage
+              sessionStorage.setItem('payment_uuid', uuid);
+              sessionStorage.setItem('payment_method', payment_method);
+              sessionStorage.setItem('payment_action', JSON.stringify(this.form.value));
               
-              if (isIOS) {
-                // For iOS devices, use the iOS payment handler
-                let action = new PlaceOrder(this.form.value);
-                this.handleIOSPayment(uuid, action, payment_method, easeBuzzData.payment_url);
-              } else {
-                // For other devices, use popup as before
-                const paymentWindow = window.open(
-                  easeBuzzData.payment_url, 
-                  'PaymentWindow', 
-                  'width=600,height=700,left=100,top=100,resizable=yes,scrollbars=yes'
-                );
-
-                if (!paymentWindow) {
-                  console.error("Popup blocked. Please allow pop-ups for this site.");
-                } else {
-                  // Start polling for payment status
-                  let action = new PlaceOrder(this.form.value);
-                  this.checkTransactionStatusEaseBuzz(uuid, action.payload, paymentWindow, payment_method);
-                }
-              }
+              // Open in current tab
+              window.location.href = easeBuzzData.payment_url;
             } else {
               console.error("Invalid response: Payment link is missing.");
             }
@@ -870,29 +774,13 @@ export class CheckoutComponent {
             const cashFreeData = response.data;
             
             if (cashFreeData?.payment_link) {
-              // Check if running on iOS
-              const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+              // Store payment info in session storage
+              sessionStorage.setItem('payment_uuid', uuid);
+              sessionStorage.setItem('payment_method', payment_method);
+              sessionStorage.setItem('payment_action', JSON.stringify(this.form.value));
               
-              if (isIOS) {
-                // For iOS devices, use the iOS payment handler
-                let action = new PlaceOrder(this.form.value);
-                this.handleIOSPayment(uuid, action, payment_method, cashFreeData.payment_link);
-              } else {
-                // For other devices, use popup as before
-                const paymentWindow = window.open(
-                  cashFreeData.payment_link, 
-                  'PaymentWindow', 
-                  'width=600,height=700,left=100,top=100,resizable=yes,scrollbars=yes'
-                );
-
-                if (!paymentWindow) {
-                  console.error("Popup blocked. Please allow pop-ups for this site.");
-                } else {
-                  // Start polling for payment status
-                  let action = new PlaceOrder(this.form.value);
-                  this.checkTransactionStatusCashFree(uuid, action.payload, paymentWindow, payment_method);
-                }
-              }
+              // Open in current tab
+              window.location.href = cashFreeData.payment_link;
             } else {
               console.error("Invalid response: Payment link is missing.");
             }
@@ -954,33 +842,15 @@ export class CheckoutComponent {
         if (response?.R && response?.data) {
           try {
             const zyaadaPayData = response.data;
-
-            console.log(zyaadaPayData);
             
             if (zyaadaPayData?.payment_url) {
-              // Check if running on iOS
-              const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+              // Store payment info in session storage
+              sessionStorage.setItem('payment_uuid', uuid);
+              sessionStorage.setItem('payment_method', payment_method);
+              sessionStorage.setItem('payment_action', JSON.stringify(this.form.value));
               
-              if (isIOS) {
-                // For iOS devices, use the iOS payment handler
-                let action = new PlaceOrder(this.form.value);
-                this.handleIOSPayment(uuid, action, payment_method, zyaadaPayData.payment_url);
-              } else {
-                // For other devices, use popup as before
-                const paymentWindow = window.open(
-                  zyaadaPayData.payment_url, 
-                  'PaymentWindow', 
-                  'width=600,height=700,left=100,top=100,resizable=yes,scrollbars=yes'
-                );
-
-                if (!paymentWindow) {
-                  console.error("Popup blocked. Please allow pop-ups for this site.");
-                } else {
-                  // Start polling for payment status
-                  let action = new PlaceOrder(this.form.value);
-                  this.checkTransactionStatusZyaadaPay(uuid, action.payload, paymentWindow, payment_method);
-                }
-              }
+              // Open in current tab
+              window.location.href = zyaadaPayData.payment_url;
             } else {
               console.error("Invalid response: Payment link is missing.");
             }
