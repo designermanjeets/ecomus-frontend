@@ -588,7 +588,7 @@ export class CheckoutComponent {
             console.log("Current Payment Window URL:", currentUrl);
             
             // Check if redirected to success or failure page
-            if (currentUrl.includes("success") || currentUrl.includes("failure") || currentUrl.includes("order/details")) {
+            if (currentUrl.includes("success") || currentUrl.includes("failure") || currentUrl.includes("account/order")) {
               console.log("Redirect detected, closing window.");
               clearInterval(urlCheckInterval);
               paymentWindow.close();
