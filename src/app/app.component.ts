@@ -100,7 +100,7 @@ export class AppComponent implements OnInit {
         if(event.url.includes('order/success')){
           console.log('Coming After Payment Successfully or Failed');
           setTimeout(() => {
-            
+            this.checkPaymentReturn();
           }, 500);
         }
       }
@@ -110,7 +110,7 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     // Check for payment return data in session storage
-    this.checkPaymentReturn();
+    // this.checkPaymentReturn();
   }
   
   private checkPaymentReturn() {
