@@ -114,15 +114,15 @@ export class AppComponent implements OnInit {
   }
   
   private checkPaymentReturn() {
-    const paymentUuid = sessionStorage.getItem('payment_uuid');
-    const paymentMethod = sessionStorage.getItem('payment_method');
-    const paymentAction = sessionStorage.getItem('payment_action');
+    const paymentUuid = localStorage.getItem('payment_uuid');
+    const paymentMethod = localStorage.getItem('payment_method');
+    const paymentAction = localStorage.getItem('payment_action');
     
     if (paymentUuid && paymentMethod && paymentAction) {
       // Clear session storage
-      sessionStorage.removeItem('payment_uuid');
-      sessionStorage.removeItem('payment_method');
-      sessionStorage.removeItem('payment_action');
+      localStorage.removeItem('payment_uuid');
+      localStorage.removeItem('payment_method');
+      localStorage.removeItem('payment_action');
       
       try {
         // Parse the stored action

@@ -764,9 +764,9 @@ export class CheckoutComponent {
             
             if (cashFreeData?.payment_link) {
               // Store payment info in session storage
-              sessionStorage.setItem('payment_uuid', uuid);
-              sessionStorage.setItem('payment_method', payment_method);
-              sessionStorage.setItem('payment_action', JSON.stringify(this.form.value));
+              localStorage.setItem('payment_uuid', uuid);
+              localStorage.setItem('payment_method', payment_method);
+              localStorage.setItem('payment_action', JSON.stringify(this.form.value));
               
               // Open in current tab
               window.location.href = cashFreeData.payment_link;
