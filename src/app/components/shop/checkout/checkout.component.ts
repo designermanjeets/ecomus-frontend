@@ -254,23 +254,13 @@ export class CheckoutComponent {
     this.checkout$.subscribe(data => this.checkoutTotal = data);
     this.products();
     
-    // Check if returning from payment on iOS
-    const paymentUuid = sessionStorage.getItem('payment_uuid');
-    const paymentMethod = sessionStorage.getItem('payment_method');
-    const paymentAction = sessionStorage.getItem('payment_action');
-    
-    if (paymentUuid && paymentMethod && paymentAction) {
-      // Clear session storage
-      sessionStorage.removeItem('payment_uuid');
-      sessionStorage.removeItem('payment_method');
-      sessionStorage.removeItem('payment_action');
-      
-      // Parse the stored action
-      const action = JSON.parse(paymentAction);
-      
-      // Check payment status and complete order
-      this.completeIOSPayment(paymentUuid, action, paymentMethod);
-    }
+    // Listen for payment return events
+    this.cartService.getPaymentReturnEvent().subscribe(data => {
+      console.log(data);
+      if (data) {
+        this.completeIOSPayment(data.uuid, data.payload, data.method);
+      }
+    });
   }
 
   products() {
@@ -775,9 +765,9 @@ export class CheckoutComponent {
             
             if (cashFreeData?.payment_link) {
               // Store payment info in session storage
-              sessionStorage.setItem('payment_uuid', uuid);
-              sessionStorage.setItem('payment_method', payment_method);
-              sessionStorage.setItem('payment_action', JSON.stringify(this.form.value));
+              localStorage.setItem('payment_uuid', uuid);
+              localStorage.setItem('payment_method', payment_method);
+              localStorage.setItem('payment_action', JSON.stringify(this.form.value));
               
               // Open in current tab
               window.location.href = cashFreeData.payment_link;
@@ -1089,17 +1079,6 @@ export class CheckoutComponent {
     this.pollingSubscription && this.pollingSubscription.unsubscribe();
   }
 
-  // Add this method to handle iOS payment redirects
-  private handleIOSPayment(uuid: string, action: any, payment_method: string, paymentUrl: string) {
-    // Store payment information in sessionStorage
-    sessionStorage.setItem('payment_uuid', uuid);
-    sessionStorage.setItem('payment_method', payment_method);
-    sessionStorage.setItem('payment_action', JSON.stringify(action.payload));
-    
-    // Redirect to payment gateway
-    window.location.href = paymentUrl;
-  }
-
   // Method to complete iOS payment
   private completeIOSPayment(uuid: string, actionPayload: any, payment_method: string) {
     console.log('Checking payment status for iOS return:', uuid, payment_method);
@@ -1118,6 +1097,9 @@ export class CheckoutComponent {
         break;
       case 'sub_paisa':
         statusCheck = this.cartService.checkPaymentResponse(uuid, payment_method);
+        break;
+      case 'ease_buzz':
+        statusCheck = this.cartService.checkTransectionStatusEaseBuzz(uuid, payment_method);
         break;
       default:
         console.error('Unknown payment method:', payment_method);
