@@ -253,14 +253,6 @@ export class CheckoutComponent {
   ngOnInit() {
     this.checkout$.subscribe(data => this.checkoutTotal = data);
     this.products();
-    
-    // Listen for payment return events
-    this.cartService.getPaymentReturnEvent().subscribe(data => {
-      console.log('this.cartService.getPaymentReturnEvent()');
-      if (data) {
-        this.completeIOSPayment(data.uuid, data.payload, data.method);
-      }
-    });
   }
 
   products() {
@@ -302,7 +294,6 @@ export class CheckoutComponent {
     this.payment_method = value;
     switch (value) {
       case 'neoKred':
-        // Call Popup for NeoKred QR Code
         this.checkout(value);
         break;
       case 'sub_paisa':
@@ -322,8 +313,8 @@ export class CheckoutComponent {
     }
   }
 
-  initiateSubPaisa(action: any, payment_method: string) {
-    const uuid = uuidv4();
+  // SubPaisa
+  initiateSubPaisa(payment_method: string, uuid: any, order_result: any) {
     const userData = localStorage.getItem('account');
     const payload = {
       uuid,
@@ -353,7 +344,7 @@ export class CheckoutComponent {
             sessionStorage.setItem('payment_uuid', uuid);
             sessionStorage.setItem('payment_method', payment_method);
             sessionStorage.setItem('payment_action', JSON.stringify(this.form.value));
-            
+            localStorage.setItem('order_id', JSON.stringify(order_result.order_number));
             // Submit the form in the current window
             form.target = '_self';
             form.submit();
@@ -365,84 +356,9 @@ export class CheckoutComponent {
       }
     });
   }
-  
-  startPollingForPaymentStatus(uuid: any, action: any, paymentWindow: Window | null, payment_method: string) {
-    if (!paymentWindow) return;
-    
-    let windowCheckInterval = setInterval(() => {
-      try {
-        if (paymentWindow.closed) {
-          console.log("Payment window closed manually or due to an issue.");
-          clearInterval(windowCheckInterval);
-          this.checkPaymentStatusAfterWindowClosed(uuid, action, payment_method);
-          return;
-        }
-      } catch (error) {
-        console.warn("Unable to check payment window state:", error);
-        clearInterval(windowCheckInterval);
-        this.checkPaymentStatusAfterWindowClosed(uuid, action, payment_method);
-      }
-    }, 1000);
-    
-    this.startPaymentStatusPolling(uuid, action, payment_method, windowCheckInterval, paymentWindow);
-  }
-
-  handlePaymentSuccess(response: any, action: any, uuid: any, payment_method: string) {
-    console.log('Payment was successful:', response);
-    console.log('Dispatching PlaceOrder action with:', action, uuid, payment_method);
-    
-    // Unsubscribe from polling if it's still active
-    if (this.pollingSubscription) {
-      this.pollingSubscription.unsubscribe();
-    }
-    
-    // Dispatch the PlaceOrder action
-    this.store.dispatch(new PlaceOrder(Object.assign({}, action, { uuid: uuid, payment_method })))
-      .subscribe({
-        next: (result) => {
-          console.log('Order placed successfully:', result);
-        },
-        error: (err) => {
-          console.error('Error placing order:', err);
-        }
-      });
-  }
-
-  async checkPaymentResponse(uuid: any, payment_method: string) {
-    this.cartService.checkPaymentResponse(uuid, payment_method).subscribe({
-      next:(data) => {
-        console.log(data);
-        if(data.R === true || data.R === false) {
-          console.log('Redirect to Success or Fail');
-          this.router.navigate([ 'order/checkout-success' ], { queryParams: { order_status: data.R } });
-        } else {
-          console.log('Payment in Pending State');
-        }
-      },
-      error:(err) => {
-        console.log(err);
-      }
-    });
-  }
-
-  async redirectToPayURL() {
-    this.cartService.redirectToPayUrl().subscribe({
-      next:(data) => {
-        console.log(data);
-        if (data && data.url) {
-          window.open(data.url, '_blank');
-        }
-      },
-      error:(err) => {
-        console.log(err);
-      }
-    });
-  }
 
   // NeoKred
-
-  initiateNeoKredPaymentIntent(payment_method: string) {
-    const uuid = uuidv4();
+  initiateNeoKredPaymentIntent(payment_method: string, uuid: any, order_result: any) {
     const userData = localStorage.getItem('account');
     const parsedUserData = JSON.parse(userData || '{}')?.user || {};
 
@@ -470,7 +386,7 @@ export class CheckoutComponent {
               sessionStorage.setItem('payment_uuid', uuid);
               sessionStorage.setItem('payment_method', payment_method);
               sessionStorage.setItem('payment_action', JSON.stringify(this.form.value));
-              
+              localStorage.setItem('order_id', JSON.stringify(order_result.order_number));
               // Open in current tab
               window.location.href = cashFreeData.payment_url;
             } else {
@@ -489,187 +405,8 @@ export class CheckoutComponent {
     });
   }
 
-  checkTransectionStatusNeoKred(uuid: any, payment_method: string) {
-    this.cartService.checkTransectionStatusNeoKred(uuid, payment_method)
-      .subscribe({
-      next: (response) => {
-        console.log('Payment status after window closed:', response);
-        if (response.status) {
-          this.handlePaymentSuccess(response, this.form.value, uuid, payment_method);
-        } else {
-          // Wait a bit and check again, payment might be processing
-          setTimeout(() => {
-            this.cartService.checkTransectionStatusNeoKred(uuid, payment_method).subscribe({
-              next: (finalResponse) => {
-                if (finalResponse.status) {
-                  this.handlePaymentSuccess(finalResponse, this.form.value, uuid, payment_method);
-                }
-              }
-            });
-          }, 3000);
-        }
-      },
-      error: (err) => {
-        console.error('Error checking payment status after window closed:', err);
-      }
-    });
-  }
-
-  // New method to check payment status after window is closed
-  private checkPaymentStatusAfterWindowClosed(uuid: any, action: any, payment_method: string) {
-    // Make a single check for payment status
-    switch(payment_method) {
-      case 'neoKred':
-        this.checkTransectionStatusNeoKred(uuid, payment_method);
-        break;
-      case 'cash_free':
-        this.cartService.checkTransectionStatusCashFree(uuid, payment_method).subscribe({
-          next: (response) => {
-            if (response.status) {
-              this.handlePaymentSuccess(response, action, uuid, payment_method);
-            }
-          }
-        });
-        break;
-      case 'zyaada_pay':
-        this.cartService.checkTransectionStatusZyaadaPay(uuid, payment_method).subscribe({
-          next: (response) => {
-            if (response.status) {
-              this.handlePaymentSuccess(response, action, uuid, payment_method);
-            }
-          }
-        });
-        break;
-      case 'sub_paisa':
-        this.cartService.checkPaymentResponse(uuid, payment_method).subscribe({
-          next: (response) => {
-            if (response.status) {
-              this.handlePaymentSuccess(response, action, uuid, payment_method);
-            }
-          }
-        });
-        break;
-    }
-  }
-
-  // Updated method to start polling for payment status
-  private startPaymentStatusPolling(uuid: any, action: any, payment_method: string, windowCheckInterval: any, paymentWindow?: Window | null) {
-    console.log(`Starting payment status polling for ${payment_method}...`);
-    
-    let windowClosedManually = false;
-    
-    // Check window status and URL changes
-    const urlCheckInterval = setInterval(() => {
-      try {
-        if (paymentWindow && paymentWindow.closed) {
-          console.log("Payment window closed manually or due to an issue.");
-          clearInterval(urlCheckInterval);
-          windowClosedManually = true;
-          
-          // If closed manually, inform the frontend
-          this.handlePaymentSuccess({ status: false, reason: "Window closed manually" }, action, uuid, payment_method);
-          return;
-        }
-        
-        // Try to check URL, but this might fail due to CORS
-        try {
-          if (paymentWindow) {
-            const currentUrl = paymentWindow.location.href;
-            console.log("Current Payment Window URL:", currentUrl);
-            
-            // Check if redirected to success or failure page
-            if (currentUrl.includes("success") || currentUrl.includes("failure") || currentUrl.includes("account/order")) {
-              console.log("Redirect detected, closing window.");
-              clearInterval(urlCheckInterval);
-              paymentWindow.close();
-              
-              // Process the response
-              this.handlePaymentSuccess({ status: true, url: currentUrl }, action, uuid, payment_method);
-            }
-          }
-        } catch (corsError) {
-          // Catches CORS-related issues if the domain changes
-          console.warn("Unable to access payment window URL (possible CORS issue).");
-        }
-      } catch (error) {
-        console.warn("Error checking payment window:", error);
-      }
-    }, 1000); // Check every second
-    
-    // Continue polling for payment status via API
-    this.pollingSubscription = interval(5000) // Poll every 5 seconds
-      .pipe(
-        switchMap(() => {
-          console.log(`Polling payment status for ${payment_method}...`);
-          return this.checkPaymentStatus(uuid, payment_method);
-        }),
-        map(response => ({
-          ...response,
-          status: response.status || false
-        })),
-        delay(9999999999999), // Wait 60 seconds before forcing status update
-        map(response => ({
-          ...response,
-          status: true // Force status to true after 60s if still false
-        })),
-        takeWhile((response: { status: boolean }) => !response.status, true)
-      )
-      .subscribe({
-        next: (response) => {
-          console.log(`${payment_method} Payment Status:`, response);
-          
-          if (response.status) {
-            console.log(`Payment successful for ${payment_method}`);
-            this.pollingSubscription.unsubscribe();
-            clearInterval(urlCheckInterval);
-            clearInterval(windowCheckInterval);
-            
-            // Close payment window if still open
-            try {
-              if (paymentWindow && !paymentWindow.closed) {
-                paymentWindow.close();
-                console.log("Payment popup closed automatically.");
-              }
-            } catch (e) {
-              console.log("Could not close payment window:", e);
-            }
-            
-            this.handlePaymentSuccess(response, action, uuid, payment_method);
-          }
-        },
-        error: (err) => {
-          console.error(`Error checking ${payment_method} payment status:`, err);
-        },
-        complete: () => {
-          if (windowClosedManually) {
-            console.log("Polling stopped: Payment window was closed manually.");
-          }
-        }
-      });
-  }
-
-  // Helper method to check payment status based on payment method
-  private checkPaymentStatus(uuid: string, payment_method: string): Observable<any> {
-    switch(payment_method) {
-      case 'neoKred':
-        return this.cartService.checkTransectionStatusNeoKred(uuid, payment_method);
-      case 'cash_free':
-        return this.cartService.checkTransectionStatusCashFree(uuid, payment_method);
-      case 'zyaada_pay':
-        return this.cartService.checkTransectionStatusZyaadaPay(uuid, payment_method);
-      case 'sub_paisa':
-        return this.cartService.checkPaymentResponse(uuid, payment_method);
-      case 'ease_buzz':
-        return this.cartService.checkTransectionStatusEaseBuzz(uuid, payment_method)
-      default:
-        return of({ status: false });
-    }
-  }
-
   // Ease Buzz
-
-  initiateEaseBuzzPaymentIntent(payment_method: string) {
-    const uuid = uuidv4();
+  initiateEaseBuzzPaymentIntent(payment_method: string, uuid: any, order_result: any) {
     const userData = localStorage.getItem('account');
     const parsedUserData = JSON.parse(userData || '{}')?.user || {};
 
@@ -697,7 +434,7 @@ export class CheckoutComponent {
               sessionStorage.setItem('payment_uuid', uuid);
               sessionStorage.setItem('payment_method', payment_method);
               sessionStorage.setItem('payment_action', JSON.stringify(this.form.value));
-              
+              localStorage.setItem('order_id', JSON.stringify(order_result.order_number));
               // Open in current tab
               window.location.href = easeBuzzData.payment_url;
             } else {
@@ -715,32 +452,9 @@ export class CheckoutComponent {
       }
     });
   }
-
-  checkTransactionStatusEaseBuzz(uuid: any, action: any, paymentWindow: Window | null, payment_method: string) {
-    if (!paymentWindow) return;
-    
-    let windowCheckInterval = setInterval(() => {
-      try {
-        if (paymentWindow.closed) {
-          console.log("Payment window closed manually or due to an issue.");
-          clearInterval(windowCheckInterval);
-          this.checkPaymentStatusAfterWindowClosed(uuid, action, payment_method);
-          return;
-        }
-      } catch (error) {
-        console.warn("Unable to check payment window state:", error);
-        clearInterval(windowCheckInterval);
-        this.checkPaymentStatusAfterWindowClosed(uuid, action, payment_method);
-      }
-    }, 1000);
-    
-    this.startPaymentStatusPolling(uuid, action, payment_method, windowCheckInterval, paymentWindow);
-
-  }
-
+  
   // CashFree Payment Integration
-  initiateCashFreePaymentIntent(payment_method: string) {
-    const uuid = uuidv4();
+  initiateCashFreePaymentIntent(payment_method: string, uuid: any, order_result: any) {
     const userData = localStorage.getItem('account');
     const parsedUserData = JSON.parse(userData || '{}')?.user || {};
 
@@ -768,7 +482,7 @@ export class CheckoutComponent {
               localStorage.setItem('payment_uuid', uuid);
               localStorage.setItem('payment_method', payment_method);
               localStorage.setItem('payment_action', JSON.stringify(this.form.value));
-              
+              localStorage.setItem('order_id', JSON.stringify(order_result.order_number));
               // Open in current tab
               window.location.href = cashFreeData.payment_link;
             } else {
@@ -787,30 +501,8 @@ export class CheckoutComponent {
     });
   }
 
-  checkTransactionStatusCashFree(uuid: any, action: any, paymentWindow: Window | null, payment_method: string) {
-    if (!paymentWindow) return;
-    
-    let windowCheckInterval = setInterval(() => {
-      try {
-        if (paymentWindow.closed) {
-          console.log("Payment window closed manually or due to an issue.");
-          clearInterval(windowCheckInterval);
-          this.checkPaymentStatusAfterWindowClosed(uuid, action, payment_method);
-          return;
-        }
-      } catch (error) {
-        console.warn("Unable to check payment window state:", error);
-        clearInterval(windowCheckInterval);
-        this.checkPaymentStatusAfterWindowClosed(uuid, action, payment_method);
-      }
-    }, 1000);
-    
-    this.startPaymentStatusPolling(uuid, action, payment_method, windowCheckInterval, paymentWindow);
-  }
-
   // Zyaada Pay Payment Integration
-  initiateZyaadaPayPaymentIntent(payment_method: string) {
-    const uuid = uuidv4();
+  initiateZyaadaPayPaymentIntent(payment_method: string, uuid: any, order_result: any) {
     const userData = localStorage.getItem('account');
     const parsedUserData = JSON.parse(userData || '{}')?.user || {};
 
@@ -838,7 +530,7 @@ export class CheckoutComponent {
               sessionStorage.setItem('payment_uuid', uuid);
               sessionStorage.setItem('payment_method', payment_method);
               sessionStorage.setItem('payment_action', JSON.stringify(this.form.value));
-              
+              localStorage.setItem('order_id', JSON.stringify(order_result.order_number));
               // Open in current tab
               window.location.href = zyaadaPayData.payment_url;
             } else {
@@ -853,44 +545,6 @@ export class CheckoutComponent {
       },
       error: (err) => {
         console.log("Error initiating payment:", err);
-      }
-    });
-  }
-
-  checkTransactionStatusZyaadaPay(uuid: any, action: any, paymentWindow: Window | null, payment_method: string) {
-    if (!paymentWindow) return;
-    
-    let windowCheckInterval = setInterval(() => {
-      try {
-        if (paymentWindow.closed) {
-          console.log("Payment window closed manually or due to an issue.");
-          clearInterval(windowCheckInterval);
-          this.checkPaymentStatusAfterWindowClosed(uuid, action, payment_method);
-          return;
-        }
-      } catch (error) {
-        console.warn("Unable to check payment window state:", error);
-        clearInterval(windowCheckInterval);
-        this.checkPaymentStatusAfterWindowClosed(uuid, action, payment_method);
-      }
-    }, 1000);
-    
-    this.startPaymentStatusPolling(uuid, action, payment_method, windowCheckInterval, paymentWindow);
-  }
-
-  async checkTransectionStatusCashFree(uuid: any,payment_method: string) {
-    this.cartService.checkTransectionStatusCashFree(uuid, payment_method).subscribe({
-      next:(data) => {
-        console.log(data);
-        if(data.R === true || data.R === false) {
-          console.log('Redirect to Success or Fail');
-          this.router.navigate([ 'order/checkout-success' ], { queryParams: { order_status: data.R } });
-        } else {
-          console.log('Payment in Pending State');
-        }
-      },
-      error:(err) => {
-        console.log(err);
       }
     });
   }
@@ -1038,28 +692,47 @@ export class CheckoutComponent {
         this.form.controls['coupon'].reset();
       }
 
+      const uuid = uuidv4();
+
       const formData = {
         ...this.form.value,
+        uuid: uuid
       }
 
       let action = new PlaceOrder(formData);
       // this.store.dispatch(new PlaceOrder(formData));
 
-      if(this.payment_method === 'cash_free'){
-        this.initiateCashFreePaymentIntent(this.payment_method);
-      }
-      if(this.payment_method === 'sub_paisa'){
-        this.initiateSubPaisa(formData, this.payment_method);
-      }
-      if(this.payment_method === 'neoKred') {
-        this.initiateNeoKredPaymentIntent(this.payment_method);
-      }
-      if(this.payment_method === 'zyaada_pay') {
-        this.initiateZyaadaPayPaymentIntent(this.payment_method);
-      }
-      if(this.payment_method === 'ease_buzz') {
-        this.initiateEaseBuzzPaymentIntent(this.payment_method);
-      }
+      this.orderService.placeOrder(action?.payload).pipe(
+        tap({
+          next: result => {
+            console.log(result);
+          },
+          error: err => {
+            throw new Error(err?.error?.message);
+          }
+        })
+      ).subscribe({
+        next: (result) => {
+        if(this.payment_method === 'cash_free'){
+          this.initiateCashFreePaymentIntent(this.payment_method, uuid, result);
+        }
+        if(this.payment_method === 'sub_paisa'){
+          this.initiateSubPaisa(this.payment_method, uuid, result);
+        }
+        if(this.payment_method === 'neoKred') {
+          this.initiateNeoKredPaymentIntent(this.payment_method, uuid, result);
+        }
+        if(this.payment_method === 'zyaada_pay') {
+          this.initiateZyaadaPayPaymentIntent(this.payment_method, uuid, result);
+        }
+        if(this.payment_method === 'ease_buzz') {
+          this.initiateEaseBuzzPaymentIntent(this.payment_method, uuid, result);
+        }
+        },
+        error: (err) => {
+          console.log(err);
+        }
+      });
     }
   }
 
@@ -1078,64 +751,5 @@ export class CheckoutComponent {
     this.form.reset();
     this.pollingSubscription && this.pollingSubscription.unsubscribe();
   }
-
-  // Method to complete iOS payment
-  private completeIOSPayment(uuid: string, actionPayload: any, payment_method: string) {
-    console.log('Checking payment status for iOS return:', uuid, payment_method);
-    
-    // First check the payment status
-    let statusCheck;
-    switch(payment_method) {
-      case 'neoKred':
-        statusCheck = this.cartService.checkTransectionStatusNeoKred(uuid, payment_method);
-        break;
-      case 'cash_free':
-        statusCheck = this.cartService.checkTransectionStatusCashFree(uuid, payment_method);
-        break;
-      case 'zyaada_pay':
-        statusCheck = this.cartService.checkTransectionStatusZyaadaPay(uuid, payment_method);
-        break;
-      case 'sub_paisa':
-        statusCheck = this.cartService.checkPaymentResponse(uuid, payment_method);
-        break;
-      case 'ease_buzz':
-        statusCheck = this.cartService.checkTransectionStatusEaseBuzz(uuid, payment_method);
-        break;
-      default:
-        console.error('Unknown payment method:', payment_method);
-        return;
-    }
-    
-    statusCheck.subscribe({
-      next: (response) => {
-        console.log(`Payment status for ${payment_method}:`, response);
-        
-        if (response.status) {
-          console.log('Payment confirmed, placing order');
-          // Create a new action with the stored payload
-          const action = { payload: { ...actionPayload, uuid, payment_method } };
-          
-          // Dispatch the PlaceOrder action to complete the order
-          this.store.dispatch(new PlaceOrder(action.payload)).subscribe({
-            next: (result) => {
-              console.log('Order placed successfully after iOS payment');
-            },
-            error: (err) => {
-              console.error('Error placing order after iOS payment:', err);
-            }
-          });
-        } else {
-          console.log('Payment not confirmed yet, checking again in 3 seconds');
-          // Try again after a short delay
-          setTimeout(() => {
-            this.completeIOSPayment(uuid, actionPayload, payment_method);
-          }, 3000);
-        }
-      },
-      error: (err) => {
-        console.error('Error checking payment status for iOS return:', err);
-      }
-    });
-  }
-
+  
 }

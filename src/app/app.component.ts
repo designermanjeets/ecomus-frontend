@@ -28,7 +28,7 @@ import { CartService } from './shared/services/cart.service';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent implements OnInit {
+export class AppComponent {
 
   @Select(ThemeOptionState.themeOptions) themeOption$: Observable<Option>;
   @Select(SettingState.setting) setting$: Observable<Values>;
@@ -97,46 +97,18 @@ export class AppComponent implements OnInit {
     
     this.router.events.subscribe((event) => {
       if(event instanceof NavigationEnd) {
-        if(event.url.includes('order/success')){
+        if(event.url.includes('/success')){
           console.log('Coming After Payment Successfully or Failed');
           setTimeout(() => {
-            this.checkPaymentReturn();
+            const getOrderId = localStorage.getItem('order_id');
+            if(getOrderId){
+              this.router.navigate(['/account/order/details', getOrderId]);
+            }
           }, 500);
         }
       }
     });
 
-  }
-
-  ngOnInit() {
-    // Check for payment return data in session storage
-    // this.checkPaymentReturn();
-  }
-  
-  private checkPaymentReturn() {
-    const paymentUuid = localStorage.getItem('payment_uuid');
-    const paymentMethod = localStorage.getItem('payment_method');
-    const paymentAction = localStorage.getItem('payment_action');
-    
-    if (paymentUuid && paymentMethod && paymentAction) {
-      // Clear session storage
-      // localStorage.removeItem('payment_uuid');
-      // localStorage.removeItem('payment_method');
-      // localStorage.removeItem('payment_action');
-      
-      try {
-        // Parse the stored action
-        const actionPayload = JSON.parse(paymentAction);
-        
-        // Emit the payment return event
-        this.cartService.processPaymentReturn(paymentUuid, paymentMethod, actionPayload);
-        setTimeout(() => {
-          this.router.navigate(['/checkout']);
-        }, 500);
-      } catch (error) {
-        console.error('Error processing payment return:', error);
-      }
-    }
   }
 
   loadScript(val: Analytics): void {

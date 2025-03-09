@@ -155,32 +155,4 @@ export class CartService {
     });
   }
 
-  checkTransectionStatusEaseBuzz(uuid: any, payment_method: string) {
-    return this.http.post<any>(`${environment.URL}/check-payment-response`,{ uuid: uuid, payment_method});
-  }
-  
-  checkTransectionStatusZyaadaPay(uuid: any, payment_method: string) {
-    return this.http.post<any>(`${environment.URL}/check-payment-response`,{ uuid: uuid, payment_method});
-  }
-
-  checkTransectionStatusCashFree(uuid: any, payment_method: string) {
-    return this.http.post<any>(`${environment.URL}/check-payment-response`,{ uuid: uuid, payment_method});
-  }
-
-  checkPaymentResponse(uuid: any, payment_method: string): Observable<any> {
-    return this.http.post<any>(`${environment.URL}/check-payment-response`,{ uuid: uuid, payment_method});
-  }
-
-  redirectToPayUrl() {
-    return this.http.post<any>(`${environment.URL}/payment-response`,{});
-  }
-
-  getPaymentReturnEvent() {
-    return this.paymentReturnSubject.asObservable();
-  }
-
-  processPaymentReturn(uuid: string, method: string, payload: any) {
-    this.paymentReturnSubject.next({uuid, method, payload});
-  }
-
 }
