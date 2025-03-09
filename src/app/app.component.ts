@@ -130,6 +130,7 @@ export class AppComponent implements OnInit {
         
         // Emit the payment return event
         this.cartService.processPaymentReturn(paymentUuid, paymentMethod, actionPayload);
+        this.router.navigate(['/checkout']);
       } catch (error) {
         console.error('Error processing payment return:', error);
       }
