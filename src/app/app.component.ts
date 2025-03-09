@@ -120,9 +120,9 @@ export class AppComponent implements OnInit {
     
     if (paymentUuid && paymentMethod && paymentAction) {
       // Clear session storage
-      localStorage.removeItem('payment_uuid');
-      localStorage.removeItem('payment_method');
-      localStorage.removeItem('payment_action');
+      // localStorage.removeItem('payment_uuid');
+      // localStorage.removeItem('payment_method');
+      // localStorage.removeItem('payment_action');
       
       try {
         // Parse the stored action
