@@ -5,6 +5,7 @@ import { GetMenu } from "../action/menu.action";
 import { tap } from "rxjs";
 import { Menu } from "../interface/menu.interface";
 import { ThemeOptionService } from "../services/theme-option.service";
+import { menuOptions } from "../data/menuOptions";
  
 
 export class MenuStateModel {
@@ -42,7 +43,7 @@ export class MenuState {
         next: result => { 
           ctx.patchState({
             menu: {
-              data: result.data,
+              data: menuOptions,
               total: result?.total ? result?.total : result.data?.length
             }
           });
