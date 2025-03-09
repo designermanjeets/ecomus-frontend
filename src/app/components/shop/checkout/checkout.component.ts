@@ -256,7 +256,7 @@ export class CheckoutComponent {
     
     // Listen for payment return events
     this.cartService.getPaymentReturnEvent().subscribe(data => {
-      console.log(data);
+      console.log('this.cartService.getPaymentReturnEvent()');
       if (data) {
         this.completeIOSPayment(data.uuid, data.payload, data.method);
       }
