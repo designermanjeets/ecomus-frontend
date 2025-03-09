@@ -1,6 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import { Component, ElementRef, HostListener, Inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
 import { NgbRatingConfig } from '@ng-bootstrap/ng-bootstrap';
 import { Actions, Select, Store, ofActionDispatched } from '@ngxs/store';
 import { Observable } from 'rxjs';
@@ -92,12 +92,13 @@ export class AppComponent {
     this.actions.pipe(ofActionDispatched(Logout)).subscribe(() => {
       this.router.navigate(['/auth/login']);
     });
-
-    this.actions.pipe(ofActionDispatched(PlaceOrder)).subscribe((action) => {
-      console.log(action);
-      console.log(action.payload);
-      console.log('Coming After Payment Successfully or Failed');
-
+    
+    this.router.events.subscribe((event) => {
+      if(event instanceof NavigationEnd) {
+        if(event.url.includes('order/success')){
+          console.log('Coming After Payment Successfully or Failed');
+        }
+      }
     });
 
 
