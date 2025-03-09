@@ -20,6 +20,7 @@ import { ThemeOptionService } from './shared/services/theme-option.service';
 import { SettingState } from './shared/state/setting.state';
 import { Values, Analytics } from './shared/interface/setting.interface';
 import { TranslateService } from '@ngx-translate/core';
+import { PlaceOrder } from './shared/action/order.action';
  
 @Component({
   selector: 'app-root',
@@ -91,6 +92,15 @@ export class AppComponent {
     this.actions.pipe(ofActionDispatched(Logout)).subscribe(() => {
       this.router.navigate(['/auth/login']);
     });
+
+    this.actions.pipe(ofActionDispatched(PlaceOrder)).subscribe((action) => {
+      console.log(action);
+      console.log(action.payload);
+      console.log('Coming After Payment Successfully or Failed');
+
+    });
+
+
   }
 
   loadScript(val: Analytics): void {
