@@ -11,6 +11,7 @@ import { Cart, CartAddOrUpdate, CartModel } from "../interface/cart.interface";
 export class CartService {
   
   private subjectQty = new Subject<boolean>();
+  private paymentReturnSubject = new Subject<{uuid: string, method: string, payload: any}>();
 
   constructor(private http: HttpClient) {}
 
@@ -172,6 +173,14 @@ export class CartService {
 
   redirectToPayUrl() {
     return this.http.post<any>(`${environment.URL}/payment-response`,{});
+  }
+
+  getPaymentReturnEvent() {
+    return this.paymentReturnSubject.asObservable();
+  }
+
+  processPaymentReturn(uuid: string, method: string, payload: any) {
+    this.paymentReturnSubject.next({uuid, method, payload});
   }
 
 }

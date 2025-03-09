@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { Component, ElementRef, HostListener, Inject } from '@angular/core';
+import { Component, ElementRef, HostListener, Inject, OnInit } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { NgbRatingConfig } from '@ng-bootstrap/ng-bootstrap';
 import { Actions, Select, Store, ofActionDispatched } from '@ngxs/store';
@@ -21,13 +21,14 @@ import { SettingState } from './shared/state/setting.state';
 import { Values, Analytics } from './shared/interface/setting.interface';
 import { TranslateService } from '@ngx-translate/core';
 import { PlaceOrder } from './shared/action/order.action';
- 
+import { CartService } from './shared/services/cart.service';
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
 
   @Select(ThemeOptionState.themeOptions) themeOption$: Observable<Option>;
   @Select(SettingState.setting) setting$: Observable<Values>;
@@ -40,7 +41,8 @@ export class AppComponent {
     private router: Router,
     private store: Store,
     public seoService: SeoService,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private cartService: CartService
   ) {
 
     this.translate.addLangs(['de', 'en']);
@@ -97,11 +99,41 @@ export class AppComponent {
       if(event instanceof NavigationEnd) {
         if(event.url.includes('order/success')){
           console.log('Coming After Payment Successfully or Failed');
+          setTimeout(() => {
+            
+          }, 500);
         }
       }
     });
 
+  }
 
+  ngOnInit() {
+    // Check for payment return data in session storage
+    this.checkPaymentReturn();
+  }
+  
+  private checkPaymentReturn() {
+    const paymentUuid = sessionStorage.getItem('payment_uuid');
+    const paymentMethod = sessionStorage.getItem('payment_method');
+    const paymentAction = sessionStorage.getItem('payment_action');
+    
+    if (paymentUuid && paymentMethod && paymentAction) {
+      // Clear session storage
+      sessionStorage.removeItem('payment_uuid');
+      sessionStorage.removeItem('payment_method');
+      sessionStorage.removeItem('payment_action');
+      
+      try {
+        // Parse the stored action
+        const actionPayload = JSON.parse(paymentAction);
+        
+        // Emit the payment return event
+        this.cartService.processPaymentReturn(paymentUuid, paymentMethod, actionPayload);
+      } catch (error) {
+        console.error('Error processing payment return:', error);
+      }
+    }
   }
 
   loadScript(val: Analytics): void {
