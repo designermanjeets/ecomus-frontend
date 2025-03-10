@@ -53,7 +53,8 @@
   <owl-carousel-o [options]="sliderOption">
     <ng-template carouselSlide *ngFor="let category of categories">
       <div *ngIf="theme == 'paris'">
-        <a href="javascript:void(0)" [routerLink]="['/category', category.slug ]" class="category-box category-dark"
+        <a  href="javascript:void(0)" [routerLink]="['/collections']" 
+        [queryParams]="{ category: category.slug, sortBy: 'asc' }" class="category-box category-dark"
           [class.active]="selectedCategorySlug.length && selectedCategorySlug.includes(category.slug!)">
           <img [src]="image ? image : 'assets/images/shape.png'" class="background-image" [alt]="category?.name">
           <img [src]="category?.category_icon ? category?.category_icon?.original_url : 'assets/images/category.png'"
