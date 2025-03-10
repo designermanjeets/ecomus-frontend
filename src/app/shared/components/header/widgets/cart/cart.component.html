@@ -126,10 +126,10 @@
     <div class="bg-overlay" [class.show]="cartStyle == 'cart_sidebar' && (sidebarCartOpen$ | async)" (click)="cartStyle == 'cart_sidebar' && cartToggle(false)"></div>
 </ng-container>
 <!-- Free Shipping Celebration -->
-<div class="confetti-wrapper" [class.show]="confetti == 1 && (sidebarCartOpen$ | async)" *ngIf="(themeOption$ | async)?.general?.celebration_effect">
+<!-- <div class="confetti-wrapper" [class.show]="confetti == 1 && (sidebarCartOpen$ | async)" *ngIf="(themeOption$ | async)?.general?.celebration_effect">
     <ng-container *ngFor="let item of confettiItems">
         <div class="confetti-{{item}}"></div>
     </ng-container>
-</div>
+</div> -->
 <!-- Variation Customize -->
 <app-variation-modal #variationModal></app-variation-modal>
