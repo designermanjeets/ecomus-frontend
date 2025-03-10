@@ -138,7 +138,9 @@
 <!--- Category Style Dropdown -->
 <ul class="category-list" *ngIf="categories?.length && style == 'dropdown'">
   <li class="onhover-category-list" *ngFor="let category of categories">
-    <a href="javascript:void(0)" [routerLink]="['/category', category.slug ]" class="category-name">
+    <a  href="javascript:void(0)" [routerLink]="['/collections']" 
+    [queryParams]="{ category: category.slug, sortBy: 'asc' }" 
+    class="category-name">
       <img [src]="category?.category_icon ? category?.category_icon?.original_url : 'assets/images/category.png'"
         [alt]="category?.name">
       <h6>{{ category?.name }}</h6>
