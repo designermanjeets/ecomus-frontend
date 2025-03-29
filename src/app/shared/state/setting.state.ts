@@ -75,9 +75,15 @@ export class SettingState {
               },
               {
                 name: 'ease_buzz',
-                status: true,
+                status: false,
                 title: 'Ease Buzz',
                 icon: './assets/images/easebuzz.png'
+              },
+              {
+                name: 'neoKred2',
+                status: true,
+                title: 'Pay By UPI INTENT2',
+                // icon: './assets/images/payment/pay_by_qr.png',
               },
             ];
             customValue.payment_methods = customPayments //[result.values.payment_methods[0]];
