@@ -1,5 +1,5 @@
 <ng-container *ngIf="image?.redirect_link?.link_type === 'external_url'; else collection">
-  <a href="{{ image?.redirect_link?.link }}" target="_blank" class="banner-contain d-block h-100">
+  <a href="{{ image?.redirect_link?.link }}" target="_self" class="banner-contain d-block h-100">
     <div class="h-100 bg-size" [ngClass]="class" *ngIf="bgImage" [ngStyle]="{'background-image': 'url(' + storageURL + image?.image_url + ')'}"></div>
     <img *ngIf="!bgImage" [src]="storageURL + image?.image_url" class="h-100 bg-img w-100" alt="banner">
   </a>
