@@ -77,7 +77,7 @@ export const menuOptions: any[] = [
     // },
     {
         "id": 162,
-        "title": "Men",
+        "title": "Men Clothes",
         "sort": null,
         "link_type": "link",
         "mega_menu": 0,
@@ -135,7 +135,7 @@ export const menuOptions: any[] = [
     // },
     {
         "id": 163,
-        "title": "Women",
+        "title": "Women Clothes",
         "sort": null,
         "link_type": "link",
         "mega_menu": 0,
