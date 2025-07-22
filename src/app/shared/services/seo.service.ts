@@ -70,15 +70,26 @@ export class SeoService {
       this.themeOption = option
     })
   }
+
+  // Helper method to safely get meta values with fallbacks
+  private getSafeMetaValue(value: any, fallback: any = ''): string {
+    if (value && value !== 'null' && value !== null) {
+      return value;
+    }
+    if (fallback && fallback !== 'null' && fallback !== null) {
+      return fallback;
+    }
+    return '';
+  }
   
   updateSeo(path:string){
     if (path.includes('product')) {
       if (this.product) {
         this.scoContent = {
           'url': window.location.href,
-          'og_title': this.product.meta_title || this.themeOption?.seo?.meta_title,
-          'og_description': this.product.meta_description || this.themeOption?.seo?.meta_description,
-          'og_image': this.product.product_meta_image?.original_url || this.themeOption?.seo?.og_image?.original_url,
+          'og_title': this.getSafeMetaValue(this.product.meta_title, this.themeOption?.seo?.meta_title),
+          'og_description': this.getSafeMetaValue(this.product.meta_description, this.themeOption?.seo?.meta_description),
+          'og_image': this.getSafeMetaValue(this.product.product_meta_image?.original_url, this.themeOption?.seo?.og_image?.original_url),
         };
       }
       this.customSCO();
@@ -88,9 +99,9 @@ export class SeoService {
         this.scoContent = {
           ...this.scoContent,
           'url': window.location.href,
-          'og_title': this.blog?.meta_title || this.themeOption?.seo?.meta_title,
-          'og_description': this.blog?.meta_description || this.themeOption?.seo?.meta_description,
-          'og_image': this.blog?.blog_meta_image?.original_url || this.themeOption?.seo?.og_image?.original_url,
+          'og_title': this.getSafeMetaValue(this.blog?.meta_title, this.themeOption?.seo?.meta_title),
+          'og_description': this.getSafeMetaValue(this.blog?.meta_description, this.themeOption?.seo?.meta_description),
+          'og_image': this.getSafeMetaValue(this.blog?.blog_meta_image?.original_url, this.themeOption?.seo?.og_image?.original_url),
         }
         this.customSCO();
       }
@@ -100,9 +111,9 @@ export class SeoService {
         this.scoContent = {
           ...this.scoContent,
           'url': window.location.href,
-          'og_title': this.page?.meta_title || this.themeOption?.seo?.meta_title,
-          'og_description': this.page?.meta_description || this.themeOption?.seo?.meta_description,
-          'og_image': this.page?.page_meta_image?.original_url || this.themeOption?.seo?.og_image?.original_url,
+          'og_title': this.getSafeMetaValue(this.page?.meta_title, this.themeOption?.seo?.meta_title),
+          'og_description': this.getSafeMetaValue(this.page?.meta_description, this.themeOption?.seo?.meta_description),
+          'og_image': this.getSafeMetaValue(this.page?.page_meta_image?.original_url, this.themeOption?.seo?.og_image?.original_url),
         }
       }
       this.customSCO();
@@ -111,9 +122,9 @@ export class SeoService {
         this.scoContent = {
           ...this.scoContent,
           'url': window.location.href,
-          'og_title': this.brand?.meta_title || this.themeOption?.seo?.meta_title,
-          'og_description': this.brand?.meta_description || this.themeOption?.seo?.meta_description,
-          'og_image': this.brand?.brand_meta_image?.original_url || this.themeOption?.seo?.og_image?.original_url,
+          'og_title': this.getSafeMetaValue(this.brand?.meta_title, this.themeOption?.seo?.meta_title),
+          'og_description': this.getSafeMetaValue(this.brand?.meta_description, this.themeOption?.seo?.meta_description),
+          'og_image': this.getSafeMetaValue(this.brand?.brand_meta_image?.original_url, this.themeOption?.seo?.og_image?.original_url),
         }
       }
       this.customSCO();
@@ -122,9 +133,9 @@ export class SeoService {
         this.scoContent = {
           ...this.scoContent,
           'url': window.location.href,
-          'og_title': this.category?.meta_title || this.themeOption?.seo?.meta_title,
-          'og_description': this.category?.meta_description || this.themeOption?.seo?.meta_description,
-          'og_image': this.category?.category_meta_image?.original_url || this.themeOption?.seo?.og_image?.original_url,
+          'og_title': this.getSafeMetaValue(this.category?.meta_title, this.themeOption?.seo?.meta_title),
+          'og_description': this.getSafeMetaValue(this.category?.meta_description, this.themeOption?.seo?.meta_description),
+          'og_image': this.getSafeMetaValue(this.category?.category_meta_image?.original_url, this.themeOption?.seo?.og_image?.original_url),
         }
       }
       this.customSCO();
@@ -135,23 +146,27 @@ export class SeoService {
   }
 
   updateDefaultSeo(){
+    const title = this.themeOption?.seo?.meta_title || '';
+    const description = this.themeOption?.seo?.meta_description || '';
+    const image = this.themeOption?.seo?.og_image?.original_url || '';
+    const url = this.scoContent['url'] || window.location.href;
  
-    this.meta.updateTag({ name: 'title', content: this.themeOption?.seo?.meta_title });
-    this.meta.updateTag({ name: 'description', content: this.themeOption?.seo?.meta_description });
+    this.meta.updateTag({ name: 'title', content: title });
+    this.meta.updateTag({ name: 'description', content: description });
 
     // Update Facebook Meta Tags
     this.meta.updateTag({ property: 'og:type', content: 'website' });
-    this.meta.updateTag({ property: 'og:url', content: this.scoContent['url'] });
-    this.meta.updateTag({ property: 'og:title', content: this.themeOption?.seo?.meta_title });
-    this.meta.updateTag({ property: 'og:description', content: this.themeOption?.seo?.meta_description });
-    this.meta.updateTag({ property: 'og:image', content: this.scoContent['og_image'] });
+    this.meta.updateTag({ property: 'og:url', content: url });
+    this.meta.updateTag({ property: 'og:title', content: title });
+    this.meta.updateTag({ property: 'og:description', content: description });
+    this.meta.updateTag({ property: 'og:image', content: image });
 
     // Update Twitter Meta Tags
     this.meta.updateTag({ property: 'twitter:card', content: 'summary_large_image' });
-    this.meta.updateTag({ property: 'twitter:url', content: this.scoContent['url'] });
-    this.meta.updateTag({ property: 'twitter:title', content: this.themeOption?.seo?.meta_title });
-    this.meta.updateTag({ property: 'twitter:description', content: this.themeOption?.seo?.meta_description });
-    this.meta.updateTag({ property: 'twitter:image', content: this.scoContent['og_image'] });
+    this.meta.updateTag({ property: 'twitter:url', content: url });
+    this.meta.updateTag({ property: 'twitter:title', content: title });
+    this.meta.updateTag({ property: 'twitter:description', content: description });
+    this.meta.updateTag({ property: 'twitter:image', content: image });
 
     if(this.themeOption?.general && this.themeOption?.general?.exit_tagline_enable){
       document.addEventListener('visibilitychange', () => {
@@ -170,9 +185,9 @@ export class SeoService {
       this.scoContent = {
         ...this.scoContent,
         'url': window.location.href,
-        'og_title': this.themeOption?.seo?.meta_title,
-        'og_description': this.themeOption?.seo?.meta_description,
-        'og_image': this.themeOption?.seo?.og_image?.original_url,
+        'og_title': title,
+        'og_description': description,
+        'og_image': image,
       }
       
       this.customSCO()
@@ -183,8 +198,8 @@ export class SeoService {
   }
  
   customSCO(){
-    const title = this.scoContent['og_title'];
-    const description = this.scoContent['og_description'];
+    const title = this.scoContent['og_title'] || this.themeOption?.seo?.meta_title || '';
+    const description = this.scoContent['og_description'] || this.themeOption?.seo?.meta_description || '';
 
     this.titleService.setTitle(title);
     this.meta.updateTag({ name: 'title', content: title });
@@ -192,17 +207,17 @@ export class SeoService {
 
     // Update Facebook Meta Tags
     this.meta.updateTag({ property: 'og:type', content: 'website' });
-    this.meta.updateTag({ property: 'og:url', content: this.scoContent['url'] });
+    this.meta.updateTag({ property: 'og:url', content: this.scoContent['url'] || window.location.href });
     this.meta.updateTag({ property: 'og:title', content: title });
     this.meta.updateTag({ property: 'og:description', content: description });
-    this.meta.updateTag({ property: 'og:image', content: this.scoContent['og_image'] });
+    this.meta.updateTag({ property: 'og:image', content: this.scoContent['og_image'] || this.themeOption?.seo?.og_image?.original_url || '' });
 
     // Update Twitter Meta Tags
     this.meta.updateTag({ property: 'twitter:card', content: 'summary_large_image' });
-    this.meta.updateTag({ property: 'twitter:url', content: this.scoContent['url'] });
+    this.meta.updateTag({ property: 'twitter:url', content: this.scoContent['url'] || window.location.href });
     this.meta.updateTag({ property: 'twitter:title', content: title });
     this.meta.updateTag({ property: 'twitter:description', content: description });
-    this.meta.updateTag({ property: 'twitter:image', content: this.scoContent['og_image'] });
+    this.meta.updateTag({ property: 'twitter:image', content: this.scoContent['og_image'] || this.themeOption?.seo?.og_image?.original_url || '' });
   }
 
   updateMessage() {
@@ -226,4 +241,5 @@ export class SeoService {
     clearTimeout(this.timeoutId);
   }
 
+  
 }

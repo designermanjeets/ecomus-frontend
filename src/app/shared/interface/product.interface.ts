@@ -106,6 +106,11 @@ export interface Product {
     created_at?: string;
     updated_at?: string;
     deleted_at?: string;
+
+    // ✅ Added for SEO support
+    meta_keywords?: string;
+    canonical_url?: string;
+    thumbnail?: string;
 }
 
 export interface PivotProduct {
