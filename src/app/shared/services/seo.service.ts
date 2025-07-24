@@ -57,6 +57,11 @@ export class SeoService {
     });
     
     this.fetchData(); 
+    
+    // Initialize with default SEO values
+    setTimeout(() => {
+      this.updateDefaultSeo();
+    }, 100);
   }
 
   fetchData() {
@@ -146,8 +151,8 @@ export class SeoService {
   }
 
   updateDefaultSeo(){
-    const title = this.themeOption?.seo?.meta_title || '';
-    const description = this.themeOption?.seo?.meta_description || '';
+    const title = this.themeOption?.seo?.meta_title || 'Fashion Collection for Men and Women | Active Wear | Fashion Hub';
+    const description = this.themeOption?.seo?.meta_description || 'Explore our latest fashion collections for men and women for real-life comfort, and look always trendy with latest men\'s clothing trends and the newest women\'s collection';
     const image = this.themeOption?.seo?.og_image?.original_url || '';
     const url = this.scoContent['url'] || window.location.href;
  
@@ -176,7 +181,7 @@ export class SeoService {
           if (this.isTabInFocus) {
             clearTimeout(this.timeoutId);
             return this.titleService.setTitle(this.themeOption?.general?.site_title && this.themeOption?.general?.site_tagline
-              ? `${this.themeOption?.general?.site_title} | ${this.themeOption?.general?.site_tagline}` : '')
+              ? `${this.themeOption?.general?.site_title} | ${this.themeOption?.general?.site_tagline}` : title)
           } else {
             this.updateMessage();
           }
@@ -193,13 +198,13 @@ export class SeoService {
       this.customSCO()
     }else {
       return this.titleService.setTitle(this.themeOption?.general?.site_title && this.themeOption?.general?.site_tagline
-        ? `${this.themeOption?.general?.site_title} | ${this.themeOption?.general?.site_tagline}` : '')
+        ? `${this.themeOption?.general?.site_title} | ${this.themeOption?.general?.site_tagline}` : title)
     }
   }
  
   customSCO(){
-    const title = this.scoContent['og_title'] || this.themeOption?.seo?.meta_title || '';
-    const description = this.scoContent['og_description'] || this.themeOption?.seo?.meta_description || '';
+    const title = this.scoContent['og_title'] || this.themeOption?.seo?.meta_title || 'Fashion Collection for Men and Women | Active Wear | Fashion Hub';
+    const description = this.scoContent['og_description'] || this.themeOption?.seo?.meta_description || 'Explore our latest fashion collections for men and women for real-life comfort, and look always trendy with latest men\'s clothing trends and the newest women\'s collection';
 
     this.titleService.setTitle(title);
     this.meta.updateTag({ name: 'title', content: title });
@@ -239,6 +244,24 @@ export class SeoService {
   ngOnDestroy() {
     // Clear the timeout when the component is destroyed
     clearTimeout(this.timeoutId);
+  }
+
+  // Force update meta tags immediately
+  forceUpdateMetaTags() {
+    const title = 'Fashion Collection for Men and Women | Active Wear | Fashion Hub';
+    const description = 'Explore our latest fashion collections for men and women for real-life comfort, and look always trendy with latest men\'s clothing trends and the newest women\'s collection';
+    
+    this.titleService.setTitle(title);
+    this.meta.updateTag({ name: 'title', content: title });
+    this.meta.updateTag({ name: 'description', content: description });
+    
+    // Update Facebook Meta Tags
+    this.meta.updateTag({ property: 'og:title', content: title });
+    this.meta.updateTag({ property: 'og:description', content: description });
+    
+    // Update Twitter Meta Tags
+    this.meta.updateTag({ property: 'twitter:title', content: title });
+    this.meta.updateTag({ property: 'twitter:description', content: description });
   }
 
   

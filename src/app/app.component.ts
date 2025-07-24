@@ -28,7 +28,7 @@ import { CartService } from './shared/services/cart.service';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
 
   @Select(ThemeOptionState.themeOptions) themeOption$: Observable<Option>;
   @Select(SettingState.setting) setting$: Observable<Values>;
@@ -109,6 +109,14 @@ export class AppComponent {
       }
     });
 
+  }
+
+  ngOnInit() {
+    // Ensure SEO is properly initialized
+    setTimeout(() => {
+      this.seoService.updateDefaultSeo();
+      this.seoService.forceUpdateMetaTags();
+    }, 200);
   }
 
   loadScript(val: Analytics): void {
