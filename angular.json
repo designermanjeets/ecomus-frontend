@@ -23,6 +23,7 @@
             "outputPath": "dist/fastkart-frontend-rest",
             "index": "src/index.html",
             "browser": "src/main.ts",
+            "server": "src/main.server.ts",
             "polyfills": [
               "zone.js"
             ],
@@ -85,6 +86,64 @@
             ]
           },
           "defaultConfiguration": "development"
+        },
+        "server": {
+          "builder": "@angular-devkit/build-angular:server",
+          "options": {
+            "outputPath": "dist/fastkart-frontend-rest/server",
+            "main": "src/main.server.ts",
+            "tsConfig": "tsconfig.server.json"
+          },
+          "configurations": {
+            "production": {
+              "outputHashing": "all",
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ],
+              "sourceMap": false,
+              "optimization": true
+            },
+            "development": {
+              "optimization": false,
+              "sourceMap": true,
+              "extractLicenses": false
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve-ssr": {
+          "builder": "@angular-devkit/build-angular:ssr-dev-server",
+          "configurations": {
+            "development": {
+              "browserTarget": "fastkart-frontend-rest:build:development",
+              "serverTarget": "fastkart-frontend-rest:server:development"
+            },
+            "production": {
+              "browserTarget": "fastkart-frontend-rest:build:production",
+              "serverTarget": "fastkart-frontend-rest:server:production"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "prerender": {
+          "builder": "@angular-devkit/build-angular:prerender",
+          "options": {
+            "routesFile": "src/routes.txt"
+          },
+          "configurations": {
+            "production": {
+              "browserTarget": "fastkart-frontend-rest:build:production",
+              "serverTarget": "fastkart-frontend-rest:server:production"
+            },
+            "development": {
+              "browserTarget": "fastkart-frontend-rest:build:development",
+              "serverTarget": "fastkart-frontend-rest:server:development"
+            }
+          },
+          "defaultConfiguration": "production"
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
