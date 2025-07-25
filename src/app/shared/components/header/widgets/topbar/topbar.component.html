@@ -12,7 +12,15 @@
             <div class="col-xxl-6 col-lg-9 d-lg-block d-none pt-1">
                 <div class="header-offer">
                     <app-notice [content]="data?.header?.top_bar_content"></app-notice>
-                  </div>
+                </div>
+                <div class="quick-links d-none d-lg-block mt-2">
+                    <ul class="quick-links-list">
+                        <li><a routerLink="/page/about-us" href="/page/about-us" title="About Us">About Us</a></li>
+                        <li><a routerLink="/Contact-Us" href="/Contact-Us" title="Contact Us">Contact Us</a></li>
+                        <li><a routerLink="/page/faq" href="/page/faq" title="FAQ">FAQ</a></li>
+                        <li><a routerLink="/page/offers" href="/page/offers" title="Offers">Offers</a></li>
+                    </ul>
+                </div>
             </div>
             <div class="col-lg-3">
                 <ul class="about-list right-nav-about">

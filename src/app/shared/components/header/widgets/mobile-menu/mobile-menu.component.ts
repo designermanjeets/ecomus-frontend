@@ -29,12 +29,40 @@ export class MobileMenuComponent {
     {
       id: 3,
       active: false,
+      title: 'About Us',
+      icon: 'ri-information-line',
+      path: '/page/about-us'
+    },
+    {
+      id: 4,
+      active: false,
+      title: 'Contact Us',
+      icon: 'ri-customer-service-line',
+      path: '/Contact-Us'
+    },
+    {
+      id: 5,
+      active: false,
+      title: 'FAQ',
+      icon: 'ri-question-line',
+      path: '/page/faq'
+    },
+    {
+      id: 6,
+      active: false,
+      title: 'Offers',
+      icon: 'ri-gift-line',
+      path: '/page/offers'
+    },
+    {
+      id: 7,
+      active: false,
       title: 'My Wish',
       icon: 'ri-heart-3',
       path: '/wishlist'
     },
     {
-      id: 4,
+      id: 8,
       active: false,
       title: 'Cart',
       icon: 'fly-cate ri-shopping-bag',

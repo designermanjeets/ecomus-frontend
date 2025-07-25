@@ -377,6 +377,31 @@ header {
       }
     }
 
+    .quick-links {
+      .quick-links-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        
+        li {
+          a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.3s ease;
+            
+            &:hover {
+              color: white;
+              text-decoration: none;
+            }
+          }
+        }
+      }
+    }
+
     .about-list {
       @include flex_common($dis: flex, $align: center, $justify: flex-end);
       height: 100%;
