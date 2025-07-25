@@ -2,7 +2,7 @@
     <div class="brand-row" [class.no-bg]="brands.length < 6 ">
         <div class="row row-cols-6 justify-content-center">
             <div *ngFor="let brand of brands">
-                <a href="javascript:void(0)" [routerLink]="['/brand', brand.slug]">
+                <a href="/brand/{{brand.slug}}" [routerLink]="['/brand', brand.slug]">
                     <img *ngIf="brand.brand_image; else name" [src]="brand.brand_image.original_url"
                         class="img-fluid">
                     <ng-template #name>

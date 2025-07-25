@@ -1,14 +1,14 @@
 <div class="mobile-menu d-md-none d-block mobile-cart">
   <ul>
     <li [class.active]="'/' === active">
-      <a href="javascript:void(0)" [routerLink]="['/']" (click)="activeMenu('/')">
+      <a href="/" [routerLink]="['/']" (click)="activeMenu('/')">
         <i class="ri-home-2-line deactivated"></i>
         <i class="ri-home-2-fill activated"></i>
         <span>Home</span>
       </a>
     </li>
     <li [class.active]="'collections' === active">
-      <a href="javascript:void(0)" [routerLink]="['/collections']" (click)="activeMenu('collections')">
+      <a href="/collections" [routerLink]="['/collections']" (click)="activeMenu('collections')">
         <i class="ri-apps-line js-line deactivated"></i>
         <i class="ri-apps-line js-fill activated"></i>
         <span>Category</span>
@@ -16,7 +16,7 @@
     </li>
   
     <li [class.active]="'wishlist' === active">
-      <a href="javascript:void(0)" [routerLink]="['/wishlist']" (click)="activeMenu('wishlist')">
+      <a href="/wishlist" [routerLink]="['/wishlist']" (click)="activeMenu('wishlist')">
         <i class="ri-heart-3-line deactivated"></i>
         <i class="ri-heart-3-fill activated"></i>
         <span>My Wish</span>

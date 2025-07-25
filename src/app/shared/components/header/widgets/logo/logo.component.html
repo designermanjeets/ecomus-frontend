@@ -1,4 +1,4 @@
-<a [routerLink]="['/']" class="web-logo nav-logo">
+<a [routerLink]="['/']" href="/" class="web-logo nav-logo">
     <img [src]="logo" class="img-fluid" alt="logo" *ngIf="logo else text">
     <ng-template #text>
         <h2 [class]="textClass">{{ data?.general?.site_title ? data?.general?.site_title : 'Logo' }}</h2>
