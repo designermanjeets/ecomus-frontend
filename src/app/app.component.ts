@@ -112,11 +112,14 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
-    // Ensure SEO is properly initialized
-    setTimeout(() => {
-      this.seoService.updateDefaultSeo();
-      this.seoService.forceUpdateMetaTags();
-    }, 200);
+    // Set default SEO data
+    this.seoService.setSEOData({
+      title: 'Stylexio | Fashion Store | Menswear Online | Unique Womenswear | ',
+      description: 'Shop for a wide range of menswear online and upgrade your style with real-life fashion and explore our unique womenswear showcased to elevate everyday looks.',
+      keywords: 'online shopping, ecommerce, electronics, fashion, home & garden, deals, discounts',
+      type: 'website',
+      url: 'https://stylexio.in'
+    });
   }
 
   loadScript(val: Analytics): void {

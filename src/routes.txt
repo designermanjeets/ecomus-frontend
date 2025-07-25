@@ -1,0 +1,12 @@
+/
+/about-us
+/contact-us
+/faq
+/offer
+/search
+/blog
+/privacy-policy
+/refund-and-cancellation
+/return-exchange
+/shipping-delevary
+/term-condition 

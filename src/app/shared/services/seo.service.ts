@@ -1,268 +1,255 @@
-import { Injectable, NgZone } from '@angular/core';
-import { Select } from '@ngxs/store';
-import { Observable, filter } from 'rxjs';
-import { ThemeOptionState } from '../state/theme-option.state';
+import { Injectable } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
-import { ProductState } from '../state/product.state';
-import { NavigationEnd, Router } from '@angular/router';
-import { BlogState } from '../state/blog.state';
-import { BrandState } from '../state/brand.state';
-import { PageState } from '../state/page.state';
-import { CategoryState } from '../state/category.state';
-import { SettingState } from '../state/setting.state';
-import { Blog } from '../interface/blog.interface';
-import { Option } from '../interface/theme-option.interface';
-import { Product } from '../interface/product.interface';
-import { Brand } from '../interface/brand.interface';
-import { Page } from '../interface/page.interface';
-import { Category } from '../interface/category.interface';
-import { Values } from '../interface/setting.interface';
+
+export interface SEOData {
+  title?: string;
+  description?: string;
+  keywords?: string;
+  image?: string;
+  url?: string;
+  type?: string;
+  author?: string;
+  publishedTime?: string;
+  modifiedTime?: string;
+  section?: string;
+  tags?: string[];
+  structuredData?: any;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class SeoService {
 
-  @Select(ThemeOptionState.themeOptions) themeOption$: Observable<Option>;
-  @Select(SettingState.setting) setting$: Observable<Values>;
-  @Select(ProductState.selectedProduct) product$: Observable<Product>;
-  @Select(BlogState.selectedBlog) blog$: Observable<Blog>;
-  @Select(BrandState.selectedBrand) brand$: Observable<Brand>;
-  @Select(PageState.selectedPage) page$: Observable<Page>;
-  @Select(CategoryState.selectedCategory) category$: Observable<Category>;
+  constructor(
+    private meta: Meta,
+    private title: Title
+  ) { }
 
-  public path: string;
-  public timeoutId: any;
-  private currentMessageIndex = 0;
-  private messages: string[];
-  private currentMessage: string;
-  private delay = 1000; // Delay between messages in milliseconds
-  public isTabInFocus = true;
-  public product: Product;
-  public blog: Blog;
-  public page: Page;
-  public brand: Brand;
-  public category: Category;
-  public themeOption: Option;
-  public scoContent: any = {};
-  public setting: Values;
-  constructor(private meta: Meta, private router: Router,
-    private titleService: Title,
-    private ngZone: NgZone,) { 
-    this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
-    ).subscribe((event: any) => {
-      this.path = event.url
-      this.updateSeo(this.path)
+  /**
+   * Set comprehensive SEO data including meta tags and structured data
+   */
+  setSEOData(data: SEOData): void {
+    // Set title
+    if (data.title) {
+      this.title.setTitle(data.title);
+    }
+
+    // Set meta tags
+    if (data.description) {
+      this.meta.updateTag({ name: 'description', content: data.description });
+      this.meta.updateTag({ property: 'og:description', content: data.description });
+      this.meta.updateTag({ name: 'twitter:description', content: data.description });
+    }
+
+    if (data.keywords) {
+      this.meta.updateTag({ name: 'keywords', content: data.keywords });
+    }
+
+    if (data.image) {
+      this.meta.updateTag({ property: 'og:image', content: data.image });
+      this.meta.updateTag({ name: 'twitter:image', content: data.image });
+    }
+
+    if (data.url) {
+      this.meta.updateTag({ property: 'og:url', content: data.url });
+      this.meta.updateTag({ name: 'twitter:url', content: data.url });
+    }
+
+    if (data.type) {
+      this.meta.updateTag({ property: 'og:type', content: data.type });
+    }
+
+    if (data.author) {
+      this.meta.updateTag({ name: 'author', content: data.author });
+      this.meta.updateTag({ property: 'og:author', content: data.author });
+    }
+
+    if (data.publishedTime) {
+      this.meta.updateTag({ property: 'article:published_time', content: data.publishedTime });
+    }
+
+    if (data.modifiedTime) {
+      this.meta.updateTag({ property: 'article:modified_time', content: data.modifiedTime });
+    }
+
+    if (data.section) {
+      this.meta.updateTag({ property: 'article:section', content: data.section });
+    }
+
+    if (data.tags && data.tags.length > 0) {
+      data.tags.forEach(tag => {
+        this.meta.addTag({ property: 'article:tag', content: tag });
+      });
+    }
+
+    // Set structured data
+    if (data.structuredData) {
+      this.setStructuredData(data.structuredData);
+    }
+  }
+
+  /**
+   * Set structured data (JSON-LD)
+   */
+  setStructuredData(data: any): void {
+    // Remove existing structured data
+    const existingScript = document.querySelector('script[type="application/ld+json"]');
+    if (existingScript) {
+      existingScript.remove();
+    }
+
+    // Add new structured data
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify(data);
+    document.head.appendChild(script);
+  }
+
+  /**
+   * Set product structured data
+   */
+  setProductStructuredData(product: any): void {
+    const structuredData: any = {
+      "@context": "https://schema.org/",
+      "@type": "Product",
+      "name": product.name,
+      "description": product.description,
+      "image": product.image,
+      "brand": {
+        "@type": "Brand",
+        "name": product.brand || "Ecomus"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": product.price,
+        "priceCurrency": product.currency || "USD",
+        "availability": product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+        "url": product.url
+      }
+    };
+
+    if (product.aggregateRating) {
+      structuredData.aggregateRating = {
+        "@type": "AggregateRating",
+        "ratingValue": product.aggregateRating.rating,
+        "reviewCount": product.aggregateRating.reviewCount
+      };
+    }
+
+    this.setStructuredData(structuredData);
+  }
+
+  /**
+   * Set organization structured data
+   */
+  setOrganizationStructuredData(): void {
+    const structuredData = {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Ecomus",
+      "url": "https://stylexio.in",
+      "logo": "https://stylexio.in/assets/images/logo.png",
+      "sameAs": [
+        "https://facebook.com/ecomus",
+        "https://twitter.com/ecomus",
+        "https://instagram.com/ecomus"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+1-555-123-4567",
+        "contactType": "customer service"
+      }
+    };
+
+    this.setStructuredData(structuredData);
+  }
+
+  /**
+   * Set breadcrumb structured data
+   */
+  setBreadcrumbStructuredData(breadcrumbs: Array<{name: string, url: string}>): void {
+    const structuredData = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": breadcrumbs.map((item, index) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "name": item.name,
+        "item": item.url
+      }))
+    };
+
+    this.setStructuredData(structuredData);
+  }
+
+  /**
+   * Set article structured data
+   */
+  setArticleStructuredData(article: any): void {
+    const structuredData = {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": article.title,
+      "description": article.description,
+      "image": article.image,
+      "author": {
+        "@type": "Person",
+        "name": article.author
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Ecomus",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://stylexio.in/assets/images/logo.png"
+        }
+      },
+      "datePublished": article.publishedDate,
+      "dateModified": article.modifiedDate
+    };
+
+    this.setStructuredData(structuredData);
+  }
+
+  /**
+   * Clear all meta tags
+   */
+  clearMetaTags(): void {
+    this.meta.removeTag('name="description"');
+    this.meta.removeTag('name="keywords"');
+    this.meta.removeTag('name="author"');
+    this.meta.removeTag('property="og:title"');
+    this.meta.removeTag('property="og:description"');
+    this.meta.removeTag('property="og:image"');
+    this.meta.removeTag('property="og:url"');
+    this.meta.removeTag('property="og:type"');
+    this.meta.removeTag('name="twitter:title"');
+    this.meta.removeTag('name="twitter:description"');
+    this.meta.removeTag('name="twitter:image"');
+    this.meta.removeTag('name="twitter:url"');
+  }
+
+  /**
+   * Update default SEO settings
+   */
+  updateDefaultSeo(): void {
+    this.setSEOData({
+      title: 'Stylexio | Fashion Store | Menswear Online | Unique Womenswear | ',
+      description: 'Shop for a wide range of menswear online and upgrade your style with real-life fashion and explore our unique womenswear showcased to elevate everyday looks.',
+      keywords: 'online shopping, ecommerce, electronics, fashion, home & garden, deals, discounts',
+      type: 'website',
+      url: 'https://stylexio.in/'
     });
-    
-    this.fetchData(); 
-    
-    // Initialize with default SEO values
+  }
+
+  /**
+   * Force update meta tags (for SSR compatibility)
+   */
+  forceUpdateMetaTags(): void {
+    // This method ensures meta tags are properly set for SSR
     setTimeout(() => {
       this.updateDefaultSeo();
     }, 100);
   }
-
-  fetchData() {
-    this.setting$.subscribe(val => this.setting = val);
-    this.product$.subscribe(product => this.product = product);
-    this.blog$.subscribe(blog => this.blog = blog);
-    this.page$.subscribe(page => this.page = page);
-    this.brand$.subscribe(brand => this.brand = brand);
-    this.category$.subscribe(blog => this.category = blog);
-    this.themeOption$.subscribe(option => {
-      this.themeOption = option
-    })
-  }
-
-  // Helper method to safely get meta values with fallbacks
-  private getSafeMetaValue(value: any, fallback: any = ''): string {
-    if (value && value !== 'null' && value !== null) {
-      return value;
-    }
-    if (fallback && fallback !== 'null' && fallback !== null) {
-      return fallback;
-    }
-    return '';
-  }
-  
-  updateSeo(path:string){
-    if (path.includes('product')) {
-      if (this.product) {
-        this.scoContent = {
-          'url': window.location.href,
-          'og_title': this.getSafeMetaValue(this.product.meta_title, this.themeOption?.seo?.meta_title),
-          'og_description': this.getSafeMetaValue(this.product.meta_description, this.themeOption?.seo?.meta_description),
-          'og_image': this.getSafeMetaValue(this.product.product_meta_image?.original_url, this.themeOption?.seo?.og_image?.original_url),
-        };
-      }
-      this.customSCO();
-    }
-    else if(path.includes('blog')) {
-      if(this.blog){
-        this.scoContent = {
-          ...this.scoContent,
-          'url': window.location.href,
-          'og_title': this.getSafeMetaValue(this.blog?.meta_title, this.themeOption?.seo?.meta_title),
-          'og_description': this.getSafeMetaValue(this.blog?.meta_description, this.themeOption?.seo?.meta_description),
-          'og_image': this.getSafeMetaValue(this.blog?.blog_meta_image?.original_url, this.themeOption?.seo?.og_image?.original_url),
-        }
-        this.customSCO();
-      }
-    }
-    else if(path.includes('page')) {
-      if(this.page) {
-        this.scoContent = {
-          ...this.scoContent,
-          'url': window.location.href,
-          'og_title': this.getSafeMetaValue(this.page?.meta_title, this.themeOption?.seo?.meta_title),
-          'og_description': this.getSafeMetaValue(this.page?.meta_description, this.themeOption?.seo?.meta_description),
-          'og_image': this.getSafeMetaValue(this.page?.page_meta_image?.original_url, this.themeOption?.seo?.og_image?.original_url),
-        }
-      }
-      this.customSCO();
-    } else if(path.includes('brand')) {
-      if(this.brand) {
-        this.scoContent = {
-          ...this.scoContent,
-          'url': window.location.href,
-          'og_title': this.getSafeMetaValue(this.brand?.meta_title, this.themeOption?.seo?.meta_title),
-          'og_description': this.getSafeMetaValue(this.brand?.meta_description, this.themeOption?.seo?.meta_description),
-          'og_image': this.getSafeMetaValue(this.brand?.brand_meta_image?.original_url, this.themeOption?.seo?.og_image?.original_url),
-        }
-      }
-      this.customSCO();
-    } else if(path.includes('category')) {
-      if(this.category) {
-        this.scoContent = {
-          ...this.scoContent,
-          'url': window.location.href,
-          'og_title': this.getSafeMetaValue(this.category?.meta_title, this.themeOption?.seo?.meta_title),
-          'og_description': this.getSafeMetaValue(this.category?.meta_description, this.themeOption?.seo?.meta_description),
-          'og_image': this.getSafeMetaValue(this.category?.category_meta_image?.original_url, this.themeOption?.seo?.og_image?.original_url),
-        }
-      }
-      this.customSCO();
-    } 
-    else {
-      this.updateDefaultSeo();
-    }
-  }
-
-  updateDefaultSeo(){
-    const title = this.themeOption?.seo?.meta_title || 'Fashion Collection for Men and Women | Active Wear | Fashion Hub';
-    const description = this.themeOption?.seo?.meta_description || 'Explore our latest fashion collections for men and women for real-life comfort, and look always trendy with latest men\'s clothing trends and the newest women\'s collection';
-    const image = this.themeOption?.seo?.og_image?.original_url || '';
-    const url = this.scoContent['url'] || window.location.href;
- 
-    this.meta.updateTag({ name: 'title', content: title });
-    this.meta.updateTag({ name: 'description', content: description });
-
-    // Update Facebook Meta Tags
-    this.meta.updateTag({ property: 'og:type', content: 'website' });
-    this.meta.updateTag({ property: 'og:url', content: url });
-    this.meta.updateTag({ property: 'og:title', content: title });
-    this.meta.updateTag({ property: 'og:description', content: description });
-    this.meta.updateTag({ property: 'og:image', content: image });
-
-    // Update Twitter Meta Tags
-    this.meta.updateTag({ property: 'twitter:card', content: 'summary_large_image' });
-    this.meta.updateTag({ property: 'twitter:url', content: url });
-    this.meta.updateTag({ property: 'twitter:title', content: title });
-    this.meta.updateTag({ property: 'twitter:description', content: description });
-    this.meta.updateTag({ property: 'twitter:image', content: image });
-
-    if(this.themeOption?.general && this.themeOption?.general?.exit_tagline_enable){
-      document.addEventListener('visibilitychange', () => {
-        this.messages = this.themeOption.general.taglines;
-        this.ngZone.run(() => {
-          this.isTabInFocus = !document.hidden;
-          if (this.isTabInFocus) {
-            clearTimeout(this.timeoutId);
-            return this.titleService.setTitle(this.themeOption?.general?.site_title && this.themeOption?.general?.site_tagline
-              ? `${this.themeOption?.general?.site_title} | ${this.themeOption?.general?.site_tagline}` : title)
-          } else {
-            this.updateMessage();
-          }
-        });
-      });
-      this.scoContent = {
-        ...this.scoContent,
-        'url': window.location.href,
-        'og_title': title,
-        'og_description': description,
-        'og_image': image,
-      }
-      
-      this.customSCO()
-    }else {
-      return this.titleService.setTitle(this.themeOption?.general?.site_title && this.themeOption?.general?.site_tagline
-        ? `${this.themeOption?.general?.site_title} | ${this.themeOption?.general?.site_tagline}` : title)
-    }
-  }
- 
-  customSCO(){
-    const title = this.scoContent['og_title'] || this.themeOption?.seo?.meta_title || 'Fashion Collection for Men and Women | Active Wear | Fashion Hub';
-    const description = this.scoContent['og_description'] || this.themeOption?.seo?.meta_description || 'Explore our latest fashion collections for men and women for real-life comfort, and look always trendy with latest men\'s clothing trends and the newest women\'s collection';
-
-    this.titleService.setTitle(title);
-    this.meta.updateTag({ name: 'title', content: title });
-    this.meta.updateTag({ name: 'description', content: description });
-
-    // Update Facebook Meta Tags
-    this.meta.updateTag({ property: 'og:type', content: 'website' });
-    this.meta.updateTag({ property: 'og:url', content: this.scoContent['url'] || window.location.href });
-    this.meta.updateTag({ property: 'og:title', content: title });
-    this.meta.updateTag({ property: 'og:description', content: description });
-    this.meta.updateTag({ property: 'og:image', content: this.scoContent['og_image'] || this.themeOption?.seo?.og_image?.original_url || '' });
-
-    // Update Twitter Meta Tags
-    this.meta.updateTag({ property: 'twitter:card', content: 'summary_large_image' });
-    this.meta.updateTag({ property: 'twitter:url', content: this.scoContent['url'] || window.location.href });
-    this.meta.updateTag({ property: 'twitter:title', content: title });
-    this.meta.updateTag({ property: 'twitter:description', content: description });
-    this.meta.updateTag({ property: 'twitter:image', content: this.scoContent['og_image'] || this.themeOption?.seo?.og_image?.original_url || '' });
-  }
-
-  updateMessage() {
-    // Clear the previous timeout
-    clearTimeout(this.timeoutId);
-
-    // Update the current message
-    this.currentMessage = this.messages[this.currentMessageIndex];
-    this.titleService.setTitle(this.currentMessage);
-    // Increment the message index or reset it to 0 if it reaches the end
-    this.currentMessageIndex = (this.currentMessageIndex + 1) % this.messages.length;
-
-    // Set a new timeout to call the function again after the specified delay
-    this.timeoutId = setTimeout(() => {
-      this.updateMessage();
-    }, this.delay);
-  }
-
-  ngOnDestroy() {
-    // Clear the timeout when the component is destroyed
-    clearTimeout(this.timeoutId);
-  }
-
-  // Force update meta tags immediately
-  forceUpdateMetaTags() {
-    const title = 'Fashion Collection for Men and Women | Active Wear | Fashion Hub';
-    const description = 'Explore our latest fashion collections for men and women for real-life comfort, and look always trendy with latest men\'s clothing trends and the newest women\'s collection';
-    
-    this.titleService.setTitle(title);
-    this.meta.updateTag({ name: 'title', content: title });
-    this.meta.updateTag({ name: 'description', content: description });
-    
-    // Update Facebook Meta Tags
-    this.meta.updateTag({ property: 'og:title', content: title });
-    this.meta.updateTag({ property: 'og:description', content: description });
-    
-    // Update Twitter Meta Tags
-    this.meta.updateTag({ property: 'twitter:title', content: title });
-    this.meta.updateTag({ property: 'twitter:description', content: description });
-  }
-
-  
 }

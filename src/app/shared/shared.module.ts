@@ -95,6 +95,7 @@ import { StandardProductBoxComponent } from './components/widgets/product-box/st
 import { ProductHoverActionComponent } from './components/widgets/product-box/widgets/product-hover-action/product-hover-action.component';
 import { ProductCartButtonComponent } from './components/widgets/product-box/widgets/product-cart-button/product-cart-button.component';
 import { SearchDropdownComponent } from './components/header/widgets/search/search-dropdown/search-dropdown.component';
+import { SeoHeadingComponent } from './components/seo-heading.component';
 
 // Directives
 import { ClickOutsideDirective } from './directive/out-side-directive';
@@ -194,7 +195,8 @@ import { SearchFilterPipe } from './pipe/search-filter.pipe';
     ProductHoverActionComponent,
     ProductCartButtonComponent,
     SearchDropdownComponent,
-    BreadcrumbDigitalComponent
+    BreadcrumbDigitalComponent,
+    SeoHeadingComponent
   ],
   imports: [
     CommonModule,
@@ -260,7 +262,8 @@ import { SearchFilterPipe } from './pipe/search-filter.pipe';
     SaleTimerComponent,
     HighlighterPipe,
     SearchFilterPipe,
-    BreadcrumbDigitalComponent
+    BreadcrumbDigitalComponent,
+    SeoHeadingComponent
   ]
 })
 export class SharedModule { }

@@ -6,7 +6,7 @@ import { LayoutComponent } from './layout/layout.component';
 import { MaintenanceComponent } from './maintenance/maintenance.component';
 import { ScrollPositionGuard } from './core/guard/scroll.guard';
 
-const routes: Routes = [
+export const routes: Routes = [
   {
     path: '',
     redirectTo: '',
