@@ -1,5 +1,5 @@
 <ul>
   <li *ngFor="let link of links">
-    <a routerLink="/{{link.value}}" class="text-content">{{ link.name | titleCase }}</a>
+    <a routerLink="/{{link.value}}" class="text-content" [href]="'/' + link.value" [title]="link.name | titleCase">{{ link.name | titleCase }}</a>
   </li>
 </ul>

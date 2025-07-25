@@ -7,18 +7,7 @@
                     <app-footer-about [data]="data"></app-footer-about>
                 </div>
             </div>
-            <!-- <div 
-                class="col-xl-2 col-lg-3 col-md-4 col-sm-6"
-                (click)="toggle('categories')">
-                <div class="footer-title" [class.show]="active['categories']">
-                    <h4>{{ 'Categories' | translate }}</h4>
-                </div>
-                <div class="footer-contain">
-                    <app-footer-categories [data]="data"></app-footer-categories>
-                   
-                    <app-no-data [class]="'no-data-footer'" [text]="'no_category_found'" *ngIf="!data?.footer?.footer_categories?.length"></app-no-data>
-                </div>
-            </div> -->
+           
             <div class="col-xl-2 col-lg-2 col-sm-3"
                 (click)="toggle('useful_link')">
                 <div class="footer-title" [class.show]="active['useful_link']">
@@ -27,13 +16,13 @@
                 <div class="footer-contain">
                     <!-- <app-footer-links [links]="data?.footer?.useful_link || []"></app-footer-links> -->
                      <ul>
-                        <li><a href="/term-condition">Terms &amp; Conditions</a></li>
-                        <li><a href="/privacy-policy">Privacy Policy</a></li>
-                        <li><a href="/refund-and-cancellation">Refund and Cancellation Policy</a></li>
-                        <li><a href="/return-policy">Return Policy</a></li>
-                        <li><a href="/shipping-policy">Shipping Policy</a></li>
-                        <li><a href="page/about-us">About Us</a></li>
-                        <li><a href="/Contact-Us">Contact Us</a></li>
+                        <li><a routerLink="/term-condition" title="Terms &amp; Conditions" href="/term-condition">Terms &amp; Conditions</a></li>
+                        <li><a routerLink="/privacy-policy" title="Privacy Policy" href="/privacy-policy">Privacy Policy</a></li>
+                        <li><a routerLink="/refund-and-cancellation" title="Refund and Cancellation Policy" href="/refund-and-cancellation">Refund and Cancellation Policy</a></li>
+                        <li><a routerLink="/return-policy" title="Return Policy" href="/return-policy">Return Policy</a></li>
+                        <li><a routerLink="/shipping-policy" title="Shipping Policy" href="/shipping-policy">Shipping Policy</a></li>
+                        <li><a routerLink="/page/about-us" title="About Us" href="/page/about-us">About Us</a></li>
+                        <li><a routerLink="/Contact-Us" title="Contact Us" href="/Contact-Us">Contact Us</a></li>
                         <!-- <li><a href="/page/about-us">About Us</a></li> -->
                      </ul>
                     <!-- No Data -->

@@ -4,11 +4,11 @@
         <h2>Register Address</h2>
         <li *ngIf="data?.footer?.about_address">
             <i class="ri-home-line"></i>
-            <a href="https://www.google.com/maps" target="_blank">{{ data?.footer?.about_address }}</a>
+            <a href="https://www.google.com/maps" target="_blank" title="View on Google Maps">{{ data?.footer?.about_address }}</a>
         </li>
         <li *ngIf="data?.footer?.about_email">
             <i class="ri-mail-line"></i>
-            <a href="mailto:{{ data?.footer?.about_email }}">{{ data?.footer?.about_email }}</a>
+            <a href="mailto:{{ data?.footer?.about_email }}" title="Send us an email">{{ data?.footer?.about_email }}</a>
         </li>
     </ul>
     <!-- <ul class="address">

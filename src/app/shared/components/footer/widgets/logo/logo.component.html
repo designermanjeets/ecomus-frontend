@@ -1,5 +1,5 @@
 <div class="theme-logo">
-    <a [routerLink]="['/']">
+    <a [routerLink]="['/']" href="/">
         <img [src]="footer.footer_logo" class="img-fluid" alt="logo" *ngIf="footer?.footer_logo else text">
         <ng-template #text>
             <h2 class="f-w-600" *ngIf="data && data?.general">
