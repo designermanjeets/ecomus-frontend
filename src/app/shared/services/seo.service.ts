@@ -235,8 +235,8 @@ export class SeoService {
    */
   updateDefaultSeo(): void {
     this.setSEOData({
-      title: 'Stylexio | Fashion Store | Menswear Online | Unique Womenswear | ',
-      description: 'Shop for a wide range of menswear online and upgrade your style with real-life fashion and explore our unique womenswear showcased to elevate everyday looks.',
+      title: 'Menswear Online Shopping Made Easy – Shop the Latest Trends | ',
+      description: 'Menswear online shopping made simple. Explore the latest fashion, best deals, and must-have wardrobe essentials for every style and budget at STYLEXIO',
       keywords: 'online shopping, ecommerce, electronics, fashion, home & garden, deals, discounts',
       type: 'website',
       url: 'https://stylexio.in/'
