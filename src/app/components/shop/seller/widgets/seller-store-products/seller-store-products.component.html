@@ -1,6 +1,6 @@
 <ul class="product-image">
     <li *ngFor="let image of store.product_images">
-        <img [src]="image ? image : 'assets/images/product.png'" class="img-fluid" alt="image">
+        <img [src]="image ? image : 'assets/images/product.png'" class="img-fluid" alt="seller store product image">
     </li>
     <li *ngIf="store.products_count > 3">+{{ store.products_count - 3 }}</li>
 </ul>

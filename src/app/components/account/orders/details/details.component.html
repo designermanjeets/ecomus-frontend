@@ -29,7 +29,7 @@
                         }">
                         <div class="panel-content">
                             <div class="icon">
-                                <img src="assets/svg/tracking/{{orderStatus?.slug}}.svg" class="img-fluid" alt="image">
+                                <img src="assets/svg/tracking/{{orderStatus?.slug}}.svg" class="img-fluid" alt="order status tracking icon">
                             </div>
                             <div class="status">{{ orderStatus?.name | titleCase }}</div>
                         </div>
@@ -38,7 +38,7 @@
                 <li class="active cancelled-box" *ngIf="order?.order_status && order?.order_status?.slug == 'cancelled'">
                     <div class="panel-content" *ngIf="order?.order_status">
                         <div class="icon">
-                            <img src="assets/svg/tracking/{{order.order_status.slug}}.svg" class="img-fluid" alt="image">
+                            <img src="assets/svg/tracking/{{order.order_status.slug}}.svg" class="img-fluid" alt="order status tracking icon">
                         </div>
                         <div class="status">{{ order.order_status.name.replace('_', ' ')! | titlecase }}</div>
                     </div>

@@ -23,7 +23,7 @@
                 <tbody>
                     <tr *ngFor="let data of (download$ | async)?.data let i = index">
                         <td>
-                            <img src="{{ data.item_image }}" class="img-fluid" alt="image">
+                            <img src="{{ data.item_image }}" class="img-fluid" alt="downloadable item image">
                         </td>
                         <td class="table-name">{{ data.item_name }}</td>
                         <td>
