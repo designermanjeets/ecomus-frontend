@@ -47,6 +47,7 @@ export class ContactUsComponent implements OnInit {
       title: 'Contact Stylexio – We\'re Here to Help You 24/7',
       description: 'Get in touch with Stylexio customer support. We\'re available 24/7 to help with orders, products, and any questions you may have.',
       keywords: 'contact us, customer support, help, stylexio contact, customer service',
+      canonicalUrl: 'https://stylexio.in/Contact-Us', // ✅ Canonical URL for SEO
       url: 'https://stylexio.in/Contact-Us',
       type: 'website',
       image: 'https://stylexio.in/assets/images/contact-us.jpg'

@@ -7,6 +7,7 @@ export interface SEOData {
   keywords?: string;
   image?: string;
   url?: string;
+  canonicalUrl?: string; // Add canonical URL support
   type?: string;
   author?: string;
   publishedTime?: string;
@@ -56,6 +57,14 @@ export class SeoService {
       this.meta.updateTag({ name: 'twitter:url', content: data.url });
     }
 
+    // Set canonical URL - this is crucial for SEO!
+    if (data.canonicalUrl) {
+      this.setCanonicalUrl(data.canonicalUrl);
+    } else if (data.url) {
+      // If no canonical URL specified, use the main URL
+      this.setCanonicalUrl(data.url);
+    }
+
     if (data.type) {
       this.meta.updateTag({ property: 'og:type', content: data.type });
     }
@@ -87,6 +96,27 @@ export class SeoService {
     if (data.structuredData) {
       this.setStructuredData(data.structuredData);
     }
+  }
+
+  /**
+   * Set canonical URL - prevents duplicate content issues
+   */
+  setCanonicalUrl(url: string): void {
+    // Remove existing canonical tags
+    this.meta.removeTag('rel="canonical"');
+    
+    // Add new canonical tag
+    this.meta.addTag({ rel: 'canonical', href: url });
+    
+    // Also update Open Graph URL for social media
+    this.meta.updateTag({ property: 'og:url', content: url });
+  }
+
+  /**
+   * Remove canonical URL (useful for dynamic pages)
+   */
+  removeCanonicalUrl(): void {
+    this.meta.removeTag('rel="canonical"');
   }
 
   /**

@@ -18,6 +18,7 @@ export class ReturnExchangeComponent implements OnInit {
       title: 'Easy 7-Day Return Policy – Shop Risk-Free | Stylexio',
       description: 'Shop with confidence at Stylexio. Our easy 7-day return policy ensures you can shop risk-free. Learn about our simple return and exchange process.',
       keywords: 'return policy, exchange policy, 7-day return, shop risk-free, stylexio returns',
+      canonicalUrl: 'https://stylexio.in/return-policy', // ✅ Canonical URL for SEO
       url: 'https://stylexio.in/return-policy',
       type: 'website'
     });
