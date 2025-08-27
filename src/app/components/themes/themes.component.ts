@@ -40,13 +40,12 @@ export class ThemesComponent implements OnInit {
 
   ngOnInit() {
     // Set SEO data for homepage
+    this.seoService.updateDefaultSeo();
+    
+    // Set additional homepage-specific SEO data
     this.seoService.setSEOData({
-      title: 'Menswear Online Shopping Made Easy – Shop the Latest Trends | Stylexio',
-      description: 'Menswear online shopping made simple. Explore the latest fashion, best deals, and must-have wardrobe essentials for every style and budget at STYLEXIO',
-      keywords: 'online shopping, ecommerce, fashion, menswear, womenswear, clothing, accessories, deals, discounts, stylexio',
       canonicalUrl: 'https://stylexio.in/',
       url: 'https://stylexio.in/',
-      type: 'website',
       image: 'https://stylexio.in/assets/images/hero-banner.jpg'
     });
   }

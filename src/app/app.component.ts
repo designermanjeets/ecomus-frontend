@@ -113,13 +113,7 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     // Set default SEO data
-    this.seoService.setSEOData({
-      title: 'Menswear Online Shopping Made Easy – Shop the Latest Trends | ',
-      description: 'Menswear online shopping made simple. Explore the latest fashion, best deals, and must-have wardrobe essentials for every style and budget at STYLEXIO',
-      keywords: 'online shopping, ecommerce, electronics, fashion, home & garden, deals, discounts',
-      type: 'website',
-      url: 'https://stylexio.in'
-    });
+    this.seoService.updateDefaultSeo();
   }
 
   loadScript(val: Analytics): void {

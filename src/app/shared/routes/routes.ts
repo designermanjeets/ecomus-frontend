@@ -6,7 +6,7 @@ export const content: Routes = [
   {
     path: "",
     loadChildren: () => import("../../components/themes/themes.module").then((m) => m.ThemesModule),
-    title: 'Menswear Online Shopping Made Easy – Shop the Latest Trends | '
+    title: 'Stylexio | Activewear, Men\'s & Women\'s Clothes Online'
   },
   {
     path: 'privacy-policy',

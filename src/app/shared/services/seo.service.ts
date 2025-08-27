@@ -265,9 +265,9 @@ export class SeoService {
    */
   updateDefaultSeo(): void {
     this.setSEOData({
-      title: 'Menswear Online Shopping Made Easy – Shop the Latest Trends | ',
-      description: 'Menswear online shopping made simple. Explore the latest fashion, best deals, and must-have wardrobe essentials for every style and budget at STYLEXIO',
-      keywords: 'online shopping, ecommerce, electronics, fashion, home & garden, deals, discounts',
+      title: 'Stylexio | Activewear, Men\'s & Women\'s Clothes Online',
+      description: 'Shop activewear and stylish clothes for men & women at Stylexio. Find gym wear, joggers, and everyday outfits designed for comfort, fit & performance.',
+      keywords: 'activewear, gym wear, joggers, men\'s clothes, women\'s clothes, stylish outfits, comfort fit, performance clothing, Stylexio',
       type: 'website',
       url: 'https://stylexio.in/'
     });
