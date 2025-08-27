@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Select, Store } from '@ngxs/store';
 import { Observable } from 'rxjs';
@@ -7,13 +7,14 @@ import { Option, Contact } from '../../../shared/interface/theme-option.interfac
 import { ThemeOptionState } from '../../../shared/state/theme-option.state';
 import { Breadcrumb } from '../../../shared/interface/breadcrumb';
 import { environment } from '../../../../environments/environment';
+import { SeoService } from '../../../shared/services/seo.service';
 
 @Component({
   selector: 'app-contact-us',
   templateUrl: './contact-us.component.html',
   styleUrls: ['./contact-us.component.scss']
 })
-export class ContactUsComponent {
+export class ContactUsComponent implements OnInit {
 
   @Select(ThemeOptionState.themeOptions) themeOption$: Observable<Option>;
 
@@ -27,7 +28,8 @@ export class ContactUsComponent {
   public storageURL = environment.storageURL;
 
   constructor(private formBuilder: FormBuilder,
-    private store: Store){
+    private store: Store,
+    private seoService: SeoService){
     this.form = this.formBuilder.group({
       name: new FormControl('', [Validators.required]),
       email: new FormControl('', [Validators.required, Validators.email]),
@@ -37,6 +39,18 @@ export class ContactUsComponent {
     })
 
     this.themeOption$.subscribe(data => this.contactData = data.contact_us)
+  }
+
+  ngOnInit() {
+    // Set unique SEO data for Contact Us page
+    this.seoService.setSEOData({
+      title: 'Contact Stylexio – We\'re Here to Help You 24/7',
+      description: 'Get in touch with Stylexio customer support. We\'re available 24/7 to help with orders, products, and any questions you may have.',
+      keywords: 'contact us, customer support, help, stylexio contact, customer service',
+      url: 'https://stylexio.in/Contact-Us',
+      type: 'website',
+      image: 'https://stylexio.in/assets/images/contact-us.jpg'
+    });
   }
 
   submit(){
