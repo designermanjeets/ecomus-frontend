@@ -1,0 +1,44 @@
+/* Homepage Title Section - H1 Styling */
+.homepage-title-section {
+  padding: 3rem 0;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  margin-bottom: 0;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.page-title-section {
+  padding: 0;
+}
+
+.main-page-title {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  
+  @media (max-width: 768px) {
+    font-size: 2.2rem;
+  }
+  
+  @media (max-width: 576px) {
+    font-size: 1.8rem;
+  }
+}
+
+.page-description {
+  font-size: 1.2rem;
+  color: #6c757d;
+  margin: 0;
+  line-height: 1.6;
+  max-width: 700px;
+  margin: 0 auto;
+  font-weight: 400;
+  
+  @media (max-width: 768px) {
+    font-size: 1.1rem;
+  }
+}
+
+/* Existing theme styles can go here */

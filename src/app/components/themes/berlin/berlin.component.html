@@ -1,5 +1,19 @@
+<!-- Main Page Title - H1 for SEO -->
+<section class="homepage-title-section">
+  <div class="container-fluid-lg">
+    <div class="row">
+      <div class="col-12">
+        <div class="page-title-section text-center">
+          <h1 class="main-page-title">Premium Fashion & Lifestyle Shopping at Stylexio</h1>
+          <p class="page-description">Discover the latest trends in fashion, electronics, and lifestyle products. Quality shopping experience with Stylexio.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- Home Section Start -->
-<section class="home-section pt-2 ratio_50" *ngIf="data?.content?.home_banner">
+<section class="home-section pt-2" *ngIf="data?.content?.home_banner">
   <app-theme-home-banner [theme]="'berlin'" [data]="data?.content?.home_banner"></app-theme-home-banner>
 </section>
 <!-- Home Section End -->

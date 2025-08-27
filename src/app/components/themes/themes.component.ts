@@ -1,17 +1,18 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Store, Select  } from '@ngxs/store';
 import { Observable } from 'rxjs';
 import { ThemeState } from '../../shared/state/theme.state';
 import { GetHomePage } from '../../shared/action/theme.action';
 import { ThemeOptionService } from '../../shared/services/theme-option.service';
+import { SeoService } from '../../shared/services/seo.service';
 
 @Component({
   selector: 'app-themes',
   templateUrl: './themes.component.html',
   styleUrls: ['./themes.component.scss']
 })
-export class ThemesComponent {
+export class ThemesComponent implements OnInit {
 
   @Select(ThemeState.homePage) homePage$: Observable<string>;
   @Select(ThemeState.activeTheme) activeTheme$: Observable<string>;
@@ -21,7 +22,8 @@ export class ThemesComponent {
 
   constructor(private store: Store,
     private route: ActivatedRoute,
-    private themeOptionService: ThemeOptionService) {
+    private themeOptionService: ThemeOptionService,
+    private seoService: SeoService) {
       this.route.queryParams.subscribe(params => {
         this.themeOptionService.preloader = true;
         this.activeTheme$.subscribe(theme => {
@@ -35,10 +37,21 @@ export class ThemesComponent {
 
     document.body.classList.add('home');
   }
-  
 
+  ngOnInit() {
+    // Set SEO data for homepage
+    this.seoService.setSEOData({
+      title: 'Menswear Online Shopping Made Easy – Shop the Latest Trends | Stylexio',
+      description: 'Menswear online shopping made simple. Explore the latest fashion, best deals, and must-have wardrobe essentials for every style and budget at STYLEXIO',
+      keywords: 'online shopping, ecommerce, fashion, menswear, womenswear, clothing, accessories, deals, discounts, stylexio',
+      canonicalUrl: 'https://stylexio.in/',
+      url: 'https://stylexio.in/',
+      type: 'website',
+      image: 'https://stylexio.in/assets/images/hero-banner.jpg'
+    });
+  }
+  
   ngOnDestroy(){
     document.body.classList.remove('home');
-    
   }
 }

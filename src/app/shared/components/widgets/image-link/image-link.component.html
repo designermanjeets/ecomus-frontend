@@ -2,7 +2,6 @@
   <a href="{{ image?.redirect_link?.link }}" target="_self" class="banner-contain d-block h-100">
     <div class="h-100 bg-size" [ngClass]="class" *ngIf="bgImage" [ngStyle]="{'background-image': 'url(' + storageURL + image?.image_url + ')'}"></div>
     <img *ngIf="!bgImage" [src]="storageURL + image?.image_url" class="h-100 bg-img w-100" alt="banner">
-    <h1 class="sr-only">Stylexio – Premium Fashion for Everyone</h1>
   </a>
 </ng-container>
 <ng-template #collection>
