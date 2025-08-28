@@ -12,5 +12,6 @@ export class TitleComponent {
   @Input() style: string;
   @Input() title?: string;
   @Input() description?: string;
+  @Input() headingLevel: 'h1' | 'h2' = 'h2';
 
 }

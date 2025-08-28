@@ -1,0 +1,16 @@
+/* Custom font size for h1 tags */
+.title h1 {
+  font-size: calc(22px + 6 * (100vw - 320px) / 1600);
+  font-weight: 700;
+  color: inherit;
+  margin: 0;
+  line-height: 1.2;
+}
+
+/* Maintain existing h2 styling */
+.title h2 {
+  font-weight: 700;
+  color: inherit;
+  margin: 0;
+  line-height: 1.2;
+}
