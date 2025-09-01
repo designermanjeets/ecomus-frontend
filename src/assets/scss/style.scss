@@ -253,3 +253,8 @@ h2.p-text-main.h1-text {
   line-height: 20px;
   margin-bottom: 10px;
 }
+.product-section-box .custom-tab .tab-pane .product-description.more-less-box {
+  max-height: auto !important; 
+  position: relative;
+  overflow: hidden;
+}
