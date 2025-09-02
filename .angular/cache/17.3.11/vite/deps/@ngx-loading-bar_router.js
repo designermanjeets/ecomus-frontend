@@ -1,4 +1,8 @@
 import {
+  LoadingBarModule,
+  LoadingBarService
+} from "./chunk-Q3VRGD4L.js";
+import {
   NavigationCancel,
   NavigationEnd,
   NavigationError,
@@ -6,10 +10,6 @@ import {
   Router,
   RouterModule
 } from "./chunk-AOP22ZBE.js";
-import {
-  LoadingBarModule,
-  LoadingBarService
-} from "./chunk-Q3VRGD4L.js";
 import "./chunk-FNX6IRXA.js";
 import "./chunk-5SZJE72U.js";
 import "./chunk-GY65V5CF.js";
@@ -20,8 +20,8 @@ import {
   ɵɵdefineNgModule,
   ɵɵinject
 } from "./chunk-LVVQT43K.js";
-import "./chunk-6FQGPHO4.js";
 import "./chunk-INSCHJF3.js";
+import "./chunk-6FQGPHO4.js";
 import "./chunk-LVRZVOCT.js";
 import "./chunk-W44PFRPX.js";
 import "./chunk-ASLTLD6L.js";

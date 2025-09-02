@@ -34,13 +34,17 @@ export class SeoService {
     // Set title
     if (data.title) {
       this.title.setTitle(data.title);
+      // Also set meta title tag for better compatibility
+      this.meta.updateTag({ name: 'title', content: data.title });
     }
 
     // Set meta tags
     if (data.description) {
-      this.meta.updateTag({ name: 'description', content: data.description });
-      this.meta.updateTag({ property: 'og:description', content: data.description });
-      this.meta.updateTag({ name: 'twitter:description', content: data.description });
+      // Strip HTML tags from description
+      const cleanDescription = this.stripHtmlTags(data.description);
+      this.meta.updateTag({ name: 'description', content: cleanDescription });
+      this.meta.updateTag({ property: 'og:description', content: cleanDescription });
+      this.meta.updateTag({ name: 'twitter:description', content: cleanDescription });
     }
 
     if (data.keywords) {
@@ -55,6 +59,12 @@ export class SeoService {
     if (data.url) {
       this.meta.updateTag({ property: 'og:url', content: data.url });
       this.meta.updateTag({ name: 'twitter:url', content: data.url });
+    }
+
+    // Set Open Graph title
+    if (data.title) {
+      this.meta.updateTag({ property: 'og:title', content: data.title });
+      this.meta.updateTag({ name: 'twitter:title', content: data.title });
     }
 
     // Set canonical URL - this is crucial for SEO!
@@ -261,9 +271,61 @@ export class SeoService {
   }
 
   /**
+   * Aggressively clear and replace meta tags
+   */
+  aggressiveClearAndSet(data: SEOData): void {
+    // Remove all existing meta tags
+    this.clearMetaTags();
+    
+    // Also remove by selector to catch any missed tags
+    const existingTags = document.querySelectorAll('meta[name="description"], meta[property="og:description"], meta[name="twitter:description"], meta[property="og:title"], meta[name="twitter:title"], meta[property="og:url"], meta[name="twitter:url"]');
+    existingTags.forEach(tag => tag.remove());
+    
+    // Set new meta tags
+    if (data.title) {
+      this.title.setTitle(data.title);
+      this.meta.addTag({ name: 'title', content: data.title });
+      this.meta.addTag({ property: 'og:title', content: data.title });
+      this.meta.addTag({ name: 'twitter:title', content: data.title });
+    }
+    
+    if (data.description) {
+      const cleanDescription = this.stripHtmlTags(data.description);
+      this.meta.addTag({ name: 'description', content: cleanDescription });
+      this.meta.addTag({ property: 'og:description', content: cleanDescription });
+      this.meta.addTag({ name: 'twitter:description', content: cleanDescription });
+    }
+    
+    if (data.url) {
+      this.meta.addTag({ property: 'og:url', content: data.url });
+      this.meta.addTag({ name: 'twitter:url', content: data.url });
+    }
+    
+    if (data.image) {
+      this.meta.addTag({ property: 'og:image', content: data.image });
+      this.meta.addTag({ name: 'twitter:image', content: data.image });
+    }
+    
+    if (data.type) {
+      this.meta.addTag({ property: 'og:type', content: data.type });
+    }
+    
+    if (data.keywords) {
+      this.meta.addTag({ name: 'keywords', content: data.keywords });
+    }
+  }
+
+  /**
    * Update default SEO settings
    */
   updateDefaultSeo(): void {
+    // Check if we're on a product page - if so, don't override
+    const currentUrl = window.location.pathname;
+    if (currentUrl.includes('/product/')) {
+      console.log('🚫 Skipping default SEO update - on product page');
+      return;
+    }
+    
     this.setSEOData({
       title: 'Stylexio | Activewear, Men\'s & Women\'s Clothes Online',
       description: 'Shop activewear and stylish clothes for men & women at Stylexio. Find gym wear, joggers, and everyday outfits designed for comfort, fit & performance.',
@@ -281,5 +343,240 @@ export class SeoService {
     setTimeout(() => {
       this.updateDefaultSeo();
     }, 100);
+  }
+
+  /**
+   * Set SEO data specifically for product pages
+   * This method provides a convenient way to set all product-related SEO data
+   */
+  setProductPageSEO(product: any, productSlug: string | null, baseUrl: string = 'https://stylexio.in'): void {
+    // Handle null/undefined slug
+    const slug = productSlug || product.slug || `product-${product.id}`;
+    const productUrl = `${baseUrl}/product/${slug}`;
+    
+    // Use custom meta data if available, otherwise generate from product data
+    const metaTitle = product.meta_title || this.generateProductTitle(product);
+    const metaDescription = product.meta_description || this.generateProductDescription(product);
+    const metaKeywords = product.meta_keywords || this.generateProductKeywords(product);
+
+    // Set comprehensive SEO data
+    this.setSEOData({
+      title: metaTitle,
+      description: metaDescription,
+      keywords: metaKeywords,
+      image: product.product_thumbnail?.original_url || product.product_galleries?.[0]?.original_url,
+      url: productUrl,
+      canonicalUrl: product.canonical_url || productUrl,
+      type: 'product',
+      author: 'Stylexio'
+    });
+
+    // Set product structured data for rich snippets
+    this.setProductStructuredData({
+      name: product.name,
+      description: product.description || product.short_description,
+      image: product.product_thumbnail?.original_url || product.product_galleries?.[0]?.original_url,
+      price: product.sale_price || product.price,
+      currency: 'INR',
+      brand: product.brand?.name || 'Stylexio',
+      url: productUrl,
+      inStock: product.stock_status === 'in_stock',
+      aggregateRating: product.reviews_count > 0 ? {
+        rating: this.calculateAverageRating(product.review_ratings),
+        reviewCount: product.reviews_count
+      } : undefined
+    });
+
+    // Set breadcrumb structured data
+    const breadcrumbs = [
+      { name: 'Home', url: baseUrl },
+      { name: 'Products', url: `${baseUrl}/collections` }
+    ];
+    
+    if (product.categories && product.categories.length > 0) {
+      breadcrumbs.push({
+        name: product.categories[0].name,
+        url: `${baseUrl}/category/${product.categories[0].slug}`
+      });
+    }
+    
+    breadcrumbs.push({ name: product.name, url: productUrl });
+    this.setBreadcrumbStructuredData(breadcrumbs);
+  }
+
+  /**
+   * Generate SEO-friendly title for the product
+   * You can customize this method to create titles according to your needs
+   */
+  private generateProductTitle(product: any): string {
+    const brand = product.brand?.name ? `${product.brand.name} ` : '';
+    const category = product.categories?.[0]?.name ? ` ${product.categories[0].name}` : '';
+    const price = product.sale_price ? `₹${product.sale_price}` : `₹${product.price}`;
+    
+    // Example: "Nike Air Max 270 Men's Running Shoes - ₹8,999 | Stylexio"
+    return `${brand}${product.name}${category} - ${price} | Stylexio`;
+  }
+
+  /**
+   * Generate SEO-friendly description for the product
+   * You can customize this method to create descriptions according to your needs
+   */
+  private generateProductDescription(product: any): string {
+    const brand = product.brand?.name ? `${product.brand.name} ` : '';
+    const category = product.categories?.[0]?.name ? ` ${product.categories[0].name}` : '';
+    const price = product.sale_price ? `₹${product.sale_price}` : `₹${product.price}`;
+    const discount = product.discount > 0 ? ` Save ${product.discount}%!` : '';
+    
+    // Use product description or short description, fallback to generated
+    const description = product.description || product.short_description || 
+      `Shop ${brand}${product.name}${category} online at Stylexio. Premium quality, great prices, fast delivery.${discount}`;
+    
+    // Limit description to 160 characters for SEO
+    return description.length > 160 ? description.substring(0, 157) + '...' : description;
+  }
+
+  /**
+   * Generate SEO keywords for the product
+   */
+  private generateProductKeywords(product: any): string {
+    const keywords = [];
+    
+    // Add product name
+    keywords.push(product.name);
+    
+    // Add brand
+    if (product.brand?.name) {
+      keywords.push(product.brand.name);
+    }
+    
+    // Add categories
+    if (product.categories) {
+      product.categories.forEach((category: any) => {
+        keywords.push(category.name);
+      });
+    }
+    
+    // Add tags
+    if (product.tags) {
+      product.tags.forEach((tag: any) => {
+        keywords.push(tag.name);
+      });
+    }
+    
+    // Add generic keywords
+    keywords.push('buy online', 'Stylexio', 'fashion', 'clothing');
+    
+    return keywords.join(', ');
+  }
+
+  /**
+   * Calculate average rating from review ratings array
+   */
+  private calculateAverageRating(ratings: number[]): number {
+    if (!ratings || ratings.length === 0) return 0;
+    const sum = ratings.reduce((acc, rating) => acc + rating, 0);
+    return Math.round((sum / ratings.length) * 10) / 10; // Round to 1 decimal place
+  }
+
+  /**
+   * Strip HTML tags from text for clean meta descriptions
+   */
+  private stripHtmlTags(html: string): string {
+    if (!html) return '';
+    
+    // Create a temporary DOM element to parse HTML
+    const temp = document.createElement('div');
+    temp.innerHTML = html;
+    
+    // Get text content and clean it up
+    let text = temp.textContent || temp.innerText || '';
+    
+    // Clean up extra whitespace
+    text = text.replace(/\s+/g, ' ').trim();
+    
+    // Limit to 160 characters for SEO
+    if (text.length > 160) {
+      text = text.substring(0, 157) + '...';
+    }
+    
+    return text;
+  }
+
+  /**
+   * Force update SEO data with aggressive overwriting
+   * This method ensures product SEO takes precedence over other SEO
+   */
+  forceUpdateSEOData(data: SEOData): void {
+    // Clear existing meta tags first
+    this.clearMetaTags();
+    
+    // Set new SEO data
+    this.setSEOData(data);
+    
+    // Force update with multiple methods and multiple timeouts
+    if (data.title) {
+      // Immediate update
+      this.title.setTitle(data.title);
+      document.title = data.title;
+      this.meta.updateTag({ name: 'title', content: data.title });
+      this.meta.updateTag({ property: 'og:title', content: data.title });
+      this.meta.updateTag({ name: 'twitter:title', content: data.title });
+      
+      // Delayed updates to ensure they stick
+      setTimeout(() => {
+        this.title.setTitle(data.title!);
+        document.title = data.title!;
+        this.meta.updateTag({ name: 'title', content: data.title! });
+        this.meta.updateTag({ property: 'og:title', content: data.title! });
+        this.meta.updateTag({ name: 'twitter:title', content: data.title! });
+      }, 0);
+      
+      setTimeout(() => {
+        this.title.setTitle(data.title!);
+        document.title = data.title!;
+        this.meta.updateTag({ name: 'title', content: data.title! });
+        this.meta.updateTag({ property: 'og:title', content: data.title! });
+        this.meta.updateTag({ name: 'twitter:title', content: data.title! });
+      }, 100);
+    }
+    
+    if (data.description) {
+      const cleanDescription = this.stripHtmlTags(data.description);
+      
+      // Immediate update
+      this.meta.updateTag({ name: 'description', content: cleanDescription });
+      this.meta.updateTag({ property: 'og:description', content: cleanDescription });
+      this.meta.updateTag({ name: 'twitter:description', content: cleanDescription });
+      
+      // Delayed updates to ensure they stick
+      setTimeout(() => {
+        this.meta.updateTag({ name: 'description', content: cleanDescription });
+        this.meta.updateTag({ property: 'og:description', content: cleanDescription });
+        this.meta.updateTag({ name: 'twitter:description', content: cleanDescription });
+      }, 0);
+      
+      setTimeout(() => {
+        this.meta.updateTag({ name: 'description', content: cleanDescription });
+        this.meta.updateTag({ property: 'og:description', content: cleanDescription });
+        this.meta.updateTag({ name: 'twitter:description', content: cleanDescription });
+      }, 100);
+      
+      setTimeout(() => {
+        this.meta.updateTag({ name: 'description', content: cleanDescription });
+        this.meta.updateTag({ property: 'og:description', content: cleanDescription });
+        this.meta.updateTag({ name: 'twitter:description', content: cleanDescription });
+      }, 500);
+    }
+    
+    // Force update URLs
+    if (data.url) {
+      this.meta.updateTag({ property: 'og:url', content: data.url });
+      this.meta.updateTag({ name: 'twitter:url', content: data.url });
+      
+      setTimeout(() => {
+        this.meta.updateTag({ property: 'og:url', content: data.url! });
+        this.meta.updateTag({ name: 'twitter:url', content: data.url! });
+      }, 100);
+    }
   }
 }

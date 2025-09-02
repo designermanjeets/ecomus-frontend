@@ -254,6 +254,7 @@ var require_react_dom_development = __commonJS({
 // node_modules/react-dom/index.js
 var require_react_dom = __commonJS({
   "node_modules/react-dom/index.js"(exports, module) {
+    "use strict";
     if (false) {
       checkDCE();
       module.exports = null;
@@ -279,4 +280,4 @@ react-dom/cjs/react-dom.development.js:
    * LICENSE file in the root directory of this source tree.
    *)
 */
-//# sourceMappingURL=chunk-M3XXEZLY.js.map
+//# sourceMappingURL=chunk-U5IBUS45.js.map
