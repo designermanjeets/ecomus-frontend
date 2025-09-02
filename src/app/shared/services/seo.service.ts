@@ -150,22 +150,41 @@ export class SeoService {
    * Set product structured data
    */
   setProductStructuredData(product: any): void {
+    // Build image array properly
+    const images: string[] = [];
+    if (product.product_thumbnail?.original_url) {
+      images.push(product.product_thumbnail.original_url);
+    }
+    if (product.product_galleries && product.product_galleries.length > 0) {
+      product.product_galleries.forEach((gallery: any) => {
+        if (gallery.original_url && !images.includes(gallery.original_url)) {
+          images.push(gallery.original_url);
+        }
+      });
+    }
+
     const structuredData: any = {
-      "@context": "https://schema.org/",
+      "@context": "https://schema.org",
       "@type": "Product",
       "name": product.name,
-      "description": product.description,
-      "image": product.image,
+      "description": product.description || product.short_description,
+      "sku": product.sku,
+      "image": images.length > 0 ? images : undefined,
       "brand": {
         "@type": "Brand",
-        "name": product.brand || "Ecomus"
+        "name": product.brand?.name || "Stylexio"
       },
       "offers": {
         "@type": "Offer",
-        "price": product.price,
-        "priceCurrency": product.currency || "USD",
-        "availability": product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-        "url": product.url
+        "price": product.sale_price || product.price,
+        "priceCurrency": product.currency || "INR",
+        "availability": product.stock_status === 'in_stock' ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+        "url": product.url,
+        "itemCondition": "https://schema.org/NewCondition",
+        "seller": {
+          "@type": "Organization",
+          "name": "Stylexio"
+        }
       }
     };
 
@@ -373,14 +392,9 @@ export class SeoService {
 
     // Set product structured data for rich snippets
     this.setProductStructuredData({
-      name: product.name,
-      description: product.description || product.short_description,
-      image: product.product_thumbnail?.original_url || product.product_galleries?.[0]?.original_url,
-      price: product.sale_price || product.price,
-      currency: 'INR',
-      brand: product.brand?.name || 'Stylexio',
+      ...product,
       url: productUrl,
-      inStock: product.stock_status === 'in_stock',
+      currency: 'INR',
       aggregateRating: product.reviews_count > 0 ? {
         rating: this.calculateAverageRating(product.review_ratings),
         reviewCount: product.reviews_count
