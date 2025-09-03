@@ -12,20 +12,13 @@ export const PRODUCT_META_DATA: { [key: number]: ProductMetaData } = {
     meta_keywords: "Blue Formal Shirt, men's shirt, cotton shirt, formal wear, Stylexio",
     canonical_url: "https://stylexio.in/product/blue-formal-shirt-for-men-premium-cotton-stylexio"
   },
-  // Add more products here as needed
-  // 1679: {
-  //   meta_title: "Another Product Title | Stylexio",
-  //   meta_description: "Another product description...",
-  //   meta_keywords: "keywords, here",
-  //   canonical_url: "https://stylexio.in/product/another-product"
-  // }
   3746: {
     meta_title: "Women’s Cotton Half Sleeve Top | Casual Wear Online | Stylexio",
     meta_description: "Shop Women’s Cotton Half Sleeve Top online at Stylexio. Comfortable, breathable cotton top for casual & daily wear. Free shipping across India.",
     meta_keywords: "Women’s Cotton Half Sleeve Top",
     canonical_url: "https://stylexio.in/product/women-s-cotton-half-sleeve-top"
   },
-  3902{
+  3902: {
     meta_title: "Off White Kurti for Women | Printed Cotton Kurti Online",
     meta_description: " Upgrade your wardrobe with this Off White Printed Cotton Kurti. Elegant, breathable & easy to style for office or festivals. Free shipping with Stylexio.",
     meta_keywords: "Off White Printed Cotton Kurti",
