@@ -25,7 +25,7 @@ export const PRODUCT_META_DATA: { [key: number]: ProductMetaData } = {
     meta_keywords: "Women’s Cotton Half Sleeve Top",
     canonical_url: "https://stylexio.in/product/women-s-cotton-half-sleeve-top"
   },
-  3902{
+  3902: {
     meta_title: "Off White Kurti for Women | Printed Cotton Kurti Online",
     meta_description: " Upgrade your wardrobe with this Off White Printed Cotton Kurti. Elegant, breathable & easy to style for office or festivals. Free shipping with Stylexio.",
     meta_keywords: "Off White Printed Cotton Kurti",
