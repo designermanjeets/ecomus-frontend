@@ -42,7 +42,7 @@ export class RegisterComponent {
     private notificationService: NotificationService
   ) {
     this.form = this.formBuilder.group({
-      name: new FormControl('', [Validators.required]),
+      name: new FormControl('', [Validators.required, Validators.pattern(/^[A-Za-z\s]*$/)]),
       email: new FormControl('', [Validators.required, Validators.email]),
       phone: new FormControl('', [Validators.required, Validators.pattern(/^[0-9]*$/)]),
       country_code: new FormControl('91', [Validators.required]),
@@ -82,6 +82,66 @@ export class RegisterComponent {
       this.form.getError('mismatch') &&
       this.form.get('password_confirmation')?.touched
     );
+  }
+
+  // Allow only letters and spaces in name field (block numbers/special characters)
+  allowOnlyLetters(event: KeyboardEvent): void {
+    const allowedControlKeys = [
+      'Backspace', 'Delete', 'Tab', 'Enter', 'Escape', 'ArrowLeft', 'ArrowRight', 'Home', 'End'
+    ];
+    if (allowedControlKeys.includes(event.key)) return;
+    if (!/^[A-Za-z\s]$/.test(event.key)) {
+      event.preventDefault();
+    }
+  }
+
+  sanitizeNameInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const sanitized = (input.value || '').replace(/[^A-Za-z\s]/g, '');
+    if (sanitized !== input.value) {
+      input.value = sanitized;
+      this.form.controls['name'].setValue(sanitized, { emitEvent: false });
+    }
+  }
+
+  sanitizeNamePaste(event: ClipboardEvent): void {
+    const pasted = event.clipboardData?.getData('text') ?? '';
+    if (/[^A-Za-z\s]/.test(pasted)) {
+      event.preventDefault();
+      const sanitized = pasted.replace(/[^A-Za-z\s]/g, '');
+      document.execCommand('insertText', false, sanitized);
+    }
+  }
+
+  // Allow only digits in phone field (block alphabets/special characters)
+  allowOnlyDigits(event: KeyboardEvent): void {
+    const allowedControlKeys = [
+      'Backspace', 'Delete', 'Tab', 'Enter', 'Escape', 'ArrowLeft', 'ArrowRight', 'Home', 'End'
+    ];
+    if (allowedControlKeys.includes(event.key)) return;
+    // Allow Ctrl/Cmd combinations (copy, paste, select all)
+    if (event.ctrlKey || event.metaKey) return;
+    if (!/^[0-9]$/.test(event.key)) {
+      event.preventDefault();
+    }
+  }
+
+  sanitizePhoneInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const digitsOnly = (input.value || '').replace(/\D/g, '').slice(0, 10);
+    if (digitsOnly !== input.value) {
+      input.value = digitsOnly;
+      this.form.controls['phone'].setValue(digitsOnly, { emitEvent: false });
+    }
+  }
+
+  sanitizePhonePaste(event: ClipboardEvent): void {
+    const pasted = event.clipboardData?.getData('text') ?? '';
+    if (/\D/.test(pasted)) {
+      event.preventDefault();
+      const sanitized = pasted.replace(/\D/g, '').slice(0, 10);
+      document.execCommand('insertText', false, sanitized);
+    }
   }
 
   submit() {

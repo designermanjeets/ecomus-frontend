@@ -15,9 +15,12 @@
                 <div class="col-xxl-12">
                     <div class="">
                         <label class="form-label" for="name">{{ 'full_name' | translate }}</label>
-                        <input class="form-control" id="name" type="text" placeholder="{{ 'enter_name' | translate }}" formControlName="name" />
+                        <input class="form-control" id="name" type="text" placeholder="{{ 'enter_name' | translate }}" formControlName="name" (keydown)="allowOnlyLetters($event)" (input)="sanitizeLettersInput($event)" (paste)="sanitizeLettersPaste($event)" />
                         <div class="invalid-feedback" *ngIf="form?.controls?.['name']?.touched && form.controls['name']?.errors?.['required']">
                             {{ 'name_is_required' | translate }}
+                        </div>
+                        <div class="invalid-feedback" *ngIf="form?.controls?.['name']?.touched && form.controls['name']?.errors?.['pattern']">
+                            {{ 'Only letters and spaces are allowed' | translate }}
                         </div>
                     </div>
                 </div>
@@ -50,7 +53,7 @@
                                 </div>
                             </ng-template>
                         </select2>
-                        <input type="number" class="form-control intl-input-padding" formControlName="phone" placeholder="{{ 'enter_phone' | translate }}" name="phone">
+                        <input type="tel" class="form-control intl-input-padding" formControlName="phone" placeholder="{{ 'enter_phone' | translate }}" name="phone" (keydown)="allowOnlyDigits($event)" (input)="sanitizeDigitsInput($event)" (paste)="sanitizeDigitsPaste($event)">
                         <div class="invalid-feedback" *ngIf="form.controls['phone'].touched && form.controls['phone'].errors?.['required']">
                             {{ 'phone_number_is_required' | translate }}
                         </div>
