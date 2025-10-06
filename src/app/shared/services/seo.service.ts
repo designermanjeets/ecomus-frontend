@@ -42,9 +42,13 @@ export class SeoService {
     if (data.description) {
       // Strip HTML tags from description
       const cleanDescription = this.stripHtmlTags(data.description);
+      console.log('🔍 Setting meta description:', cleanDescription);
       this.meta.updateTag({ name: 'description', content: cleanDescription });
       this.meta.updateTag({ property: 'og:description', content: cleanDescription });
       this.meta.updateTag({ name: 'twitter:description', content: cleanDescription });
+      console.log('✅ Meta description tags updated');
+    } else {
+      console.log('❌ No description provided to setSEOData');
     }
 
     if (data.keywords) {
@@ -291,46 +295,72 @@ export class SeoService {
 
   /**
    * Aggressively clear and replace meta tags
+   * FIX: Use updateTag instead of addTag to properly handle existing meta tags
    */
   aggressiveClearAndSet(data: SEOData): void {
-    // Remove all existing meta tags
-    this.clearMetaTags();
+    // Don't remove tags - just update them in place
+    // This is more reliable than removing and re-adding
     
-    // Also remove by selector to catch any missed tags
-    const existingTags = document.querySelectorAll('meta[name="description"], meta[property="og:description"], meta[name="twitter:description"], meta[property="og:title"], meta[name="twitter:title"], meta[property="og:url"], meta[name="twitter:url"]');
-    existingTags.forEach(tag => tag.remove());
-    
-    // Set new meta tags
+    // Set new meta tags using updateTag (creates if doesn't exist, updates if exists)
     if (data.title) {
       this.title.setTitle(data.title);
-      this.meta.addTag({ name: 'title', content: data.title });
-      this.meta.addTag({ property: 'og:title', content: data.title });
-      this.meta.addTag({ name: 'twitter:title', content: data.title });
+      this.meta.updateTag({ name: 'title', content: data.title });
+      this.meta.updateTag({ property: 'og:title', content: data.title });
+      this.meta.updateTag({ name: 'twitter:title', content: data.title });
     }
     
     if (data.description) {
       const cleanDescription = this.stripHtmlTags(data.description);
-      this.meta.addTag({ name: 'description', content: cleanDescription });
-      this.meta.addTag({ property: 'og:description', content: cleanDescription });
-      this.meta.addTag({ name: 'twitter:description', content: cleanDescription });
+      console.log('🔥 Aggressive update - Setting meta description:', cleanDescription);
+      
+      // First try to update existing tag
+      this.meta.updateTag({ name: 'description', content: cleanDescription });
+      this.meta.updateTag({ property: 'og:description', content: cleanDescription });
+      this.meta.updateTag({ name: 'twitter:description', content: cleanDescription });
+      
+      // If updateTag doesn't work, force create the tag directly
+      setTimeout(() => {
+        let metaDesc = document.querySelector('meta[name="description"]');
+        if (!metaDesc) {
+          console.log('🔧 Meta description tag missing, creating it...');
+          metaDesc = document.createElement('meta');
+          metaDesc.setAttribute('name', 'description');
+          document.head.appendChild(metaDesc);
+        }
+        metaDesc.setAttribute('content', cleanDescription);
+        
+        // Also ensure Open Graph description exists
+        let ogDesc = document.querySelector('meta[property="og:description"]');
+        if (!ogDesc) {
+          ogDesc = document.createElement('meta');
+          ogDesc.setAttribute('property', 'og:description');
+          document.head.appendChild(ogDesc);
+        }
+        ogDesc.setAttribute('content', cleanDescription);
+        
+        console.log('✅ Meta description forcefully set:', cleanDescription.substring(0, 50) + '...');
+      }, 50);
+      
+    } else {
+      console.log('❌ No description provided to aggressiveClearAndSet');
     }
     
     if (data.url) {
-      this.meta.addTag({ property: 'og:url', content: data.url });
-      this.meta.addTag({ name: 'twitter:url', content: data.url });
+      this.meta.updateTag({ property: 'og:url', content: data.url });
+      this.meta.updateTag({ name: 'twitter:url', content: data.url });
     }
     
     if (data.image) {
-      this.meta.addTag({ property: 'og:image', content: data.image });
-      this.meta.addTag({ name: 'twitter:image', content: data.image });
+      this.meta.updateTag({ property: 'og:image', content: data.image });
+      this.meta.updateTag({ name: 'twitter:image', content: data.image });
     }
     
     if (data.type) {
-      this.meta.addTag({ property: 'og:type', content: data.type });
+      this.meta.updateTag({ property: 'og:type', content: data.type });
     }
     
     if (data.keywords) {
-      this.meta.addTag({ name: 'keywords', content: data.keywords });
+      this.meta.updateTag({ name: 'keywords', content: data.keywords });
     }
   }
 
@@ -345,6 +375,13 @@ export class SeoService {
       return;
     }
     
+    // Additional check: if we're on any product-related page, don't override
+    if (currentUrl.includes('/product') || currentUrl.includes('/collections')) {
+      console.log('🚫 Skipping default SEO update - on product/collection page');
+      return;
+    }
+    
+    console.log('✅ Setting default SEO for non-product page:', currentUrl);
     this.setSEOData({
       title: 'Stylexio | Activewear, Men\'s & Women\'s Clothes Online',
       description: 'Shop activewear and stylish clothes for men & women at Stylexio. Find gym wear, joggers, and everyday outfits designed for comfort, fit & performance.',
@@ -521,8 +558,8 @@ export class SeoService {
    * This method ensures product SEO takes precedence over other SEO
    */
   forceUpdateSEOData(data: SEOData): void {
-    // Clear existing meta tags first
-    this.clearMetaTags();
+    // Don't clear tags - just update them directly to avoid timing issues
+    console.log('🚀 Force update SEO data - NOT clearing tags to prevent timing issues');
     
     // Set new SEO data
     this.setSEOData(data);
@@ -556,6 +593,7 @@ export class SeoService {
     
     if (data.description) {
       const cleanDescription = this.stripHtmlTags(data.description);
+      console.log('🚀 Force update - Setting meta description:', cleanDescription);
       
       // Immediate update
       this.meta.updateTag({ name: 'description', content: cleanDescription });
@@ -580,6 +618,23 @@ export class SeoService {
         this.meta.updateTag({ property: 'og:description', content: cleanDescription });
         this.meta.updateTag({ name: 'twitter:description', content: cleanDescription });
       }, 500);
+      
+      // Final aggressive update with direct DOM manipulation
+      setTimeout(() => {
+        console.log('🔧 Final force update - Direct DOM manipulation');
+        let metaDesc = document.querySelector('meta[name="description"]');
+        if (!metaDesc) {
+          metaDesc = document.createElement('meta');
+          metaDesc.setAttribute('name', 'description');
+          document.head.appendChild(metaDesc);
+          console.log('🔧 Created missing meta description tag');
+        }
+        metaDesc.setAttribute('content', cleanDescription);
+        console.log('✅ Meta description final update:', metaDesc.getAttribute('content'));
+        
+        // Start persistent monitoring to ensure meta description stays
+        this.startMetaDescriptionMonitoring(cleanDescription);
+      }, 1000);
     }
     
     // Force update URLs
@@ -592,5 +647,47 @@ export class SeoService {
         this.meta.updateTag({ name: 'twitter:url', content: data.url! });
       }, 100);
     }
+  }
+
+  /**
+   * Start monitoring to ensure meta description stays in place
+   * This prevents other scripts from removing the meta description
+   */
+  private startMetaDescriptionMonitoring(description: string): void {
+    console.log('🛡️ Starting meta description monitoring...');
+    
+    // Check every 500ms for 10 seconds to ensure meta description stays
+    let checkCount = 0;
+    const maxChecks = 20; // 10 seconds
+    
+    const monitor = setInterval(() => {
+      checkCount++;
+      const metaDesc = document.querySelector('meta[name="description"]');
+      
+      if (!metaDesc || metaDesc.getAttribute('content') !== description) {
+        console.log('⚠️ Meta description missing or changed, restoring...');
+        
+        // Restore the meta description
+        if (!metaDesc) {
+          const newMetaDesc = document.createElement('meta');
+          newMetaDesc.setAttribute('name', 'description');
+          document.head.appendChild(newMetaDesc);
+        }
+        
+        const targetDesc = document.querySelector('meta[name="description"]');
+        if (targetDesc) {
+          targetDesc.setAttribute('content', description);
+          console.log('✅ Meta description restored:', description.substring(0, 50) + '...');
+        }
+      } else {
+        console.log('✅ Meta description is stable');
+      }
+      
+      // Stop monitoring after max checks
+      if (checkCount >= maxChecks) {
+        clearInterval(monitor);
+        console.log('🛡️ Meta description monitoring completed');
+      }
+    }, 500);
   }
 }
