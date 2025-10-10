@@ -8,8 +8,8 @@
 
   <!-- HTML Meta Tags   -->
   <title>Stylexio | Activewear, Men's & Women's Clothes Online</title>
-  <meta name="title" content="Stylexio | Activewear, Men's & Women's Clothes Online">
-  <meta name="description" content="Shop activewear and stylish clothes for men & women at Stylexio. Find gym wear, joggers, and everyday outfits designed for comfort, fit & performance.">
+  <meta name="title" content="Stylexio Premium Mens and Womens Fashion Online">
+  <meta name="description" content="Discover new season shirts jackets suits denim and more at Stylexio. Premium quality fast shipping across India COD and easy returns.">
   <meta name="google-site-verification" content="WbUPnzaqiwAwaHCNsfdWrzqEkdaFhXGT1YN-G4DJ8Rc" />
   <meta name="msvalidate.01" content="1077BA54A21353B678FD2C381FDDD029" />
   <!-- Google tag (gtag.js) -->
@@ -64,6 +64,13 @@ fbq('track', 'PageView');
   <script>
     // Ensure meta tags are set immediately
     document.addEventListener('DOMContentLoaded', function() {
+      // Check if we're on a product page - if so, don't override
+      const currentUrl = window.location.pathname;
+      if (currentUrl.includes('/product/')) {
+        console.log('🚫 Skipping default meta tag updates - on product page');
+        return;
+      }
+      
       // Update title
       document.title = 'Stylexio | Activewear, Men\'s & Women\'s Clothes Online';
       

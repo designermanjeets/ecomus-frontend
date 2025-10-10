@@ -45,6 +45,11 @@ export class ProductComponent implements OnInit, OnDestroy {
         product.meta_keywords = metaData.meta_keywords;
         product.canonical_url = metaData.canonical_url;
         console.log('🎯 Applied meta data from mapping for product ID:', product.id);
+        console.log('🎯 Meta title set to:', product.meta_title);
+        console.log('🎯 Meta description set to:', product.meta_description);
+      } else if (product) {
+        console.log('❌ No meta data found for product ID:', product.id);
+        console.log('❌ Available meta data IDs:', Object.keys(PRODUCT_META_DATA));
       }
       
       this.breadcrumb.items = [];
@@ -89,33 +94,23 @@ export class ProductComponent implements OnInit, OnDestroy {
     console.log('🔍 Setting SEO for product:', product.name);
     console.log('📝 Custom meta title:', product.meta_title);
     console.log('📝 Custom meta description:', product.meta_description);
-    console.log('📝 Product description:', product.description);
-    console.log('📝 Product short description:', product.short_description);
-    console.log('🔗 Product slug:', productSlug);
-    console.log('🔍 Full product object:', product);
+    console.log('🔗 Product ID:', product.id);
     
     // Use the SeoService method for product pages
-    // SeoService will handle null slug with fallback logic
     this.seoService.setProductPageSEO(product, productSlug);
     
-    // Force update SEO data to override any conflicting SEO
+    // Multiple delayed updates to ensure it overrides default SEO
     setTimeout(() => {
       this.forceProductSEOUpdate(product, productSlug);
-    }, 100);
+    }, 50);
     
-    // Additional force updates with longer delays
+    setTimeout(() => {
+      this.forceProductSEOUpdate(product, productSlug);
+    }, 200);
+    
     setTimeout(() => {
       this.forceProductSEOUpdate(product, productSlug);
     }, 500);
-    
-    setTimeout(() => {
-      this.forceProductSEOUpdate(product, productSlug);
-    }, 1000);
-    
-    // Final aggressive update after everything has loaded
-    setTimeout(() => {
-      this.finalAggressiveUpdate(product, productSlug);
-    }, 2000);
   }
 
   /**
@@ -135,8 +130,8 @@ export class ProductComponent implements OnInit, OnDestroy {
     console.log('📝 Title:', metaTitle);
     console.log('📝 Description:', metaDescription);
 
-    // Use aggressive clear and set method
-    this.seoService.aggressiveClearAndSet({
+    // Use the most aggressive update method available
+    this.seoService.forceUpdateSEOData({
       title: metaTitle,
       description: metaDescription,
       keywords: metaKeywords,
@@ -146,9 +141,6 @@ export class ProductComponent implements OnInit, OnDestroy {
       type: 'product',
       author: 'Stylexio'
     });
-    
-    // Additional aggressive description update
-    this.forceDescriptionUpdate(metaDescription);
   }
 
   /**
@@ -211,128 +203,6 @@ export class ProductComponent implements OnInit, OnDestroy {
     keywords.push('buy online', 'Stylexio', 'fashion', 'clothing');
     
     return keywords.join(', ');
-  }
-
-  /**
-   * Force update description meta tags with aggressive overwriting
-   */
-  private forceDescriptionUpdate(description: string): void {
-    console.log('🔥 Force updating description:', description);
-    
-    // Import Meta service for direct access
-    const meta = this.seoService['meta'];
-    
-    // Multiple immediate updates
-    meta.updateTag({ name: 'description', content: description });
-    meta.updateTag({ property: 'og:description', content: description });
-    meta.updateTag({ name: 'twitter:description', content: description });
-    
-    // Multiple delayed updates
-    setTimeout(() => {
-      meta.updateTag({ name: 'description', content: description });
-      meta.updateTag({ property: 'og:description', content: description });
-      meta.updateTag({ name: 'twitter:description', content: description });
-      console.log('🔥 Description updated at 100ms');
-    }, 100);
-    
-    setTimeout(() => {
-      meta.updateTag({ name: 'description', content: description });
-      meta.updateTag({ property: 'og:description', content: description });
-      meta.updateTag({ name: 'twitter:description', content: description });
-      console.log('🔥 Description updated at 300ms');
-    }, 300);
-    
-    setTimeout(() => {
-      meta.updateTag({ name: 'description', content: description });
-      meta.updateTag({ property: 'og:description', content: description });
-      meta.updateTag({ name: 'twitter:description', content: description });
-      console.log('🔥 Description updated at 600ms');
-    }, 600);
-    
-    setTimeout(() => {
-      meta.updateTag({ name: 'description', content: description });
-      meta.updateTag({ property: 'og:description', content: description });
-      meta.updateTag({ name: 'twitter:description', content: description });
-      console.log('🔥 Description updated at 1000ms');
-    }, 1000);
-  }
-
-  /**
-   * Final aggressive update that runs after all other components
-   */
-  private finalAggressiveUpdate(product: Product, productSlug: string | null): void {
-    console.log('🔥 FINAL AGGRESSIVE UPDATE - Overriding everything');
-    
-    const slug = productSlug || product.slug || `product-${product.id}`;
-    const baseUrl = 'https://stylexio.in';
-    const productUrl = `${baseUrl}/product/${slug}`;
-    const metaTitle = product.meta_title || this.generateProductTitle(product);
-    const metaDescription = product.meta_description || this.generateProductDescription(product);
-    
-    // Direct DOM manipulation as last resort
-    const titleElement = document.querySelector('title');
-    if (titleElement) {
-      titleElement.textContent = metaTitle;
-    }
-    
-    // Remove all existing meta tags by selector
-    const metaSelectors = [
-      'meta[name="description"]',
-      'meta[property="og:description"]',
-      'meta[name="twitter:description"]',
-      'meta[property="og:title"]',
-      'meta[name="twitter:title"]',
-      'meta[property="og:url"]',
-      'meta[name="twitter:url"]'
-    ];
-    
-    metaSelectors.forEach(selector => {
-      const elements = document.querySelectorAll(selector);
-      elements.forEach(el => el.remove());
-    });
-    
-    // Add new meta tags directly to DOM
-    const head = document.head;
-    
-    // Description meta tags
-    const descriptionMeta = document.createElement('meta');
-    descriptionMeta.setAttribute('name', 'description');
-    descriptionMeta.setAttribute('content', metaDescription);
-    head.appendChild(descriptionMeta);
-    
-    const ogDescriptionMeta = document.createElement('meta');
-    ogDescriptionMeta.setAttribute('property', 'og:description');
-    ogDescriptionMeta.setAttribute('content', metaDescription);
-    head.appendChild(ogDescriptionMeta);
-    
-    const twitterDescriptionMeta = document.createElement('meta');
-    twitterDescriptionMeta.setAttribute('name', 'twitter:description');
-    twitterDescriptionMeta.setAttribute('content', metaDescription);
-    head.appendChild(twitterDescriptionMeta);
-    
-    // Title meta tags
-    const ogTitleMeta = document.createElement('meta');
-    ogTitleMeta.setAttribute('property', 'og:title');
-    ogTitleMeta.setAttribute('content', metaTitle);
-    head.appendChild(ogTitleMeta);
-    
-    const twitterTitleMeta = document.createElement('meta');
-    twitterTitleMeta.setAttribute('name', 'twitter:title');
-    twitterTitleMeta.setAttribute('content', metaTitle);
-    head.appendChild(twitterTitleMeta);
-    
-    // URL meta tags
-    const ogUrlMeta = document.createElement('meta');
-    ogUrlMeta.setAttribute('property', 'og:url');
-    ogUrlMeta.setAttribute('content', productUrl);
-    head.appendChild(ogUrlMeta);
-    
-    const twitterUrlMeta = document.createElement('meta');
-    twitterUrlMeta.setAttribute('name', 'twitter:url');
-    twitterUrlMeta.setAttribute('content', productUrl);
-    head.appendChild(twitterUrlMeta);
-    
-    console.log('🔥 FINAL UPDATE COMPLETE - Meta tags set via DOM manipulation');
   }
 
   @HostListener('window:scroll', ['$event'])
