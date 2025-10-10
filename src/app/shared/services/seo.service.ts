@@ -1,5 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
+import { DOCUMENT } from '@angular/common';
+import { isPlatformBrowser, isPlatformServer } from '@angular/common';
 
 export interface SEOData {
   title?: string;
@@ -24,11 +26,14 @@ export class SeoService {
 
   constructor(
     private meta: Meta,
-    private title: Title
+    private title: Title,
+    @Inject(PLATFORM_ID) private platformId: Object,
+    @Inject(DOCUMENT) private document: Document
   ) { }
 
   /**
    * Set comprehensive SEO data including meta tags and structured data
+   * Works on both server and client side
    */
   setSEOData(data: SEOData): void {
     // Set title
@@ -36,6 +41,11 @@ export class SeoService {
       this.title.setTitle(data.title);
       // Also set meta title tag for better compatibility
       this.meta.updateTag({ name: 'title', content: data.title });
+      
+      // For SSR compatibility, also set document title directly
+      if (isPlatformServer(this.platformId)) {
+        this.document.title = data.title;
+      }
     }
 
     // Set meta tags
@@ -43,9 +53,19 @@ export class SeoService {
       // Strip HTML tags from description
       const cleanDescription = this.stripHtmlTags(data.description);
       console.log('🔍 Setting meta description:', cleanDescription);
+      
+      // Update meta tags using Angular Meta service
       this.meta.updateTag({ name: 'description', content: cleanDescription });
       this.meta.updateTag({ property: 'og:description', content: cleanDescription });
       this.meta.updateTag({ name: 'twitter:description', content: cleanDescription });
+      
+      // For SSR compatibility, also set meta tags directly in document
+      if (isPlatformServer(this.platformId)) {
+        this.setMetaTagDirectly('description', cleanDescription);
+        this.setMetaTagDirectly('og:description', cleanDescription, 'property');
+        this.setMetaTagDirectly('twitter:description', cleanDescription);
+      }
+      
       console.log('✅ Meta description tags updated');
     } else {
       console.log('❌ No description provided to setSEOData');
@@ -53,22 +73,37 @@ export class SeoService {
 
     if (data.keywords) {
       this.meta.updateTag({ name: 'keywords', content: data.keywords });
+      if (isPlatformServer(this.platformId)) {
+        this.setMetaTagDirectly('keywords', data.keywords);
+      }
     }
 
     if (data.image) {
       this.meta.updateTag({ property: 'og:image', content: data.image });
       this.meta.updateTag({ name: 'twitter:image', content: data.image });
+      if (isPlatformServer(this.platformId)) {
+        this.setMetaTagDirectly('og:image', data.image, 'property');
+        this.setMetaTagDirectly('twitter:image', data.image);
+      }
     }
 
     if (data.url) {
       this.meta.updateTag({ property: 'og:url', content: data.url });
       this.meta.updateTag({ name: 'twitter:url', content: data.url });
+      if (isPlatformServer(this.platformId)) {
+        this.setMetaTagDirectly('og:url', data.url, 'property');
+        this.setMetaTagDirectly('twitter:url', data.url);
+      }
     }
 
     // Set Open Graph title
     if (data.title) {
       this.meta.updateTag({ property: 'og:title', content: data.title });
       this.meta.updateTag({ name: 'twitter:title', content: data.title });
+      if (isPlatformServer(this.platformId)) {
+        this.setMetaTagDirectly('og:title', data.title, 'property');
+        this.setMetaTagDirectly('twitter:title', data.title);
+      }
     }
 
     // Set canonical URL - this is crucial for SEO!
@@ -114,6 +149,7 @@ export class SeoService {
 
   /**
    * Set canonical URL - prevents duplicate content issues
+   * Works on both server and client side
    */
   setCanonicalUrl(url: string): void {
     // Remove existing canonical tags
@@ -121,6 +157,19 @@ export class SeoService {
     
     // Add new canonical tag
     this.meta.addTag({ rel: 'canonical', href: url });
+    
+    // For SSR compatibility, also set canonical tag directly in document
+    if (isPlatformServer(this.platformId)) {
+      let canonicalTag = this.document.querySelector('link[rel="canonical"]');
+      if (canonicalTag) {
+        canonicalTag.setAttribute('href', url);
+      } else {
+        canonicalTag = this.document.createElement('link');
+        canonicalTag.setAttribute('rel', 'canonical');
+        canonicalTag.setAttribute('href', url);
+        this.document.head.appendChild(canonicalTag);
+      }
+    }
     
     // Also update Open Graph URL for social media
     this.meta.updateTag({ property: 'og:url', content: url });
@@ -527,6 +576,23 @@ export class SeoService {
     if (!ratings || ratings.length === 0) return 0;
     const sum = ratings.reduce((acc, rating) => acc + rating, 0);
     return Math.round((sum / ratings.length) * 10) / 10; // Round to 1 decimal place
+  }
+
+  /**
+   * Set meta tag directly in document (for SSR compatibility)
+   */
+  private setMetaTagDirectly(name: string, content: string, attribute: string = 'name'): void {
+    if (isPlatformServer(this.platformId)) {
+      let metaTag = this.document.querySelector(`meta[${attribute}="${name}"]`);
+      if (metaTag) {
+        metaTag.setAttribute('content', content);
+      } else {
+        metaTag = this.document.createElement('meta');
+        metaTag.setAttribute(attribute, name);
+        metaTag.setAttribute('content', content);
+        this.document.head.appendChild(metaTag);
+      }
+    }
   }
 
   /**
