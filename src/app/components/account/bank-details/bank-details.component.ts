@@ -20,9 +20,9 @@ export class BankDetailsComponent {
 
   constructor(private store: Store) {
     this.form = new FormGroup({
-      bank_account_no: new FormControl(),
-      bank_name: new FormControl(),
-      bank_holder_name: new FormControl(),
+      bank_account_no: new FormControl('', [Validators.pattern(/^[0-9]*$/)]),
+      bank_name: new FormControl('', [Validators.pattern(/^[A-Za-z\s]*$/)]),
+      bank_holder_name: new FormControl('', [Validators.pattern(/^[A-Za-z\s]*$/)]),
       swift: new FormControl(),
       ifsc: new FormControl(),
       paypal_email: new FormControl('', [Validators.email]),
@@ -47,6 +47,63 @@ export class BankDetailsComponent {
     this.form.markAllAsTouched();
     if(this.form.valid){
       this.store.dispatch(new UpdatePaymentDetails(this.form.value))
+    }
+  }
+
+  // Input guards: shared helpers
+  allowOnlyDigits(event: KeyboardEvent): void {
+    const allowedControlKeys = [
+      'Backspace','Delete','Tab','Enter','Escape','ArrowLeft','ArrowRight','Home','End'
+    ];
+    if (allowedControlKeys.includes(event.key)) return;
+    if (event.ctrlKey || event.metaKey) return;
+    if (!/^[0-9]$/.test(event.key)) {
+      event.preventDefault();
+    }
+  }
+
+  sanitizeDigitsInput(event: Event, controlName: 'bank_account_no'): void {
+    const input = event.target as HTMLInputElement;
+    const digitsOnly = (input.value || '').replace(/\D/g, '');
+    if (digitsOnly !== input.value) {
+      input.value = digitsOnly;
+      this.form.controls[controlName].setValue(digitsOnly, { emitEvent: false });
+    }
+  }
+
+  sanitizeDigitsPaste(event: ClipboardEvent): void {
+    const pasted = event.clipboardData?.getData('text') ?? '';
+    if (/\D/.test(pasted)) {
+      event.preventDefault();
+      const sanitized = pasted.replace(/\D/g, '');
+      document.execCommand('insertText', false, sanitized);
+    }
+  }
+
+  allowOnlyLetters(event: KeyboardEvent): void {
+    const allowedControlKeys = [
+      'Backspace','Delete','Tab','Enter','Escape','ArrowLeft','ArrowRight','Home','End'
+    ];
+    if (allowedControlKeys.includes(event.key)) return;
+    if (/^[A-Za-z\s]$/.test(event.key)) return;
+    event.preventDefault();
+  }
+
+  sanitizeLettersInput(event: Event, controlName: 'bank_name' | 'bank_holder_name'): void {
+    const input = event.target as HTMLInputElement;
+    const sanitized = (input.value || '').replace(/[^A-Za-z\s]/g, '');
+    if (sanitized !== input.value) {
+      input.value = sanitized;
+      this.form.controls[controlName].setValue(sanitized, { emitEvent: false });
+    }
+  }
+
+  sanitizeLettersPaste(event: ClipboardEvent): void {
+    const pasted = event.clipboardData?.getData('text') ?? '';
+    if (/[^A-Za-z\s]/.test(pasted)) {
+      event.preventDefault();
+      const sanitized = pasted.replace(/[^A-Za-z\s]/g, '');
+      document.execCommand('insertText', false, sanitized);
     }
   }
 

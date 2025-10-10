@@ -7,19 +7,19 @@
     <div class="row mb-3 align-items-center">
         <label for="bank_account_no" class="form-label col-xxl-2 col-lg-12 col-md-3">{{ 'Bank Account No.'| translate}}</label>
         <div class="col-xxl-10 col-lg-12 col-md-9">
-            <input type="text" class="form-control" id="bank_account_no" placeholder="{{ 'Enter bank Account Number' | translate }}" formControlName="bank_account_no" numbersOnly>
+            <input type="text" class="form-control" id="bank_account_no" placeholder="{{ 'Enter bank Account Number' | translate }}" formControlName="bank_account_no" (keydown)="allowOnlyDigits($event)" (input)="sanitizeDigitsInput($event, 'bank_account_no')" (paste)="sanitizeDigitsPaste($event)">
         </div>
     </div>
     <div class="row mb-3 align-items-center">
         <label for="bank_name" class="form-label col-xxl-2 col-lg-12 col-md-3">{{ 'Bank Name'| translate}}</label>
         <div class="col-xxl-10 col-lg-12 col-md-9">
-            <input type="text" class="form-control" id="bank_name" placeholder="{{ 'Enter Bank Name' | translate }}" formControlName="bank_name">
+            <input type="text" class="form-control" id="bank_name" placeholder="{{ 'Enter Bank Name' | translate }}" formControlName="bank_name" (keydown)="allowOnlyLetters($event)" (input)="sanitizeLettersInput($event, 'bank_name')" (paste)="sanitizeLettersPaste($event)">
         </div>
     </div>
     <div class="row mb-3 align-items-center">
         <label for="bank_holder_name" class="form-label col-xxl-2 col-lg-12 col-md-3">{{ 'Holder Name'| translate}}</label>
         <div class="col-xxl-10 col-lg-12 col-md-9">
-            <input type="text" class="form-control" id="bank_holder_name" placeholder="{{ 'Enter Bank Holder Name' | translate }}" formControlName="bank_holder_name">
+            <input type="text" class="form-control" id="bank_holder_name" placeholder="{{ 'Enter Bank Holder Name' | translate }}" formControlName="bank_holder_name" (keydown)="allowOnlyLetters($event)" (input)="sanitizeLettersInput($event, 'bank_holder_name')" (paste)="sanitizeLettersPaste($event)">
         </div>
     </div>
     <div class="row mb-3 align-items-center">

@@ -57,7 +57,7 @@ export class AddressModalComponent {
 
   ) {
     this.form = this.formBuilder.group({
-      title: new FormControl('', [Validators.required]),
+      title: new FormControl('', [Validators.required, Validators.pattern(/^[A-Za-z\s]*$/)]),
       street: new FormControl('', [Validators.required]),
       state_id: new FormControl('', [Validators.required]),
       country_id: new FormControl('', [Validators.required]),
@@ -347,6 +347,64 @@ export class AddressModalComponent {
   ngOnDestroy() {
     if(this.modalOpen) {
       this.modalService.dismissAll();
+    }
+  }
+
+  // Input restrictions
+  allowOnlyLetters(event: KeyboardEvent): void {
+    const allowedControlKeys = [
+      'Backspace','Delete','Tab','Enter','Escape','ArrowLeft','ArrowRight','Home','End'
+    ];
+    if (allowedControlKeys.includes(event.key)) return;
+    if (!/^[A-Za-z\s]$/.test(event.key)) {
+      event.preventDefault();
+    }
+  }
+
+  sanitizeLettersInput(event: Event, controlName: 'title'): void {
+    const input = event.target as HTMLInputElement;
+    const sanitized = (input.value || '').replace(/[^A-Za-z\s]/g, '');
+    if (sanitized !== input.value) {
+      input.value = sanitized;
+      this.form.controls[controlName].setValue(sanitized, { emitEvent: false });
+    }
+  }
+
+  sanitizeLettersPaste(event: ClipboardEvent): void {
+    const pasted = event.clipboardData?.getData('text') ?? '';
+    if (/[^A-Za-z\s]/.test(pasted)) {
+      event.preventDefault();
+      const sanitized = pasted.replace(/[^A-Za-z\s]/g, '');
+      document.execCommand('insertText', false, sanitized);
+    }
+  }
+
+  allowOnlyDigits(event: KeyboardEvent): void {
+    const allowedControlKeys = [
+      'Backspace','Delete','Tab','Enter','Escape','ArrowLeft','ArrowRight','Home','End'
+    ];
+    if (allowedControlKeys.includes(event.key)) return;
+    if (event.ctrlKey || event.metaKey) return;
+    if (!/^[0-9]$/.test(event.key)) {
+      event.preventDefault();
+    }
+  }
+
+  sanitizeDigitsInput(event: Event, controlName: 'phone'): void {
+    const input = event.target as HTMLInputElement;
+    const digitsOnly = (input.value || '').replace(/\D/g, '').slice(0, 10);
+    if (digitsOnly !== input.value) {
+      input.value = digitsOnly;
+      this.form.controls[controlName].setValue(digitsOnly, { emitEvent: false });
+    }
+  }
+
+  sanitizeDigitsPaste(event: ClipboardEvent): void {
+    const pasted = event.clipboardData?.getData('text') ?? '';
+    if (/\D/.test(pasted)) {
+      event.preventDefault();
+      const sanitized = pasted.replace(/\D/g, '').slice(0, 10);
+      document.execCommand('insertText', false, sanitized);
     }
   }
 

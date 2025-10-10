@@ -4,7 +4,7 @@ export interface ProductMetaData {
   meta_keywords: string;
   canonical_url: string;
 }
-
+ 
 export const PRODUCT_META_DATA: { [key: number]: ProductMetaData } = {
     "438": {
       "meta_title": "Mens Classic Fit Blazer Stylexio",

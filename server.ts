@@ -21,6 +21,19 @@ export function app(): express.Express {
 
   // Example Express Rest API endpoints
   // server.get('/api/**', (req, res) => { });
+  
+  // Serve sitemap.xml as static file with proper content type
+  server.get('/sitemap.xml', (req, res) => {
+    res.setHeader('Content-Type', 'application/xml');
+    res.sendFile(join(browserDistFolder, 'sitemap.xml'));
+  });
+  
+  // Serve robots.txt as static file with proper content type
+  server.get('/robots.txt', (req, res) => {
+    res.setHeader('Content-Type', 'text/plain');
+    res.sendFile(join(browserDistFolder, 'robots.txt'));
+  });
+  
   // Serve static files from /browser
   server.get('*.*', express.static(browserDistFolder, {
     maxAge: '1y'

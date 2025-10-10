@@ -51,7 +51,7 @@ export class SettingState {
             const customPayments = [
               {
                 name: 'neoKred',
-                status: true,
+                status: false,
                 title: 'Pay By UPI INTENT',
                 // icon: './assets/images/payment/pay_by_qr.png',
               },
@@ -81,7 +81,7 @@ export class SettingState {
               },
               {
                 name: 'neoKred2',
-                status: true,
+                status: false,
                 title: 'Pay By UPI INTENT2',
                 // icon: './assets/images/payment/pay_by_qr.png',
               },
