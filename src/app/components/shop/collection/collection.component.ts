@@ -110,8 +110,8 @@ export class CollectionComponent {
         break;
 
       case 'men':
-        title = 'Men\'s Clothing Collection | Stylish Men\'s Fashion & Apparel | Stylexio';
-        description = 'Discover trendy men\'s clothing and fashion at Stylexio. Shop the latest men\'s fashion including shirts, pants, jeans, jackets, casual wear, formal clothes, and stylish men\'s apparel. Quality fashion for every occasion.';
+        title = 'Mens Clothing Collection Stylexio';
+        description = 'Explore mens shirts jackets suits jeans and more at Stylexio. New arrivals fast PAN India delivery COD and easy 7 day returns.';
         keywords = 'men\'s clothes, men\'s fashion, men\'s clothing, men\'s apparel, men\'s shirts, men\'s pants, men\'s jeans, men\'s jackets, men\'s casual wear, men\'s formal clothes, stylish men\'s fashion, Stylexio';
         break;
 

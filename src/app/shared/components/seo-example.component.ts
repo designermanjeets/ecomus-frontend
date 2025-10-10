@@ -7,8 +7,8 @@ import { SeoService } from '../services/seo.service';
     <div class="seo-example-container">
       <!-- Main page title with H1 -->
       <app-seo-heading 
-        title="Stylexio | Activewear, Men's & Women's Clothes Online" 
-        description="Shop activewear and stylish clothes for men & women at Stylexio. Find gym wear, joggers, and everyday outfits designed for comfort, fit & performance."
+        title="Stylexio Premium Mens and Womens Fashion Online" 
+        description="Discover new season shirts jackets suits denim and more at Stylexio. Premium quality fast shipping across India COD and easy returns."
         level="1"
         headingClass="main-title">
       </app-seo-heading>
@@ -177,8 +177,8 @@ export class SeoExampleComponent implements OnInit {
   ngOnInit() {
     // Set comprehensive SEO data for this page
     this.seoService.setSEOData({
-      title: 'Stylexio | Activewear, Men\'s & Women\'s Clothes Online',
-      description: 'Shop activewear and stylish clothes for men & women at Stylexio. Find gym wear, joggers, and everyday outfits designed for comfort, fit & performance.',
+      title: 'Stylexio Premium Mens and Womens Fashion Online',
+      description: 'Discover new season shirts jackets suits denim and more at Stylexio. Premium quality fast shipping across India COD and easy returns.',
       keywords: 'activewear, gym wear, joggers, men\'s clothes, women\'s clothes, stylish outfits, comfort fit, performance clothing, Stylexio',
       image: 'https://stylexio.in/assets/images/hero-banner.jpg',
       url: 'https://stylexio.in',
