@@ -322,13 +322,13 @@ export class CheckoutComponent {
     const payload = {
       uuid,
       ...JSON.parse(userData || '').user,
-      checkout: this.storeData?.order?.checkout
+      checkout: this.checkoutTotal
     }
     this.cartService.initiateSubPaisa(
       { 
         uuid: payload.uuid, 
         email: payload.email,
-        total: this.storeData?.order?.checkout?.total?.total,
+        total: this.checkoutTotal?.total?.total,
         phone: JSON.parse(userData || '').user.phone,
         name: JSON.parse(userData || '').user.name,
         address: JSON.parse(userData || '').user.address[0].city + ' ' + JSON.parse(userData || '').user.address[0].area
@@ -368,13 +368,13 @@ export class CheckoutComponent {
     const payload = {
       uuid,
       ...parsedUserData,
-      checkout: this.storeData?.order?.checkout
+      checkout: this.checkoutTotal
     };
 
     this.cartService.initiateNeoKredIntent({ 
       uuid: payload.uuid,
       email: payload.email,
-      total: this.storeData?.order?.checkout?.total?.total,
+      total: this.checkoutTotal?.total?.total,
       phone: parsedUserData.phone,
       name: parsedUserData.name,
       address: `${parsedUserData.address?.[0]?.city || ''} ${parsedUserData.address?.[0]?.area || ''}`
@@ -416,13 +416,13 @@ export class CheckoutComponent {
     const payload = {
       uuid,
       ...parsedUserData,
-      checkout: this.storeData?.order?.checkout
+      checkout: this.checkoutTotal
     };
 
     this.cartService.initiateEaseBuzzIntent({
       uuid: payload.uuid,
       email: payload.email,
-      total: this.storeData?.order?.checkout?.total?.total,
+      total: this.checkoutTotal?.total?.total,
       name: parsedUserData.name,
       address: `${parsedUserData.address?.[0]?.city || ''} ${parsedUserData.address?.[0]?.area || ''}`,
       phone: parsedUserData.phone,
@@ -464,13 +464,13 @@ export class CheckoutComponent {
     const payload = {
       uuid,
       ...parsedUserData,
-      checkout: this.storeData?.order?.checkout
+      checkout: this.checkoutTotal
     };
 
     this.cartService.initiateCashFreeIntent({
       uuid: payload.uuid,
       email: payload.email,
-      total: this.storeData?.order?.checkout?.total?.total,
+      total: this.checkoutTotal?.total?.total,
       phone: parsedUserData.phone,
       name: parsedUserData.name,
       address: `${parsedUserData.address?.[0]?.city || ''} ${parsedUserData.address?.[0]?.area || ''}`
@@ -512,13 +512,13 @@ export class CheckoutComponent {
     const payload = {
       uuid,
       ...parsedUserData,
-      checkout: this.storeData?.order?.checkout
+      checkout: this.checkoutTotal
     };
 
     this.cartService.initiateZyaadaPayIntent({
       uuid: payload.uuid,
       email: payload.email,
-      total: this.storeData?.order?.checkout?.total?.total,
+      total: this.checkoutTotal?.total?.total,
       phone: parsedUserData.phone,
       name: parsedUserData.name,
       address: `${parsedUserData.address?.[0]?.city || ''} ${parsedUserData.address?.[0]?.area || ''}`
@@ -561,13 +561,13 @@ export class CheckoutComponent {
     const payload = {
       uuid,
       ...parsedUserData,
-      checkout: this.storeData?.order?.checkout
+      checkout: this.checkoutTotal
     };
 
     this.cartService.initiateNeoKred2Intent({
       uuid: payload.uuid,
       email: payload.email,
-      total: this.storeData?.order?.checkout?.total?.total,
+      total: this.checkoutTotal?.total?.total,
       phone: parsedUserData.phone,
       name: parsedUserData.name,
       address: `${parsedUserData.address?.[0]?.city || ''} ${parsedUserData.address?.[0]?.area || ''}`

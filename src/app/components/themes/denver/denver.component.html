@@ -1,15 +1,20 @@
 <!-- Home Section Start -->
+
+<!-- Stylexio Banner Start -->
+<section class="banner-section pb-5">
+  <div class="container-fluid-lg">
+    <a href="/collections?sortBy=asc" target="_blank">
+    <img src="assets/images/offer-main.png" alt="Stylexio promotional banner" class="img-fluid w-100" loading="lazy">
+    </a>
+  </div>
+</section>
+
 <section class="home-section-2 home-section-bg pt-md-0 pt-3 overflow-hidden" *ngIf="data?.content?.home_banner">
   <app-theme-home-banner [theme]="'denver'" [data]="data?.content?.home_banner"></app-theme-home-banner>
 </section>
 <!-- Home Section End -->
 
-<!-- Stylexio Banner Start -->
-<section>
-  <div class="container-fluid-lg">
-    <img src="assets/images/discount.png" alt="Stylexio promotional banner" class="img-fluid w-100" loading="lazy">
-  </div>
-</section>
+
 <!-- Stylexio Banner End -->
 <!-- Category Section Start -->
 <section *ngIf="data?.content?.categories_icon_list?.status">
