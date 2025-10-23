@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ViewChild, ElementRef, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { Select, Store  } from '@ngxs/store';
 import { Observable, forkJoin } from 'rxjs';
 import { GetProductByIds } from '../../../shared/action/product.action';
@@ -16,19 +16,161 @@ import { ActivatedRoute } from '@angular/router';
   templateUrl: './denver.component.html',
   styleUrls: ['./denver.component.scss']
 })
-export class DenverComponent {
+export class DenverComponent implements OnInit, OnDestroy, AfterViewInit {
 
   @Input() data?: Denver;
   @Input() slug?: string;
+  @ViewChild('heroSlider') heroSlider!: ElementRef;
+  @ViewChild('sliderTrack') sliderTrack!: ElementRef;
 
   @Select(ThemeOptionState.themeOptions) themeOption$: Observable<Option>;
 
   public categorySlider = data.categorySlider9;
   public productSlider6ItemMargin = data.productSlider6ItemMargin;
+  
+  // Hero Slider Properties
+  public currentSlide = 0;
+  public autoSlideInterval: any;
+  public isDragging = false;
+  public startX = 0;
+  public currentX = 0;
+  public translateX = 0;
+  
+  public heroSlides = [
+    {
+      image: 'assets/images/banner-f.png',
+      alt: 'Cool Fashion Stuff - Women\'s Fashion',
+      link: '/collections?category=womens'
+    },
+    {
+      image: 'assets/images/banner-f1.png',
+      alt: 'Stylexio Fashion - Fresh Drops Only',
+      link: '/collections?sortBy=desc'
+    }
+  ];
 
   constructor(private store: Store,
     private route: ActivatedRoute,
     private themeOptionService: ThemeOptionService) {}
+
+  ngAfterViewInit() {
+    this.initSlider();
+    this.startAutoSlide();
+  }
+
+  ngOnDestroy() {
+    this.stopAutoSlide();
+  }
+
+  // Slider Methods
+  initSlider() {
+    if (this.sliderTrack) {
+      this.sliderTrack.nativeElement.addEventListener('mousedown', this.onDragStart.bind(this));
+      this.sliderTrack.nativeElement.addEventListener('touchstart', this.onDragStart.bind(this));
+      document.addEventListener('mousemove', this.onDragMove.bind(this));
+      document.addEventListener('touchmove', this.onDragMove.bind(this));
+      document.addEventListener('mouseup', this.onDragEnd.bind(this));
+      document.addEventListener('touchend', this.onDragEnd.bind(this));
+    }
+  }
+
+  startAutoSlide() {
+    this.autoSlideInterval = setInterval(() => {
+      if (!this.isDragging) {
+        this.nextSlide();
+      }
+    }, 5000); // Auto slide every 5 seconds
+  }
+
+  stopAutoSlide() {
+    if (this.autoSlideInterval) {
+      clearInterval(this.autoSlideInterval);
+    }
+  }
+
+  nextSlide() {
+    this.currentSlide = (this.currentSlide + 1) % this.heroSlides.length;
+    this.updateSliderPosition();
+  }
+
+  previousSlide() {
+    this.currentSlide = this.currentSlide === 0 ? this.heroSlides.length - 1 : this.currentSlide - 1;
+    this.updateSliderPosition();
+  }
+
+  goToSlide(index: number) {
+    this.currentSlide = index;
+    this.updateSliderPosition();
+  }
+
+  updateSliderPosition() {
+    if (this.sliderTrack) {
+      const slideWidth = this.sliderTrack.nativeElement.offsetWidth;
+      this.translateX = -this.currentSlide * slideWidth;
+      this.sliderTrack.nativeElement.style.transform = `translateX(${this.translateX}px)`;
+    }
+  }
+
+  // Drag functionality
+  onDragStart(e: MouseEvent | TouchEvent) {
+    this.isDragging = true;
+    this.stopAutoSlide();
+    
+    if (e instanceof MouseEvent) {
+      this.startX = e.clientX;
+    } else {
+      this.startX = e.touches[0].clientX;
+    }
+    
+    this.sliderTrack.nativeElement.style.transition = 'none';
+  }
+
+  onDragMove(e: MouseEvent | TouchEvent) {
+    if (!this.isDragging) return;
+    
+    e.preventDefault();
+    
+    if (e instanceof MouseEvent) {
+      this.currentX = e.clientX;
+    } else {
+      this.currentX = e.touches[0].clientX;
+    }
+    
+    const diffX = this.currentX - this.startX;
+    const slideWidth = this.sliderTrack.nativeElement.offsetWidth;
+    const newTranslateX = this.translateX + diffX;
+    
+    // Limit dragging range
+    const maxTranslate = 0;
+    const minTranslate = -(this.heroSlides.length - 1) * slideWidth;
+    
+    if (newTranslateX <= maxTranslate && newTranslateX >= minTranslate) {
+      this.sliderTrack.nativeElement.style.transform = `translateX(${newTranslateX}px)`;
+    }
+  }
+
+  onDragEnd(e: MouseEvent | TouchEvent) {
+    if (!this.isDragging) return;
+    
+    this.isDragging = false;
+    this.sliderTrack.nativeElement.style.transition = 'transform 0.3s ease';
+    
+    const diffX = this.currentX - this.startX;
+    const slideWidth = this.sliderTrack.nativeElement.offsetWidth;
+    const threshold = slideWidth * 0.3; // 30% threshold for slide change
+    
+    if (Math.abs(diffX) > threshold) {
+      if (diffX > 0) {
+        this.previousSlide();
+      } else {
+        this.nextSlide();
+      }
+    } else {
+      this.updateSliderPosition();
+    }
+    
+    this.startAutoSlide();
+  }
 
   ngOnInit() {
     if(this.data?.slug == this.slug) {

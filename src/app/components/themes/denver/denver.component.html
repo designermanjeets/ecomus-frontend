@@ -1,11 +1,36 @@
 <!-- Home Section Start -->
 
-<!-- Stylexio Banner Start -->
-<section class="banner-section pb-5">
+<!-- Hero Slider Start -->
+<section class="hero-slider-section pb-5">
   <div class="container-fluid-lg">
-    <a href="/collections?sortBy=asc" target="_blank">
-    <img src="assets/images/stylexio-offer.png" alt="Stylexio promotional banner" class="img-fluid w-100" loading="lazy">
-    </a>
+    <div class="hero-slider" #heroSlider>
+      <div class="slider-container">
+        <div class="slider-track" #sliderTrack>
+          <div class="slide active" *ngFor="let slide of heroSlides; let i = index" [class.active]="currentSlide === i">
+            <a [href]="slide.link" target="_blank">
+              <img [src]="slide.image" [alt]="slide.alt" class="img-fluid w-100" loading="lazy">
+            </a>
+          </div>
+        </div>
+        
+        <!-- Navigation Arrows -->
+        <button class="slider-nav prev" (click)="previousSlide()" aria-label="Previous slide">
+          <i class="ri-arrow-left-line"></i>
+        </button>
+        <button class="slider-nav next" (click)="nextSlide()" aria-label="Next slide">
+          <i class="ri-arrow-right-line"></i>
+        </button>
+        
+        <!-- Dots Indicator -->
+        <div class="slider-dots">
+          <button *ngFor="let slide of heroSlides; let i = index" 
+                  [class.active]="currentSlide === i"
+                  (click)="goToSlide(i)"
+                  [attr.aria-label]="'Go to slide ' + (i + 1)">
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
