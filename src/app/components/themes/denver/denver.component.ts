@@ -40,7 +40,7 @@ export class DenverComponent implements OnInit, OnDestroy, AfterViewInit {
     {
       image: 'assets/images/banner-stylexio.png',
       alt: 'Cool Fashion Stuff - Women\'s Fashion',
-      link: '/collections?category=womens'
+      link: '/collections?category=women'
     },
     {
       image: 'assets/images/banner-f1.png',
