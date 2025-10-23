@@ -7,7 +7,7 @@
       <div class="slider-container">
         <div class="slider-track" #sliderTrack>
           <div class="slide active" *ngFor="let slide of heroSlides; let i = index" [class.active]="currentSlide === i">
-            <a [href]="slide.link" target="_blank">
+            <a [href]="slide.link">
               <img [src]="slide.image" [alt]="slide.alt" class="img-fluid w-100" loading="lazy">
             </a>
           </div>
