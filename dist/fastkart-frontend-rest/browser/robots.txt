@@ -1,0 +1,23 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://stylexio.in/sitemap.xml
+
+# Disallow admin and private areas
+Disallow: /admin/
+Disallow: /private/
+Disallow: /api/
+Disallow: /_next/
+Disallow: /static/
+
+# Allow important pages
+Allow: /about-us
+Allow: /contact-us
+Allow: /blog
+Allow: /products
+Allow: /categories
+
+# Crawl delay (optional)
+Crawl-delay: 1
+

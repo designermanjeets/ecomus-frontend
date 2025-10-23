@@ -83,6 +83,58 @@
 @import "themes/dark";
 @import "themes/rtl";
 
+// Internal Links Section
+.internal-links-section {
+  background-color: #f8f9fa;
+  padding: 60px 0;
+  
+  .internal-links-container {
+    h3 {
+      color: var(--theme-color);
+      font-weight: 600;
+      margin-bottom: 30px;
+    }
+    
+    .internal-link-card {
+      display: block;
+      background: white;
+      padding: 30px 20px;
+      border-radius: 10px;
+      text-decoration: none;
+      color: #333;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      height: 100%;
+      
+      &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        color: var(--theme-color);
+        text-decoration: none;
+      }
+      
+      i {
+        font-size: 2.5rem;
+        color: var(--theme-color);
+        margin-bottom: 15px;
+        display: block;
+      }
+      
+      h5 {
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: #333;
+      }
+      
+      p {
+        color: #666;
+        font-size: 0.9rem;
+        margin: 0;
+      }
+    }
+  }
+}
+
 .user-dashboard-section .dashboard-left-sidebar .user-nav-pills .logout-cls .btn {
   background-color: #000000;
   color: #ffffff;
@@ -131,4 +183,84 @@ footer .sub-footer {
 }
 .product-left-box .ng-star-inserted {
   width: 100%;
+}
+
+// Sub Paisa
+$border-radius: 4px;
+
+@mixin with-border($radius: $border-radius, $border-color: black) {
+  border: 1px solid $border-color;
+  border-radius: $radius;
+}
+
+.my-graph-component {
+  @include with-border($border-radius, blue);
+
+  filter: drop-shadow(2px 4px 6px black);
+  background-color: #1eb4d1;
+  border: 1px solid #198aa2;
+  display: inline-block;
+  user-select: none;
+  padding: 20px;
+
+  .comp-props {
+    color: white;
+
+    .increase-button {
+      @include with-border($border-radius, #3e3e3e);
+      background-color: white;
+      margin-left: 40px;
+      padding: 4px 6px;
+      cursor: pointer;
+      color: black;
+
+      &:hover {
+        filter: drop-shadow(2px 4px 6px black);
+      }
+    }
+  }
+
+  .comp-state {
+    color: yellow;
+    margin-top: 20px;
+  }
+}
+
+.checkout-section-2 .left-sidebar-checkout .checkout-detail-box>ul>li .checkout-box .checkout-detail .payment-option img {
+  top: 50%;
+  transform: translateY(-50%);
+  position: absolute;
+  left: 140px;
+  right: auto;
+  width: 100px;
+}
+
+app-product-box:has(.hidden) {
+  display: none !important;
+}
+.price-rating .product-rating.custom-rate {
+  display: none;
+}
+h6.byers.ng-star-inserted {
+  display: none;
+}
+.title-flex-2 {
+    margin-bottom: 10px;
+}
+h2.p-text-main.h1-text {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  margin-bottom: 10px;
+}
+.product-section-box .custom-tab .tab-pane .product-description.more-less-box {
+  max-height: auto !important; 
+  position: relative;
+  overflow: hidden;
+}
+
+.product-section .right-box-contain .name {
+    font-weight: 700;
+    margin-bottom: 8px;
+    font-size: 40px;
 }

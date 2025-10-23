@@ -18,7 +18,10 @@
           "builder": "@angular-devkit/build-angular:application",
           "options": {
             "allowedCommonJsDependencies": [
-              "feather-icons"
+              "feather-icons",
+              "react",
+              "react-dom",
+              "react-dom/client"
             ],
             "outputPath": "dist/fastkart-frontend-rest",
             "index": "src/index.html",

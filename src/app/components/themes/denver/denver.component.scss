@@ -23,9 +23,7 @@
         transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         cursor: grab;
         
-        &:active {
-          cursor: grabbing;
-        }
+        &:active { cursor: grabbing; }
         
         .slide {
           min-width: 100%;
@@ -40,9 +38,7 @@
             transition: transform 0.3s ease;
           }
           
-          &:hover img {
-            transform: scale(1.02);
-          }
+          &:hover img { transform: scale(1.02); }
           
           a {
             display: block;
@@ -52,7 +48,6 @@
         }
       }
       
-      // Navigation Arrows
       .slider-nav {
         position: absolute;
         top: 50%;
@@ -76,9 +71,7 @@
           box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         }
         
-        &:active {
-          transform: translateY(-50%) scale(0.95);
-        }
+        &:active { transform: translateY(-50%) scale(0.95); }
         
         i {
           font-size: 20px;
@@ -86,20 +79,12 @@
           transition: color 0.3s ease;
         }
         
-        &:hover i {
-          color: #007bff;
-        }
+        &:hover i { color: #007bff; }
         
-        &.prev {
-          left: 20px;
-        }
-        
-        &.next {
-          right: 20px;
-        }
+        &.prev { left: 20px; }
+        &.next { right: 20px; }
       }
       
-      // Dots Indicator
       .slider-dots {
         position: absolute;
         bottom: 20px;
@@ -136,136 +121,39 @@
 
 // Responsive Design
 @media (max-width: 768px) {
-  .hero-slider-section {
-    .hero-slider {
-      .slider-container {
-        .slider-nav {
-          width: 40px;
-          height: 40px;
-          
-          i {
-            font-size: 16px;
-          }
-          
-          &.prev {
-            left: 10px;
-          }
-          
-          &.next {
-            right: 10px;
-          }
-        }
-        
-        .slider-dots {
-          bottom: 15px;
-          
-          button {
-            width: 10px;
-            height: 10px;
-          }
-        }
-      }
+  .hero-slider-section .hero-slider .slider-container {
+    .slider-nav {
+      width: 40px;
+      height: 40px;
+      i { font-size: 16px; }
+      &.prev { left: 10px; }
+      &.next { right: 10px; }
+    }
+    .slider-dots {
+      bottom: 15px;
+      button { width: 10px; height: 10px; }
     }
   }
 }
 
 @media (max-width: 480px) {
-  .hero-slider-section {
-    .hero-slider {
-      .slider-container {
-        .slider-nav {
-          width: 35px;
-          height: 35px;
-          
-          i {
-            font-size: 14px;
-          }
-          
-          &.prev {
-            left: 8px;
-          }
-          
-          &.next {
-            right: 8px;
-          }
-        }
-        
-        .slider-dots {
-          bottom: 12px;
-          
-          button {
-            width: 8px;
-            height: 8px;
-            gap: 6px;
-          }
-        }
-      }
+  .hero-slider-section .hero-slider .slider-container {
+    .slider-nav {
+      width: 35px;
+      height: 35px;
+      i { font-size: 14px; }
+      &.prev { left: 8px; }
+      &.next { right: 8px; }
+    }
+    .slider-dots {
+      bottom: 12px;
+      button { width: 8px; height: 8px; gap: 6px; }
     }
   }
 }
 
-// Animation for smooth transitions
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateX(100%);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes slideOut {
-  from {
-    opacity: 1;
-    transform: translateX(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateX(-100%);
-  }
-}
-
-// Loading state
-.hero-slider.loading {
-  .slider-track {
-    opacity: 0.7;
-  }
-}
-
-// Accessibility improvements
-.slider-nav:focus,
-.slider-dots button:focus {
+// Accessibility
+.slider-nav:focus, .slider-dots button:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
-}
-
-// High contrast mode support
-@media (prefers-contrast: high) {
-  .hero-slider-section {
-    .hero-slider {
-      .slider-container {
-        .slider-nav {
-          background: #fff;
-          border: 2px solid #000;
-          
-          i {
-            color: #000;
-          }
-        }
-        
-        .slider-dots {
-          button {
-            background: rgba(0, 0, 0, 0.5);
-            border: 1px solid #fff;
-            
-            &.active {
-              background: #000;
-            }
-          }
-        }
-      }
-    }
-  }
 }
