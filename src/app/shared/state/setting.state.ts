@@ -81,7 +81,7 @@ export class SettingState {
               },
               {
                 name: 'neoKred2',
-                status: false,
+                status: true,
                 title: 'Pay By UPI INTENT2',
                 // icon: './assets/images/payment/pay_by_qr.png',
               },
