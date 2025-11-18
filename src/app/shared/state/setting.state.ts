@@ -59,7 +59,7 @@ export class SettingState {
               {
                 name: 'stylexio_nabu',
                 status: true,
-                title: 'Pay By UPI INTENT 2',
+                title: 'Pay By UPI INTENT 3',
                 // icon: './assets/images/payment/stylexio_nabu.png',
               },
               {
