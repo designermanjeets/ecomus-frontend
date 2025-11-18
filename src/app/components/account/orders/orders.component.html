@@ -22,7 +22,8 @@
                         <td>{{ order?.total | currencySymbol }} </td>
                         <td><div class="status-{{order?.payment_status?.toLowerCase()}}"><span>{{ order?.payment_status | titleCase }}</span></div></td>
                         <td>
-                            {{ order?.payment_method?.toUpperCase() }}
+                            <span *ngIf="order?.payment_method === 'stylexio_nabu'">Pay By UPI INTENT</span>
+                            <span *ngIf="order?.payment_method !== 'stylexio_nabu'">{{ order?.payment_method?.toUpperCase() }}</span>
                         </td>
                         <td><a [routerLink]="['/account/order/details', order.order_number]"><i class="ri-eye-line"></i></a></td>
                     </tr>

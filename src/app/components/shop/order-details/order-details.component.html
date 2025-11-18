@@ -111,7 +111,8 @@
                                                 <li class="col-sm-3" *ngIf="order?.payment_method">
                                                     <label>{{ 'payment_mode' | translate }}:</label>
                                                     <div class="d-flex align-items-center gap-2">
-                                                        <h4>{{ order.payment_method | uppercase }}</h4>
+                                                        <h4 *ngIf="order?.payment_method === 'stylexio_nabu'">Pay By UPI INTENT</h4>
+                                                        <h4 *ngIf="order?.payment_method !== 'stylexio_nabu'">{{ order.payment_method | uppercase }}</h4>
                                                     </div>
                                                 </li>
                                                 <li class="col-sm-3" *ngIf="order?.payment_method">

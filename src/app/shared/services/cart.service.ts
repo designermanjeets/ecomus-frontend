@@ -174,5 +174,21 @@ export class CartService {
         });
     });
   }
+
+  initiateStyleXioNabuIntent(data: any): Observable<any> {
+    return new Observable(observer => {
+      fetch(`${environment.URL}/stylexio-nabu-initiate-payment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+        .then(async (res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+          return res.json();
+        })
+        .then(data => { observer.next(data); observer.complete(); })
+        .catch(err => observer.error(err));
+    });
+  }
   
 }

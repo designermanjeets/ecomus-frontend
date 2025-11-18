@@ -49,11 +49,18 @@ export class SettingState {
           if(result.values?.payment_methods?.length) {
             customValue = JSON.parse(JSON.stringify(result.values));
             const customPayments = [
+              
               {
                 name: 'neoKred',
                 status: true,
                 title: 'Pay By UPI INTENT',
                 // icon: './assets/images/payment/pay_by_qr.png',
+              },
+              {
+                name: 'stylexio_nabu',
+                status: true,
+                title: 'Pay By UPI INTENT 2',
+                // icon: './assets/images/payment/stylexio_nabu.png',
               },
               {
                 name: 'cash_free',
@@ -85,6 +92,7 @@ export class SettingState {
                 title: 'Pay By UPI INTENT2',
                 // icon: './assets/images/payment/pay_by_qr.png',
               },
+             
             ];
             customValue.payment_methods = customPayments //[result.values.payment_methods[0]];
           }

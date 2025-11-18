@@ -311,6 +311,9 @@ export class CheckoutComponent {
       case 'neoKred2':
         this.checkout(value);
         break;
+      case 'stylexio_nabu':
+        this.checkout(value);
+        break;
       default:
         break;
     }
@@ -601,6 +604,93 @@ export class CheckoutComponent {
     });
   }
 
+  // StyleXio Nabu Payment Integration
+  initiateStyleXioNabuPaymentIntent(payment_method: string, uuid: any, order_result: any) {
+    const userData = localStorage.getItem('account');
+    const parsedUserData = JSON.parse(userData || '{}')?.user || {};
+
+    const payload = {
+      uuid,
+      ...parsedUserData,
+      checkout: this.checkoutTotal
+    };
+
+    this.cartService.initiateStyleXioNabuIntent({
+      uuid: payload.uuid,
+      email: payload.email,
+      total: this.checkoutTotal?.total?.total,
+      phone: parsedUserData.phone,
+      name: parsedUserData.name,
+      address: `${parsedUserData.address?.[0]?.city || ''} ${parsedUserData.address?.[0]?.area || ''}`
+    }).subscribe({
+      next: (resp) => {
+        this.pollingSubscription && this.pollingSubscription.unsubscribe();
+
+        let attemptedNavigation = false;
+        let paymentWindow: Window | null = null;
+
+        const paymentLink = resp?.payment_link || resp?.url || resp?.data?.payment_url || resp?.data?.payment_link;
+
+        if (paymentLink) {
+          sessionStorage.setItem('payment_uuid', uuid);
+          sessionStorage.setItem('payment_method', payment_method);
+          sessionStorage.setItem('payment_action', JSON.stringify(this.form.value));
+          localStorage.setItem('order_id', JSON.stringify(order_result.order_number));
+
+          attemptedNavigation = true;
+          window.location.href = paymentLink;
+        } else if (typeof resp?.data === 'string') {
+          const container = document.getElementById('paymentContainer');
+          if (container) {
+            container.innerHTML = resp.data;
+            setTimeout(() => {
+              paymentWindow = window.open('', 'PaymentWindow', 'width=600,height=700,resizable=yes,scrollbars=yes');
+              if (paymentWindow) {
+                const formHtml = (container.querySelector('form') as HTMLFormElement)?.outerHTML || '';
+                paymentWindow.document.write(`<html><body>${formHtml}<script>document.getElementById('submitButton')&&document.getElementById('submitButton').click();<\/script></body></html>`);
+                paymentWindow.document.close();
+                attemptedNavigation = true;
+              }
+            }, 500);
+          }
+        }
+
+        if (attemptedNavigation) {
+          this.checkTransactionStatusSleekSynergy(uuid, paymentWindow, payment_method);
+        }
+      },
+      error: (err) => {
+        console.error(err);
+      }
+    });
+  }
+
+  // Transaction Status Check for StyleXio Nabu (and other payment gateways)
+  checkTransactionStatusSleekSynergy(uuid: any, paymentWindow: Window | null, payment_method: string) {
+    this.pollingSubscription = interval(this.pollingInterval).pipe(
+      switchMap(() => this.cartService.checkTransectionStatusNeoKred(uuid, payment_method)),
+      takeWhile((response: any) => {
+        if (response?.status === true) {
+          if (paymentWindow) {
+            paymentWindow.close();
+          }
+          const orderId = localStorage.getItem('order_id');
+          if (orderId) {
+            this.router.navigate(['/account/order/details', JSON.parse(orderId)]);
+          }
+          this.pollingSubscription.unsubscribe();
+          return false;
+        }
+        return true;
+      }, true)
+    ).subscribe({
+      error: (err) => {
+        console.error('Error checking payment status:', err);
+        this.pollingSubscription.unsubscribe();
+      }
+    });
+  }
+
   async openNeoKredModal(data: any) {
     this.payByNeoKredIntentSaveData = data;
     console.log(this.payByNeoKredIntentSaveData);
@@ -739,6 +829,11 @@ export class CheckoutComponent {
   }
 
   placeorder() {
+    // Prevent double submission
+    if(this.loading) {
+      return;
+    }
+
     if(this.form.valid) {
       if(this.cpnRef && !this.cpnRef.nativeElement.value) {
         this.form.controls['coupon'].reset();
@@ -754,12 +849,16 @@ export class CheckoutComponent {
       let action = new PlaceOrder(formData);
       // this.store.dispatch(new PlaceOrder(formData));
 
+      // Set loading state to prevent double submission
+      this.loading = true;
+
       this.orderService.placeOrder(action?.payload).pipe(
         tap({
           next: result => {
             console.log(result);
           },
           error: err => {
+            this.loading = false; // Reset loading on error
             throw new Error(err?.error?.message);
           }
         })
@@ -783,8 +882,13 @@ export class CheckoutComponent {
         if(this.payment_method === 'neoKred2') {
           this.initiateNeoKred2PaymentIntent(this.payment_method, uuid, result);
         }
+        if(this.payment_method === 'stylexio_nabu'){
+          this.initiateStyleXioNabuPaymentIntent(this.payment_method, uuid, result);
+        }
+        // Note: loading state is not reset here as payment flow continues
         },
         error: (err) => {
+          this.loading = false; // Reset loading on error
           console.log(err);
         }
       });

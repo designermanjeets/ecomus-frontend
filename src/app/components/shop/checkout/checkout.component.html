@@ -493,7 +493,7 @@
                                     <app-button
                                         [class]="'btn theme-bg-color text-white btn-md w-100 mt-4 fw-bold'"
                                         [id]="'place_order'"
-                                        [disabled]="form.valid && checkoutTotal ? false : true">
+                                        [disabled]="loading || !(form.valid && checkoutTotal)">
                                         {{ 'Place Order' | translate }}
                                     </app-button>
                                 </div>
