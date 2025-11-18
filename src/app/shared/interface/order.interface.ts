@@ -15,6 +15,7 @@ export interface Order {
     id: number;
     order_id: string;
     order_number: number;
+    uuid?: string;
     amount: number;
     store_id: number;
     store: Stores;
