@@ -38,14 +38,14 @@ export class DenverComponent implements OnInit, OnDestroy, AfterViewInit {
   
   public heroSlides = [
     {
-      image: 'assets/images/banner-stylexio.png',
-      alt: 'Cool Fashion Stuff - Women\'s Fashion',
-      link: '/collections?category=women'
+      image: 'assets/images/stylexio-banner-1.jpg',
+      alt: 'Stylexio Winter Fashion - Warm Looks Cool Vibes',
+      link: '/collections'
     },
     {
-      image: 'assets/images/banner-f1.png',
-      alt: 'Stylexio Fashion - Fresh Drops Only',
-      link: '/collections?sortBy=desc'
+      image: 'assets/images/stylexio-banner-2.jpg',
+      alt: 'Stylexio Seasonal Trends - Meet The Trends Of Season',
+      link: '/collections'
     }
   ];
 
