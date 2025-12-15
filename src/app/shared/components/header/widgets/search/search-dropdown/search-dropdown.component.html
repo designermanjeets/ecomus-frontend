@@ -1,29 +1,5 @@
 <div class="search-suggestion-box" *ngIf="isOpenResult">
-    <div [class]="(categories.length || categoryService.searchSkeleton)! ? 'recent-search-section mt-0 mb-4' : 'recent-search-section'">
-      <ng-container *ngIf="!categoryService.searchSkeleton && categories?.length">
-        <h4 class="page-title">{{ 'related_categories'  | translate}}</h4>
-        <div class="filter-row">
-          <ng-container *ngIf="!selectedCategory; else other">
-            <ng-container *ngFor="let category of categories" >
-              <a [routerLink]="['/category', category.slug]">{{ category.name }}</a>
-            </ng-container>
-          </ng-container>
-          <ng-template #other>
-            <div *ngTemplateOutlet="recursiveCategory; context: { $implicit: categories }"></div>
-            <ng-template #recursiveCategory let-categories>
-              <ng-container *ngFor="let category of categories">
-                <a [routerLink]="['/category', category.slug]">{{ category.name }}</a>
-                <ng-container *ngTemplateOutlet="recursiveCategory; context: { $implicit: category.subcategories }"></ng-container>
-              </ng-container>
-            </ng-template>
-          </ng-template>
-        </div>
-      </ng-container>
-      <!-- skeleton loader -->
-      <div class="filter-row filter-skeleton" *ngIf="categoryService.searchSkeleton">
-        <div class="skeleton__p" *ngFor="let item of skeleton"></div>
-      </div>
-    </div>
+ 
     <div class="recent-search-section">
       <h4 class="page-title">{{ 'related_product' | translate }} <a [routerLink]="['/search']" [queryParams]="{'search': term}">{{ 'see_all' | translate }}</a></h4>
       <!-- skeleton loader -->
