@@ -2,7 +2,7 @@ export const CategoryOption: any[] = [
        {
             "id": 69,
             "name": "Snowfall Collections",
-            "slug": "Snowfall Collections",
+            "slug": "Winter collections",
             "meta_title": null,
             "meta_description": null,
             "category_meta_image_id": null,
