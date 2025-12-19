@@ -76,6 +76,7 @@ import { CollectionProductsComponent } from './collection/widgets/collection-pro
 import { CollectionPaginateComponent } from './collection/widgets/collection-paginate/collection-paginate.component';
 import { CollectionCategoryFilterComponent } from './collection/widgets/filter/collection-category-filter/collection-category-filter.component';
 import { CollectionPriceFilterComponent } from './collection/widgets/filter/collection-price-filter/collection-price-filter.component';
+import { CollectionPriceRangeFilterComponent } from './collection/widgets/filter/collection-price-range-filter/collection-price-range-filter.component';
 import { CollectionRatingFilterComponent } from './collection/widgets/filter/collection-rating-filter/collection-rating-filter.component';
 import { CollectionFilterComponent } from './collection/widgets/filter/collection-filter/collection-filter.component';
 import { CollectionAttributesComponent } from './collection/widgets/filter/collection-attributes-filter/collection-attributes-filter.component';
@@ -159,6 +160,7 @@ import { CheckoutSuccessComponent } from './checkout/checkout-success/checkout-s
     CollectionPaginateComponent,
     CollectionCategoryFilterComponent,
     CollectionPriceFilterComponent,
+    CollectionPriceRangeFilterComponent,
     CollectionRatingFilterComponent,
     CollectionFilterComponent,
     CollectionAttributesComponent,

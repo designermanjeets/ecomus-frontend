@@ -26,36 +26,7 @@
           </div>
         </div>
       </div>
-      <!-- <div class="accordion-item" ngbAccordionItem [collapsed]="false" *ngIf="(brand$ | async)?.data?.length && !hideFilter?.includes('brand')">
-        <h2 class="accordion-header" ngbAccordionHeader>
-          <button class="accordion-button" ngbAccordionButton>
-            <span>{{ 'brand' | translate }}</span>
-          </button>
-        </h2>
-        <div ngbAccordionCollapse>
-          <div class="accordion-body" ngbAccordionBody>
-            <app-collection-brand-filter [filter]="filter"></app-collection-brand-filter>
-          </div>
-        </div>
-      </div> -->
-      <!-- <ng-container *ngIf="!filter['store_slug'] && !hideFilter?.includes('attribute')">
-        <ng-container *ngFor="let attribute of (attribute$ | async)?.data">
-          <div class="accordion-item" ngbAccordionItem [collapsed]="false"
-            *ngIf="attribute.style !== 'image'">
-            <h2 class="accordion-header" ngbAccordionHeader>
-              <button class="accordion-button" ngbAccordionButton>
-                <span>{{ attribute.name }}</span>
-              </button>
-            </h2>
-            <div ngbAccordionCollapse>
-              <div class="accordion-body" ngbAccordionBody>
-                <app-collection-attributes-filter [filter]="filter"
-                  [attribute]="attribute"></app-collection-attributes-filter>
-              </div>
-            </div>
-          </div>
-        </ng-container>
-      </ng-container> -->
+   
       <div class="accordion-item" ngbAccordionItem [collapsed]="false" *ngIf="!hideFilter?.includes('price')">
         <h2 class="accordion-header" ngbAccordionHeader>
           <button class="accordion-button" ngbAccordionButton>
@@ -64,24 +35,11 @@
         </h2>
         <div ngbAccordionCollapse>
           <div class="accordion-body" ngbAccordionBody>
-            <app-collection-price-filter [filter]="filter"></app-collection-price-filter>
+            <app-collection-price-range-filter [filter]="filter"></app-collection-price-range-filter>
           </div>
         </div>
       </div>
-      <!-- <div class="accordion-item" ngbAccordionItem [collapsed]="false" *ngIf="!hideFilter?.includes('rating')">
-        <h2 class="accordion-header" ngbAccordionHeader>
-          <button class="accordion-button" ngbAccordionButton>
-            <span>{{ 'rating' | translate }}</span>
-          </button>
-        </h2>
-        <div ngbAccordionCollapse>
-          <div ngbAccordionBody>
-            <div class="accordion-body" ngbAccordionBody>
-              <app-collection-rating-filter [filter]="filter"></app-collection-rating-filter>
-          </div>
-          </div>
-        </div>
-      </div> -->
+     
     </div>
   </ng-template>
 </div>

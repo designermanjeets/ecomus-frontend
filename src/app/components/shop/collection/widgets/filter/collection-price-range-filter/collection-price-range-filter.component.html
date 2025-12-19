@@ -1,0 +1,76 @@
+<div class="price-range-filter">
+  <div class="price-inputs mb-3">
+    <div class="row g-2">
+      <div class="col-6">
+        <label class="form-label small text-muted">{{ 'min' | translate }}</label>
+        <input 
+          type="number" 
+          class="form-control form-control-sm" 
+          [min]="minPrice" 
+          [max]="maxPrice"
+          [ngModel]="selectedMinPrice"
+          (ngModelChange)="onMinPriceChange($event)"
+          (blur)="applyFilter()">
+      </div>
+      <div class="col-6">
+        <label class="form-label small text-muted">{{ 'max' | translate }}</label>
+        <input 
+          type="number" 
+          class="form-control form-control-sm" 
+          [min]="minPrice" 
+          [max]="maxPrice"
+          [ngModel]="selectedMaxPrice"
+          (ngModelChange)="onMaxPriceChange($event)"
+          (blur)="applyFilter()">
+      </div>
+    </div>
+  </div>
+
+  <div class="price-range-slider mb-3">
+    <div class="range-container" 
+         [style.--min-percentage]="getPercentage(selectedMinPrice)"
+         [style.--max-percentage]="getPercentage(selectedMaxPrice)">
+      <input 
+        type="range" 
+        class="form-range range-min" 
+        [min]="minPrice" 
+        [max]="maxPrice"
+        [value]="selectedMinPrice"
+        (input)="onRangeChange($event, 'min')"
+        (change)="applyFilter()"
+        step="1">
+      <input 
+        type="range" 
+        class="form-range range-max" 
+        [min]="minPrice" 
+        [max]="maxPrice"
+        [value]="selectedMaxPrice"
+        (input)="onRangeChange($event, 'max')"
+        (change)="applyFilter()"
+        step="1">
+    </div>
+  </div>
+
+  <div class="price-display mb-3">
+    <div class="d-flex justify-content-between align-items-center">
+      <span class="price-value">
+        <strong>{{ selectedMinPrice | currencySymbol }}</strong>
+      </span>
+      <span class="text-muted">-</span>
+      <span class="price-value">
+        <strong>{{ selectedMaxPrice | currencySymbol }}</strong>
+      </span>
+    </div>
+  </div>
+
+  <div class="price-actions">
+    <button 
+      type="button" 
+      class="btn btn-sm btn-outline-secondary w-100"
+      (click)="resetFilter()"
+      *ngIf="selectedMinPrice > minPrice || selectedMaxPrice < maxPrice">
+      {{ 'reset' | translate }}
+    </button>
+  </div>
+</div>
+
