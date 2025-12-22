@@ -31,10 +31,12 @@ export class CollectionCategoryFilterComponent {
   }
 
   applyFilter(event: Event) {
-    const index = this.selectedCategories.indexOf((<HTMLInputElement>event?.target)?.value);  // checked and unchecked value
+    const slug = (<HTMLInputElement>event?.target)?.value;
+    const urlFriendlySlug = this.getUrlFriendlySlug(slug);
+    const index = this.selectedCategories.indexOf(urlFriendlySlug);  // checked and unchecked value
 
     if ((<HTMLInputElement>event?.target)?.checked)
-      this.selectedCategories.push((<HTMLInputElement>event?.target)?.value); // push in array cheked value
+      this.selectedCategories.push(urlFriendlySlug); // push in array cheked value
     else
       this.selectedCategories.splice(index,1);  // removed in array unchecked value
 
@@ -51,10 +53,21 @@ export class CollectionCategoryFilterComponent {
 
   // check if the item are selected
   checked(item: string){
-    if(this.selectedCategories?.indexOf(item) != -1){
+    const urlFriendlySlug = this.getUrlFriendlySlug(item);
+    if(this.selectedCategories?.indexOf(urlFriendlySlug) != -1){
       return true;
     }
     return false;
+  }
+
+  /**
+   * Converts a category slug to URL-friendly format
+   * Converts spaces to hyphens and makes it lowercase
+   * Example: "Winter collections" -> "winter-collections"
+   */
+  getUrlFriendlySlug(slug: string): string {
+    if (!slug) return '';
+    return slug.toLowerCase().trim().replace(/\s+/g, '-');
   }
 
 }
