@@ -29,4 +29,14 @@ export class FooterCategoriesComponent {
     }
   }
 
+  /**
+   * Converts a category slug to URL-friendly format
+   * Converts spaces to hyphens and makes it lowercase
+   * Example: "Winter collections" -> "winter-collections"
+   */
+  getUrlFriendlySlug(slug: string | undefined): string {
+    if (!slug) return '';
+    return slug.toLowerCase().trim().replace(/\s+/g, '-');
+  }
+
 }

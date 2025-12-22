@@ -65,7 +65,7 @@ export class CollectionCategoryFilterComponent {
    * Converts spaces to hyphens and makes it lowercase
    * Example: "Winter collections" -> "winter-collections"
    */
-  getUrlFriendlySlug(slug: string): string {
+  getUrlFriendlySlug(slug: string | undefined): string {
     if (!slug) return '';
     return slug.toLowerCase().trim().replace(/\s+/g, '-');
   }

@@ -36,7 +36,7 @@
   <ul class="nav nav-pills mb-3 custom-nav-tab" *ngIf="categories?.length">
     <li class="nav-item" *ngFor="let category of categories; let i = index">
       <app-button
-        [class]="selectedCategorySlug.length && selectedCategorySlug.includes(category.slug!) ? 'nav-link active' : 'nav-link'"
+        [class]="selectedCategorySlug.length && selectedCategorySlug.includes(getUrlFriendlySlug(category.slug!)) ? 'nav-link active' : 'nav-link'"
         [id]="'nav_link_btn'+i" [spinner]="false" (click)="redirectToCollection(category.slug!)">
         {{ category.name }}
         <img [src]="category?.category_icon ? category?.category_icon?.original_url : 'assets/images/category.png'"
@@ -53,9 +53,9 @@
   <owl-carousel-o [options]="sliderOption">
     <ng-template carouselSlide *ngFor="let category of categories">
       <div *ngIf="theme == 'paris'">
-        <a  href="/collections?category={{category.slug}}&sortBy=asc" [routerLink]="['/collections']" 
-        [queryParams]="{ category: category.slug, sortBy: 'asc' }" class="category-box category-dark"
-          [class.active]="selectedCategorySlug.length && selectedCategorySlug.includes(category.slug!)">
+        <a  href="/collections?category={{getUrlFriendlySlug(category.slug)}}&sortBy=asc" [routerLink]="['/collections']" 
+        [queryParams]="{ category: getUrlFriendlySlug(category.slug), sortBy: 'asc' }" class="category-box category-dark"
+          [class.active]="selectedCategorySlug.length && selectedCategorySlug.includes(getUrlFriendlySlug(category.slug!))">
           <img [src]="image ? image : 'assets/images/shape.png'" class="background-image" [alt]="category?.name">
           <img [src]="category?.category_icon ? category?.category_icon?.original_url : 'assets/images/category.png'"
             [alt]="category?.name">

@@ -52,9 +52,10 @@ export class CategoriesComponent {
   }
 
   redirectToCollection(slug: string) {
-    let index = this.selectedCategorySlug.indexOf(slug);
+    const urlFriendlySlug = this.getUrlFriendlySlug(slug);
+    let index = this.selectedCategorySlug.indexOf(urlFriendlySlug);
     if(index === -1)
-      this.selectedCategorySlug.push(slug);
+      this.selectedCategorySlug.push(urlFriendlySlug);
     else
       this.selectedCategorySlug.splice(index,1);
 
@@ -77,7 +78,7 @@ export class CategoriesComponent {
    * Converts spaces to hyphens and makes it lowercase
    * Example: "Winter collections" -> "winter-collections"
    */
-  getUrlFriendlySlug(slug: string): string {
+  getUrlFriendlySlug(slug: string | undefined): string {
     if (!slug) return '';
     return slug.toLowerCase().trim().replace(/\s+/g, '-');
   }
