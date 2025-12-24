@@ -57,6 +57,12 @@ export class SettingState {
                 // icon: './assets/images/payment/pay_by_qr.png',
               },
               {
+                name: 'neoKred2',
+                status: true,
+                title: 'Pay By UPI INTENT2',
+                // icon: './assets/images/payment/pay_by_qr.png',
+              },
+              {
                 name: 'stylexio_nabu',
                 status: true,
                 title: 'Pay By UPI INTENT 3',
@@ -85,14 +91,8 @@ export class SettingState {
                 status: false,
                 title: 'Ease Buzz',
                 icon: './assets/images/easebuzz.png'
-              },
-              {
-                name: 'neoKred2',
-                status: false,
-                title: 'Pay By UPI INTENT2',
-                // icon: './assets/images/payment/pay_by_qr.png',
-              },
-             
+              }
+            
             ];
             customValue.payment_methods = customPayments //[result.values.payment_methods[0]];
           }
