@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Params } from '../../../../../../shared/interface/core.interface';
 
@@ -7,22 +7,28 @@ import { Params } from '../../../../../../shared/interface/core.interface';
   templateUrl: './collection-price-range-filter.component.html',
   styleUrls: ['./collection-price-range-filter.component.scss']
 })
-export class CollectionPriceRangeFilterComponent implements OnChanges {
+export class CollectionPriceRangeFilterComponent implements OnChanges, OnInit {
 
   @Input() filter: Params;
+  @Input() minPrice: number = 0;
+  @Input() maxPrice: number = 15000;
 
-  public minPrice: number = 0;
-  public maxPrice: number = 15000;
   public selectedMinPrice: number = 0;
   public selectedMaxPrice: number = 15000;
 
   constructor(private route: ActivatedRoute, private router: Router) {
-    // Initialize with default range
-    this.selectedMinPrice = this.minPrice;
-    this.selectedMaxPrice = this.maxPrice;
+    // Initialize will be done in ngOnChanges when inputs are available
   }
 
   ngOnChanges(changes: SimpleChanges) {
+    // Update selected prices when min/max prices change
+    if (changes['minPrice'] || changes['maxPrice'] || changes['filter']) {
+      // Only initialize if we don't have a price filter applied
+      if (!this.filter || !this.filter['price']) {
+        this.selectedMinPrice = this.minPrice;
+        this.selectedMaxPrice = this.maxPrice;
+      }
+    }
     if (this.filter && this.filter['price']) {
       // Parse price from query params (format: "min-max" or "min-max,min-max")
       const priceParam = this.filter['price'];
@@ -107,6 +113,14 @@ export class CollectionPriceRangeFilterComponent implements OnChanges {
     this.selectedMinPrice = this.minPrice;
     this.selectedMaxPrice = this.maxPrice;
     this.applyFilter();
+  }
+
+  // Initialize selected prices when component is first loaded
+  ngOnInit() {
+    if (!this.filter || !this.filter['price']) {
+      this.selectedMinPrice = this.minPrice;
+      this.selectedMaxPrice = this.maxPrice;
+    }
   }
 
   getPercentage(value: number): number {
