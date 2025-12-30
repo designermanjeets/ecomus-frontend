@@ -1,5 +1,8 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Component, Input, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
+import { ActivatedRoute, Router, NavigationEnd, Scroll } from '@angular/router';
+import { ViewportScroller } from '@angular/common';
+import { filter } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 import { Params } from '../../../../../../shared/interface/core.interface';
 
 @Component({
@@ -7,28 +10,101 @@ import { Params } from '../../../../../../shared/interface/core.interface';
   templateUrl: './collection-price-range-filter.component.html',
   styleUrls: ['./collection-price-range-filter.component.scss']
 })
-export class CollectionPriceRangeFilterComponent implements OnChanges, OnInit {
+export class CollectionPriceRangeFilterComponent implements OnChanges, OnDestroy {
 
   @Input() filter: Params;
-  @Input() minPrice: number = 0;
-  @Input() maxPrice: number = 15000;
 
+  public minPrice: number = 0;
+  public maxPrice: number = 15000;
   public selectedMinPrice: number = 0;
   public selectedMaxPrice: number = 15000;
+  private scrollPosition: number = 0;
+  private navigationSubscription?: Subscription;
+  private scrollSubscription?: Subscription;
+  private shouldRestoreScroll: boolean = false;
+  private restoreTimeout?: any;
 
-  constructor(private route: ActivatedRoute, private router: Router) {
-    // Initialize will be done in ngOnChanges when inputs are available
+  constructor(
+    private route: ActivatedRoute, 
+    private router: Router,
+    private viewportScroller: ViewportScroller
+  ) {
+    // Initialize with default range
+    this.selectedMinPrice = this.minPrice;
+    this.selectedMaxPrice = this.maxPrice;
+
+    // Restore scroll position after navigation completes
+    this.navigationSubscription = this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe(() => {
+        if (this.shouldRestoreScroll && this.scrollPosition > 0) {
+          this.restoreScrollPosition();
+        }
+      });
+
+    // Also listen to Scroll events (triggered by guards) and restore after them
+    this.scrollSubscription = this.router.events
+      .pipe(filter((e): e is Scroll => e instanceof Scroll))
+      .subscribe(() => {
+        if (this.shouldRestoreScroll && this.scrollPosition > 0) {
+          // Clear any existing timeout
+          if (this.restoreTimeout) {
+            clearTimeout(this.restoreTimeout);
+          }
+          // Restore after guard has set scroll position
+          this.restoreTimeout = setTimeout(() => {
+            this.restoreScrollPosition();
+          }, 10);
+        }
+      });
+  }
+
+  private restoreScrollPosition() {
+    if (!this.shouldRestoreScroll || this.scrollPosition <= 0) {
+      return;
+    }
+
+    const restoreScroll = () => {
+      window.scrollTo(0, this.scrollPosition);
+      this.viewportScroller.scrollToPosition([0, this.scrollPosition]);
+    };
+
+    // Try immediately
+    restoreScroll();
+
+    // Try after multiple delays to ensure it works even if guards scroll
+    setTimeout(restoreScroll, 0);
+    setTimeout(restoreScroll, 50);
+    setTimeout(restoreScroll, 100);
+    setTimeout(restoreScroll, 200);
+    
+    // Use requestAnimationFrame for next frames
+    requestAnimationFrame(() => {
+      restoreScroll();
+      requestAnimationFrame(() => {
+        restoreScroll();
+      });
+    });
+
+    // Reset flag after restoration attempts
+    setTimeout(() => {
+      this.shouldRestoreScroll = false;
+    }, 300);
+  }
+
+  ngOnDestroy() {
+    if (this.navigationSubscription) {
+      this.navigationSubscription.unsubscribe();
+    }
+    if (this.scrollSubscription) {
+      this.scrollSubscription.unsubscribe();
+    }
+    if (this.restoreTimeout) {
+      clearTimeout(this.restoreTimeout);
+    }
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    // Update selected prices when min/max prices change
-    if (changes['minPrice'] || changes['maxPrice'] || changes['filter']) {
-      // Only initialize if we don't have a price filter applied
-      if (!this.filter || !this.filter['price']) {
-        this.selectedMinPrice = this.minPrice;
-        this.selectedMaxPrice = this.maxPrice;
-      }
-    }
     if (this.filter && this.filter['price']) {
       // Parse price from query params (format: "min-max" or "min-max,min-max")
       const priceParam = this.filter['price'];
@@ -92,6 +168,10 @@ export class CollectionPriceRangeFilterComponent implements OnChanges, OnInit {
   }
 
   applyFilter() {
+    // Save current scroll position before navigation
+    this.scrollPosition = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    this.shouldRestoreScroll = true;
+
     // Only apply if values are different from default range
     const priceValue = 
       (this.selectedMinPrice > this.minPrice || this.selectedMaxPrice < this.maxPrice)
@@ -113,14 +193,6 @@ export class CollectionPriceRangeFilterComponent implements OnChanges, OnInit {
     this.selectedMinPrice = this.minPrice;
     this.selectedMaxPrice = this.maxPrice;
     this.applyFilter();
-  }
-
-  // Initialize selected prices when component is first loaded
-  ngOnInit() {
-    if (!this.filter || !this.filter['price']) {
-      this.selectedMinPrice = this.minPrice;
-      this.selectedMaxPrice = this.maxPrice;
-    }
   }
 
   getPercentage(value: number): number {
