@@ -32,7 +32,7 @@ export const menuOptions: any[] = [
         "mega_menu": 1,
         "mega_menu_type": null,
         "slug": "activewear",
-        "path": "collections?category= activewear",
+        "path": "collections?category=activewear",
         "badge_text": null,
         "badge_color": null,
         "content_item": null,

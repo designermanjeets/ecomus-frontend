@@ -14,9 +14,9 @@ export class CollectionPriceRangeFilterComponent implements OnChanges, OnDestroy
 
   @Input() filter: Params;
 
-  public minPrice: number = 0;
+  public minPrice: number = 300;
   public maxPrice: number = 15000;
-  public selectedMinPrice: number = 0;
+  public selectedMinPrice: number = 300;
   public selectedMaxPrice: number = 15000;
   private scrollPosition: number = 0;
   private navigationSubscription?: Subscription;
