@@ -63,6 +63,7 @@ export class SellerDetailsComponent {
         'sortBy': params['sortBy'] ? params['sortBy'] : '',
         'rating': params['rating'] ? params['rating'] : '',
         'attribute': params['attribute'] ? params['attribute'] : '',
+        'size': params['size'] ? params['size'] : '',
       }
 
       this.route.params.subscribe(param => this.filter['store_slug'] = param['slug']);

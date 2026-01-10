@@ -9,7 +9,7 @@
       <app-skeleton-product-box *ngFor="let item of skeletonItems"></app-skeleton-product-box>
     </ng-container>
     <ng-template #productContent>
-      <ng-container *ngFor="let product of (product$ | async)?.data">
+      <ng-container *ngFor="let product of filteredProducts$ | async">
           <app-product-box [product]="product" [class]="'product-box-3'" [style]="'horizontal'"></app-product-box>
       </ng-container>
     </ng-template>
@@ -19,10 +19,10 @@
   [image]="'assets/svg/no-product.svg'"
   [text]="'Sorry Cant Find Products Looking'"
   [description]="'Please Check Misspelt Something Searching Other Way'"
-  *ngIf="!(product$ | async)?.data?.length && !productService.skeletonLoader">
+  *ngIf="!(filteredProducts$ | async)?.length && !productService.skeletonLoader">
 </app-no-data>
 </div>
 <app-collection-paginate
   [filter]="filter"
-  *ngIf="(product$ | async)?.data?.length && !productService.skeletonLoader">
+  *ngIf="(filteredProducts$ | async)?.length && !productService.skeletonLoader">
 </app-collection-paginate>

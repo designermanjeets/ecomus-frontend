@@ -64,6 +64,7 @@ export class CollectionComponent {
         'sortBy': params['sortBy'] ? params['sortBy'] : this.filter['sortBy'],
         'rating': params['rating'] ? params['rating'] : '',
         'attribute': params['attribute'] ? params['attribute'] : '',
+        'size': params['size'] ? params['size'] : '',
         store_id: 19,
       }
 

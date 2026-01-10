@@ -1,0 +1,14 @@
+<ul class="category-list custom-padding custom-height">
+    <li *ngFor="let size of sizes">
+        <div class="form-check ps-0 m-0 category-list-box">
+            <input class="checkbox_animated" type="checkbox"
+                id="size-{{size}}"
+                [value]="size"
+                [checked]="checked(size)"
+                (change)="applyFilter($event)">
+            <label class="form-check-label" for="size-{{size}}">
+                <span class="name">{{ size }}</span>
+            </label>
+        </div>
+    </li>
+</ul>

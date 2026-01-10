@@ -26,7 +26,20 @@
           </div>
         </div>
       </div>
-   
+
+      <div class="accordion-item" ngbAccordionItem [collapsed]="false" *ngIf="!hideFilter?.includes('size')">
+        <h2 class="accordion-header" ngbAccordionHeader>
+          <button class="accordion-button" type="button" ngbAccordionButton>
+            <span>{{ 'size' | translate }}</span>
+          </button>
+        </h2>
+        <div class="accordion-collapse collapse" ngbAccordionCollapse>
+          <div class="accordion-body" ngbAccordionBody>
+            <app-collection-size-filter [filter]="filter"></app-collection-size-filter>
+          </div>
+        </div>
+      </div>
+
       <div class="accordion-item" ngbAccordionItem [collapsed]="false" *ngIf="!hideFilter?.includes('price')">
         <h2 class="accordion-header" ngbAccordionHeader>
           <button class="accordion-button" ngbAccordionButton>
@@ -39,7 +52,7 @@
           </div>
         </div>
       </div>
-     
+
     </div>
   </ng-template>
 </div>

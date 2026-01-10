@@ -80,6 +80,7 @@ import { CollectionPriceRangeFilterComponent } from './collection/widgets/filter
 import { CollectionRatingFilterComponent } from './collection/widgets/filter/collection-rating-filter/collection-rating-filter.component';
 import { CollectionFilterComponent } from './collection/widgets/filter/collection-filter/collection-filter.component';
 import { CollectionAttributesComponent } from './collection/widgets/filter/collection-attributes-filter/collection-attributes-filter.component';
+import { CollectionSizeFilterComponent } from './collection/widgets/filter/collection-size-filter/collection-size-filter.component';
 import { BannerComponent } from './collection/widgets/banner/banner.component';
 import { SkeletonCollectionSidebarComponent } from './collection/widgets/skeleton-collection-sidebar/skeleton-collection-sidebar.component';
 import { DigitalProductContainComponent } from './product/product-details/widgets/digital-product-contain/digital-product-contain.component';
@@ -164,6 +165,7 @@ import { CheckoutSuccessComponent } from './checkout/checkout-success/checkout-s
     CollectionRatingFilterComponent,
     CollectionFilterComponent,
     CollectionAttributesComponent,
+    CollectionSizeFilterComponent,
     SkeletonSellerStoreComponent,
     BannerComponent,
     SkeletonCollectionSidebarComponent,

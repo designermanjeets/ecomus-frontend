@@ -18,7 +18,8 @@ export class CollectionFilterComponent implements OnChanges {
     tag: [],
     rating: [],
     price: [],
-    attribute: []
+    attribute: [],
+    size: []
   };
 
   constructor(private route: ActivatedRoute,
@@ -31,7 +32,8 @@ export class CollectionFilterComponent implements OnChanges {
       tag: this.splitFilter('tag'),
       rating: this.splitFilter('rating'),
       price: this.splitFilter('price'),
-      attribute: this.splitFilter('attribute')
+      attribute: this.splitFilter('attribute'),
+      size: this.splitFilter('size')
     };
 
     this.filters = this.mergeFilters();
@@ -81,7 +83,8 @@ export class CollectionFilterComponent implements OnChanges {
       ...this.filtersObj['tag'],
       ...this.filtersObj['rating'].map(val => val.startsWith('rating ') ? val : `rating ${val}`),
       ...this.filtersObj['price'],
-      ...this.filtersObj['attribute']
+      ...this.filtersObj['attribute'],
+      ...this.filtersObj['size']
     ];
   }
 }
