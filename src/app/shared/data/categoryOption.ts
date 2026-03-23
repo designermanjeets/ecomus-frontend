@@ -1,66 +1,66 @@
 export const CategoryOption: any[] = [
-       {
-            "id": 69,
-            "name": "Snowfall Collections",
-            "slug": "Winter collections",
-            "meta_title": null,
-            "meta_description": null,
-            "category_meta_image_id": null,
-            "description": null,
-            "category_image_id": 23893,
-            "category_icon_id": 23893,
-            "status": 1,
-            "type": "product",
-            "commission_rate": null,
-            "parent_id": null,
-            "created_by_id": 1,
-            "created_at": "2025-12-15T09:02:22.000000Z",
-            "updated_at": "2025-12-15T09:25:21.000000Z",
-            "deleted_at": null,
-            "is_allow_all_zone": 1,
-            "blogs_count": 0,
-            "products_count": 0,
-            "category_image": {
-                "id": 23893,
-                "name": "jacket (1)",
-                "disk": "public",
-                "mime_type": "image\/png",
-                "file_name": "jacket-(1).png",
-                "asset_url": "\/storage\/23893\/jacket-(1).png",
-                "original_url": "https:\/\/api.fashioncarft.com\/public\/storage\/23893\/jacket-(1).png"
-            },
-            "category_meta_image": null,
-            "category_icon": {
-                "id": 23893,
-                "name": "jacket (1)",
-                "disk": "public",
-                "mime_type": "image\/png",
-                "file_name": "jacket-(1).png",
-                "asset_url": "\/storage\/23893\/jacket-(1).png",
-                "original_url": "https:\/\/api.fashioncarft.com\/public\/storage\/23893\/jacket-(1).png"
-            },
-            "zones": [
-                {
-                    "id": 1,
-                    "name": "India",
-                    "pivot": {
-                        "category_id": 69,
-                        "zone_id": 1
-                    }
-                },
-                {
-                    "id": 2,
-                    "name": "Adajan",
-                    "pivot": {
-                        "category_id": 69,
-                        "zone_id": 2
-                    }
-                }
-            ],
-            "exclude_zones": [],
-            "subcategories": [],
-            "parent": null
-        },
+    //    {
+    //         "id": 69,
+    //         "name": "Snowfall Collections",
+    //         "slug": "Winter collections",
+    //         "meta_title": null,
+    //         "meta_description": null,
+    //         "category_meta_image_id": null,
+    //         "description": null,
+    //         "category_image_id": 23893,
+    //         "category_icon_id": 23893,
+    //         "status": 1,
+    //         "type": "product",
+    //         "commission_rate": null,
+    //         "parent_id": null,
+    //         "created_by_id": 1,
+    //         "created_at": "2025-12-15T09:02:22.000000Z",
+    //         "updated_at": "2025-12-15T09:25:21.000000Z",
+    //         "deleted_at": null,
+    //         "is_allow_all_zone": 1,
+    //         "blogs_count": 0,
+    //         "products_count": 0,
+    //         "category_image": {
+    //             "id": 23893,
+    //             "name": "jacket (1)",
+    //             "disk": "public",
+    //             "mime_type": "image\/png",
+    //             "file_name": "jacket-(1).png",
+    //             "asset_url": "\/storage\/23893\/jacket-(1).png",
+    //             "original_url": "https:\/\/api.fashioncarft.com\/public\/storage\/23893\/jacket-(1).png"
+    //         },
+    //         "category_meta_image": null,
+    //         "category_icon": {
+    //             "id": 23893,
+    //             "name": "jacket (1)",
+    //             "disk": "public",
+    //             "mime_type": "image\/png",
+    //             "file_name": "jacket-(1).png",
+    //             "asset_url": "\/storage\/23893\/jacket-(1).png",
+    //             "original_url": "https:\/\/api.fashioncarft.com\/public\/storage\/23893\/jacket-(1).png"
+    //         },
+    //         "zones": [
+    //             {
+    //                 "id": 1,
+    //                 "name": "India",
+    //                 "pivot": {
+    //                     "category_id": 69,
+    //                     "zone_id": 1
+    //                 }
+    //             },
+    //             {
+    //                 "id": 2,
+    //                 "name": "Adajan",
+    //                 "pivot": {
+    //                     "category_id": 69,
+    //                     "zone_id": 2
+    //                 }
+    //             }
+    //         ],
+    //         "exclude_zones": [],
+    //         "subcategories": [],
+    //         "parent": null
+    //     },
         {
             "id": 60,
             "name": "Activewear",
