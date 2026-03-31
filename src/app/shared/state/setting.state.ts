@@ -52,19 +52,19 @@ export class SettingState {
               
               {
                 name: 'neoKred',
-                status: true,
+                status: false,
                 title: 'Pay By UPI INTENT',
                 // icon: './assets/images/payment/pay_by_qr.png',
               },
               {
                 name: 'neoKred2',
-                status: true,
+                status: false,
                 title: 'Pay By UPI INTENT2',
                 // icon: './assets/images/payment/pay_by_qr.png',
               },
               {
                 name: 'stylexio_nabu',
-                status: true,
+                status: false,
                 title: 'Pay By UPI INTENT 3',
                 // icon: './assets/images/payment/stylexio_nabu.png',
               },
