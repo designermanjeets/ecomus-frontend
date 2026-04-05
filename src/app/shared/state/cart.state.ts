@@ -177,56 +177,26 @@ export class CartState {
 
     const state = ctx.getState();
     const cart = [...state.items];
-    const index = cart.findIndex(item => item.id === result.items[0].id);
+    const index = cart.findIndex(item => (item.id === result.items[0].id) || 
+                                       (item.variation_id && item.variation_id == result.items[0].variation_id) ||
+                                       (!item.variation_id && item.product_id == result.items[0].product_id));
 
     let output = { ...state };
 
     if (index == -1) {
-      if(!state.items.length){
-        output.items = [...state.items, ...result.items]
-      }else {
-        if(result.items[0].variation){
-          if(state.items.find(item => item.variation_id == result.items[0].variation_id)){
+      output.items = [...state.items, ...result.items]
+    } else {
+        const item = cart[index];
+        const productQty = item?.variation ? item?.variation?.quantity : item?.product?.quantity;
 
-            cart.find((item) => {
-              if(item.variation_id){
-                if(item.variation_id == result.items[0].variation_id){
-
-                const productQty = item?.variation?.quantity;
-
-                if (productQty < item?.quantity + action?.payload.quantity) {
-                  this.notificationService.showError(`You can not add more items than available. In stock ${productQty} items.`);
-                  return false;
-                }
-
-                  item.quantity = item?.quantity + result.items[0].quantity;
-                  item.sub_total = item?.quantity * (item?.variation?.sale_price);
-                }
-              }
-              
-            })
-          }else{
-            output.items = [...state.items, ...result.items]
-          }
+        if (productQty < item?.quantity + action?.payload.quantity) {
+            this.notificationService.showError(`You can not add more items than available. In stock ${productQty} items.`);
+            return;
         }
-        else if(state.items.find(item => item.product_id == result.items[0].product_id)){
-          cart.find((item) => {
-            if(item.product_id == result.items[0].product_id){
-              const productQty = item?.product?.quantity;
 
-              if (productQty < item?.quantity + action?.payload.quantity) {
-                this.notificationService.showError(`You can not add more items than available. In stock ${productQty} items.`);
-                return false;
-              }
-
-              item.quantity = item?.quantity + result.items[0].quantity;
-              item.sub_total = item?.quantity * (item.product.sale_price);
-            }
-          })
-        }else{
-          output.items = [...state.items, ...result.items]
-        }
-      }
+        item.quantity = item?.quantity + result.items[0].quantity;
+        item.sub_total = item?.quantity * (item?.variation ? item.variation.sale_price : item.product.sale_price);
+        output.items = cart;
     }
 
     // Set Selected Varaint
@@ -243,7 +213,7 @@ export class CartState {
 
     output.stickyCartOpen = true;
     output.sidebarCartOpen = true;
-    output.is_digital_only = output.items.map(item => item.product && item?.product?.product_type).every(item => item == 'digital');
+    output.is_digital_only = output.items.length > 0 ? output.items.map(item => item.product && item?.product?.product_type).every(item => item == 'digital') : false;
 
     ctx.patchState(output);
 
@@ -311,12 +281,12 @@ export class CartState {
       total: total
     });
 
-    if (!this.store.selectSnapshot(state => state.auth && state.auth.access_token)) {
-      return;
-    }
     return this.cartService.updateCart(action.payload).pipe(
       tap({
         error: err => {
+          if (!this.store.selectSnapshot(state => state.auth && state.auth.access_token)) {
+            return;
+          }
           throw new Error(err?.error?.message);
         }
       })
@@ -365,12 +335,12 @@ export class CartState {
       total: total
     });
 
-    if (!this.store.selectSnapshot(state => state.auth && state.auth.access_token)) {
-      return;
-    }
     return this.cartService.replaceCart(action.payload).pipe(
       tap({
         error: err => {
+          if (!this.store.selectSnapshot(state => state.auth && state.auth.access_token)) {
+            return;
+          }
           throw new Error(err?.error?.message);
         }
       })
@@ -392,13 +362,12 @@ export class CartState {
       total: total
     });
 
-    if (!this.store.selectSnapshot(state => state.auth && state.auth.access_token)) {
-      return;
-    }
-
     return this.cartService.deleteCart(id).pipe(
       tap({
         error: err => {
+          if (!this.store.selectSnapshot(state => state.auth && state.auth.access_token)) {
+            return;
+          }
           throw new Error(err?.error?.message);
         }
       })

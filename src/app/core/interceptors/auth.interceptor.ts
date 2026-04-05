@@ -52,8 +52,8 @@ export class AuthInterceptor implements HttpInterceptor {
 
     return next.handle(req).pipe(
       catchError((error: HttpErrorResponse) => {
-        if (error.status === 401) {
-          // this.notificationService.notification = false;
+        const token = this.store.selectSnapshot(state => state.auth.access_token);
+        if (error.status === 401 && token) {
           this.store.dispatch(new AuthClear());
         }
         return throwError(() => error);

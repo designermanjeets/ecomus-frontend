@@ -29,3 +29,38 @@
         height: 500px
     }
 }
+
+// Auth tab switcher
+.auth-tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+
+    .auth-tab {
+        background: transparent;
+        border: 2px solid #e0e0e0;
+        color: #666;
+        padding: 8px 18px;
+        border-radius: 6px;
+        font-weight: 500;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        white-space: nowrap;
+
+        &:hover {
+            border-color: var(--theme-color, #ff6b6b);
+            color: var(--theme-color, #ff6b6b);
+        }
+
+        &.active {
+            background: var(--theme-color, #ff6b6b);
+            border-color: var(--theme-color, #ff6b6b);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+    }
+}

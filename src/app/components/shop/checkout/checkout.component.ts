@@ -11,6 +11,8 @@ import { CartState } from '../../../shared/state/cart.state';
 import { OrderState } from '../../../shared/state/order.state';
 import { Checkout, PlaceOrder } from '../../../shared/action/order.action';
 import { ClearCart } from '../../../shared/action/cart.action';
+import { Register, Login } from '../../../shared/action/auth.action';
+import { NotificationService } from '../../../shared/services/notification.service';
 import { AddressModalComponent } from '../../../shared/components/widgets/modal/address-modal/address-modal.component';
 import { Cart } from '../../../shared/interface/cart.interface';
 import { SettingState } from '../../../shared/state/setting.state';
@@ -56,12 +58,16 @@ export class CheckoutComponent {
   @ViewChild("payByQRModal") payByQRModal: TemplateRef<any>;
 
   public form: FormGroup;
+  public registerForm: FormGroup;
+  public loginForm: FormGroup;
+  public accountMode: 'register' | 'login' = 'register';
   public coupon: boolean = true;
   public couponCode: string;
   public appliedCoupon: boolean = false;
   public couponError: string | null;
   public checkoutTotal: OrderCheckout;
   public loading: boolean = false;
+  public authLoading: boolean = false;
 
   public shippingStates$: Observable<Select2Data>;
   public billingStates$: Observable<Select2Data>;
@@ -93,9 +99,26 @@ export class CheckoutComponent {
     private formBuilder: FormBuilder, public cartService: CartService,
         private modalService: NgbModal,
         private sanitizer: DomSanitizer,
-        private orderService: OrderService
+        private orderService: OrderService,
+        private notificationService: NotificationService
       ) {
     this.store.dispatch(new GetSettingOption());
+
+    // Register form
+    this.registerForm = this.formBuilder.group({
+      name: new FormControl('', [Validators.required]),
+      email: new FormControl('', [Validators.required, Validators.email]),
+      phone: new FormControl('', [Validators.required]),
+      country_code: new FormControl('91', [Validators.required]),
+      password: new FormControl('', [Validators.required, Validators.minLength(6)]),
+      password_confirmation: new FormControl('', [Validators.required]),
+    });
+
+    // Login form
+    this.loginForm = this.formBuilder.group({
+      email: new FormControl('', [Validators.required, Validators.email]),
+      password: new FormControl('', [Validators.required]),
+    });
 
     this.form = this.formBuilder.group({
       products: this.formBuilder.array([], [Validators.required]),
@@ -236,8 +259,19 @@ export class CheckoutComponent {
       }
     });
     
-    this.localUserCheck = JSON.parse(localStorage.getItem('account') || '');
-    
+    const account = localStorage.getItem('account');
+    if (account && account !== 'undefined') {
+      try {
+        this.localUserCheck = JSON.parse(account);
+      } catch (e) {
+        this.localUserCheck = null;
+      }
+    }
+
+    const setting = this.store.selectSnapshot(state => state.setting);
+    if (setting && setting.setting && setting.setting.activation) {
+       setting.setting.activation.guest_checkout = true;
+    }
   }
 
   get productControl(): FormArray {
@@ -251,7 +285,11 @@ export class CheckoutComponent {
   // }
 
   ngOnInit() {
-    this.checkout$.subscribe(data => this.checkoutTotal = data);
+    this.checkout$.subscribe(data => {
+      if (data) {
+        this.checkoutTotal = data;
+      }
+    });
     this.products();
   }
 
@@ -266,8 +304,103 @@ export class CheckoutComponent {
             quantity: new FormControl(item?.quantity),
           })
       ));
+
+      // Local calculation for guests or initial state
+      if (items.length > 0 && !this.checkoutTotal) {
+        const subtotal = items.reduce((sum, item) => sum + (item.sub_total || 0), 0);
+        this.checkoutTotal = {
+          total: {
+            sub_total: subtotal,
+            shipping_total: 0,
+            tax_total: 0,
+            total: subtotal,
+            convert_point_amount: 0,
+            convert_wallet_balance: 0,
+            coupon_total_discount: 0,
+            points: 0,
+            points_amount: 0,
+            wallet_balance: 0,
+            points_id: null,
+            points_balance: 0
+          }
+        } as any;
+      }
     });
   }
+
+  // Sync guest cart to server then reload so the logged-in user sees their items
+  private syncCartAndReload() {
+    const cartItems: Cart[] = this.store.selectSnapshot(CartState.cartItems);
+    if (cartItems && cartItems.length > 0) {
+      const syncPayload = cartItems.map(item => ({
+        id: null,
+        product: item.product,
+        product_id: item.product_id,
+        variation: item.variation || null,
+        variation_id: item.variation_id || null,
+        quantity: item.quantity,
+      }));
+      // Call cart sync API directly (bypassing state dispatch to avoid GetCartItems race)
+      this.cartService.syncCart(syncPayload).subscribe({
+        next: () => window.location.reload(),
+        error: () => window.location.reload(),
+      });
+    } else {
+      window.location.reload();
+    }
+  }
+
+
+  registerUser() {
+    if (this.registerForm.invalid) {
+      this.registerForm.markAllAsTouched();
+      return;
+    }
+    const val = this.registerForm.value;
+    if (val.password !== val.password_confirmation) {
+      this.notificationService.showError('Passwords do not match');
+      return;
+    }
+    this.authLoading = true;
+    this.store.dispatch(new Register({
+      name: val.name,
+      email: val.email,
+      phone: val.phone,
+      country_code: val.country_code,
+      password: val.password,
+      password_confirmation: val.password_confirmation,
+    })).subscribe({
+      complete: () => {
+        this.authLoading = false;
+        this.notificationService.showSuccess('Account created! Continuing to checkout...');
+        this.syncCartAndReload();
+      },
+      error: (err) => {
+        this.authLoading = false;
+        this.notificationService.showError(err?.message || 'Registration failed');
+      }
+    });
+  }
+
+  loginUser() {
+    if (this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
+      return;
+    }
+    this.authLoading = true;
+    this.store.dispatch(new Login(this.loginForm.value)).subscribe({
+      complete: () => {
+        this.authLoading = false;
+        this.notificationService.showSuccess('Logged in! Continuing to checkout...');
+        this.syncCartAndReload();
+      },
+      error: (err) => {
+        this.authLoading = false;
+        this.notificationService.showError(err?.message || 'Login failed');
+      }
+    });
+  }
+
 
   selectShippingAddress(id: number) {
     if(id) {
@@ -905,8 +1038,7 @@ export class CheckoutComponent {
   }
 
   ngOnDestroy() {
-    // this.store.dispatch(new Clear());
-    this.store.dispatch(new ClearCart());
+    // this.store.dispatch(new ClearCart());
     this.form.reset();
     this.pollingSubscription && this.pollingSubscription.unsubscribe();
   }
