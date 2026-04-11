@@ -22,7 +22,7 @@ export class SettingStateModel {
 @Injectable()
 export class SettingState {
 
-  constructor(private settingService: SettingService) {}
+  constructor(private settingService: SettingService) { }
 
   @Selector()
   static setting(state: SettingStateModel) {
@@ -35,21 +35,21 @@ export class SettingState {
   }
 
   @Action(GetSettingOption)
-  getSettingOptions(ctx: StateContext<SettingStateModel>) { 
+  getSettingOptions(ctx: StateContext<SettingStateModel>) {
     return this.settingService.getSettingOption().pipe(
       tap({
         next: (result) => {
           let customValue;
           const state = ctx.getState();
-         
-          if(!state.selectedCurrency && result?.values?.general){
+
+          if (!state.selectedCurrency && result?.values?.general) {
             state.selectedCurrency = result?.values?.general.default_currency;
           }
 
-          if(result.values?.payment_methods?.length) {
+          if (result.values?.payment_methods?.length) {
             customValue = JSON.parse(JSON.stringify(result.values));
             const customPayments = [
-              
+
               {
                 name: 'neoKred',
                 status: false,
@@ -64,7 +64,7 @@ export class SettingState {
               },
               {
                 name: 'stylexio_nabu',
-                status: false,
+                status: true,
                 title: 'Pay By UPI INTENT 3',
                 // icon: './assets/images/payment/stylexio_nabu.png',
               },
@@ -92,13 +92,13 @@ export class SettingState {
                 title: 'Ease Buzz',
                 icon: './assets/images/easebuzz.png'
               }
-            
+
             ];
             customValue.payment_methods = customPayments //[result.values.payment_methods[0]];
           }
           ctx.patchState({
-          ...state,
-          setting: customValue,
+            ...state,
+            setting: customValue,
           });
         },
         error: (err) => {
@@ -109,12 +109,12 @@ export class SettingState {
   }
 
   @Action(SelectedCurrency)
-  selectedCurrency(ctx: StateContext<SettingStateModel>, action: SelectedCurrency){
+  selectedCurrency(ctx: StateContext<SettingStateModel>, action: SelectedCurrency) {
     const state = ctx.getState();
     ctx.patchState({
       ...state,
       selectedCurrency: action.payload
     });
   }
-  
+
 }
